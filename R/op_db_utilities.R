@@ -769,6 +769,20 @@ get_opentargets_cancer_drugs <-
     dplyr::select(-n) %>%
     dplyr::distinct()
 
+  ## adjust max ct phase
+  drugs_with_max_phase_adj <- as.data.frame(
+    targeted_cancer_compounds %>%
+    dplyr::filter(!is.na(drug_max_ct_phase) & !is.na(drug_max_phase_indication)) %>%
+    dplyr::group_by(drug_name, molecule_chembl_id) %>%
+    dplyr::summarise(drug_max_ct_phase = max(drug_max_phase_indication),
+                     .groups = "drop")
+  )
+
+  targeted_cancer_compounds <- as.data.frame(targeted_cancer_compounds %>%
+    dplyr::select(-drug_max_ct_phase) %>%
+    dplyr::left_join(drugs_with_max_phase_adj, by = c("drug_name","molecule_chembl_id"))
+  )
+
 
   return(targeted_cancer_compounds)
 
