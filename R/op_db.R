@@ -26,7 +26,7 @@ get_drug <- function(drug_is_targeted = F,
                      list_per_indication = T,
                      list_per_drug_synonym = F){
 
-  drug_records <- cancer_drug
+  drug_records <- oncoPharmaDB::oncopharmadb
   assertthat::validate_that(is.numeric(drug_approved_later_than),
                           msg = "ERROR: Argument 'drug_approved_later_than' must be of type 'numeric'")
   assertthat::validate_that(drug_approved_later_than >= 1939 & drug_approved_later_than <= 2020,
