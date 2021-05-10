@@ -6,7 +6,7 @@
 #' @param drug_action_type character vector with drug action types to include in drug record list -
 #' possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
 #' "STABILISER","CROSS-LINKING AGENT",DISRUPTING AGENT","OTHER"
-#' @param opentargets_only logical indicating if resulting drug records should contain drug records from Open Targets Platform only
+#' @param source_opentargets_only logical indicating if resulting drug records should contain drug records from Open Targets Platform only
 #' @param drug_has_blackbox_warning logical indicating if resulting drug records should contain drugs with black box warnings only
 #' @param drug_approved_later_than only include records for drugs approved later than this date (year)
 #' @param drug_minimum_max_phase_any_indication only include drug records that are in a clinical phase (any indication) greater or equal than this phase

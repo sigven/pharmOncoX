@@ -29,6 +29,8 @@ get_drug(
 possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
 "STABILISER","CROSS-LINKING AGENT",DISRUPTING AGENT","OTHER"}
 
+\item{source_opentargets_only}{logical indicating if resulting drug records should contain drug records from Open Targets Platform only}
+
 \item{drug_has_blackbox_warning}{logical indicating if resulting drug records should contain drugs with black box warnings only}
 
 \item{drug_approved_later_than}{only include records for drugs approved later than this date (year)}
@@ -40,8 +42,6 @@ possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVA
 \item{list_per_indication}{list resulting drug records per drug indication/tumor type}
 
 \item{list_per_drug_synonym}{list resulting drug records per drug synonym}
-
-\item{opentargets_only}{logical indicating if resulting drug records should contain drug records from Open Targets Platform only}
 }
 \description{
 Function that returns various properties of antineoplastic drugs (targeted and non-targeted)
