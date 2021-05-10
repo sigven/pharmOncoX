@@ -1,0 +1,215 @@
+pattern	symbol
+(KSP )	KIF11
+RIPK1	RIPK1
+CD73	NT5E
+CCR4	CCR4
+CENP-E	CENPE
+CYP17	CYP17A1
+EBNA-1	EBNA1
+(FASN )	FASN
+Glutaminase	GLS
+GSK-3	GSK3A
+GSK-3	GSK3B
+Protein Arginine Methyltransferase 5	PRMT5
+Pyruvate Kinase	PKM
+RAD51	RAD51
+(RET |RET/)	RET
+Topoisomerase-II	TOP2A
+Topoisomerase-II	TOP2B
+RNR Inhibitor COH29	RRM2
+RSK1-4 Inhibitor	RRM1
+RSK1-4 Inhitibor 	RRM2
+RNR Subunits Interaction	RRM1
+RNR Subunits Interaction	RRM2
+SGLT2	SLC5A2
+SRPK1	SRPK1
+ABCG2	ABCG2
+Tankyrase	TNKS
+Tankyrase	TNKS2
+Thioredoxin-1	TXN
+Thymidylate Synthase	TYMS
+TIGIT	TIGIT
+Tropomyosin Receptor Kinase	NTRK1
+Tropomyosin Receptor Kinase	NTRK2
+USP14	USP14
+UCHL5	UCHL5
+PI3K Inhibitor	PIK3CA
+PI3K Inhibitor	PIK3CB
+PI3K Inhibitor	PIK3CD
+PI3K Inhibitor	PIK3CG
+LMP7	LMP7
+(ITK )	ITK
+IRE1 RNase	ERN1
+(Akt-1/2|AKT-1/2|AKT 1/2)	AKT1
+(Akt-1/2|AKT-1/2|AKT 1/2)	AKT2
+(Akt Inhibitor|AKT/)	AKT1
+(Akt Inhibitor|AKT/)	AKT2
+Chk1 Inhibitor|Checkpoint Kinase Inhibitor	CHEK1
+Dihydroorotate Dehydrogenase	DHODH
+DNA-dependent Protein Kinase|DNA-PK	PRKDC
+ALK2	ACVR1
+Bcr-Abl	ABL1
+ROS1	ROS1
+DNMT1	DNMT1
+Epidermal Growth Factor Receptor	EGFR
+Galectin-1	LGALS1
+Galectin-3	LGALS3
+CD73	CD73
+CDK8/19|Cyclin-dependent Kinase 8/19	CDK8
+CDK8/19|Cyclin-dependent Kinase 8/19	CDK19
+HDAC6	HDAC6
+HDAC8	HDAC8
+CYP11A1	CYP11A1
+Eg5 Kinesin-Related Motor Protein	KIF11
+SGLT2	SGLT2
+SLC6A8	SLC6A8
+PI3Kalpha	PIK3CA
+PI3Kdelta	PIK3CD
+PI3K-gamma	PIK3CG
+HDM2	MDM2
+JAK2	JAK2
+LOXL2	LOXL2
+MALT1	MALT1
+MAT2A	MAT2A
+MELK	MELK
+MTF-1	MTF1
+Aryl Hydrocarbon Receptor	AHR
+Aurora A Kinase	AURKA
+Aurora kinase A/B	AURKA
+Aurora kinase A/B	AURKB
+Aurora B/C	AURKB
+Aurora B/C	AURKC
+Aurora Kinase Inhibitor	AURKA
+Aurora Kinase Inhibitor	AURKB
+Aurora Kinase Inhibitor	AURKC
+UAE Inhibitor	UBA1
+XPO1	XPO1
+Protein Phosphatase 2A	PTPA
+IRAK4	IRAK4
+(ALK )	ALK
+Alpha-1-Proteinase	SERPINA1
+CDC7	CDC7
+HIF-1alpha	HIF1A
+(FAK )	PTK2
+(Fascin )	FSCN1
+(Gamma-Secretase )	GSAP
+Uridine Phosphorylase Inhibitor	UPP1
+EZH2	EZH2
+Androgen Receptor	AR
+(p97 )	VCP
+(ATR )	ATR
+NAMPT	NAMPT
+NEDD8 Activating Enzyme E1	NAE1
+(mTORC 1/2|mTORC1/2|mTORC1/mTORC2|mTOR )	MTOR
+MetAP2	METAP2
+(Mps1 )	TTK
+MKNK1	MKNK1
+MNK1/2	MKNK1
+MNK1/2	MKNK2
+(CDK4/6)	CDK4
+(CDK4/6)	CDK6
+(CDK2/4/6)	CDK2
+(CDK2/4/6)	CDK4
+(CDK2/4/6)	CDK6
+(CDK2 )	CDK2
+(CDK4 )	CDK4
+CDK7	CDK7
+CDK9	CDK9
+BRAF	BRAF
+(BET |BET-bromo)	BRD1
+(BET |BET-bromo)	BRD2
+(BET |BET-bromo)	BRD3
+(BET |BET-bromo)	BRD4
+(ATM )	ATM
+BCL-2|Bcl-2	BCL2
+Axl/Mer	MERTK
+(Hsp90|HSP90|Heat Shock Protein)	HSP90AA1
+(Hsp90|HSP90|Heat Shock Protein)	HSP90AB1
+Inosine Monophosphate Dehydrogenase	IMPDH2
+Inosine Monophosphate Dehydrogenase	IMPDH1
+MARCKS	MARCKS
+(^EGFR| EGFR)	EGFR
+FLT3|Flt3|Flt-3	FLT3
+AXL|Axl	AXL
+CSF1R|CSF-1R	CSF1R
+KIT|c-Kit	KIT
+VEGFR2	KDR
+(VEFGR |VEGFR/)	KDR
+(VEFGR |VEGFR/)	FLT1
+(VEFGR |VEGFR/)	FLT4
+Wee1	WEE1
+(PI3K Alpha)	PIK3CA
+PI3K-delta	PIK3CD
+(PI3K/PI3K |Phosphatidylinositide 3-Kinase|pan-PI3K)	PIK3CA
+(PI3K/PI3K |Phosphatidylinositide 3-Kinase|pan-PI3K)	PIK3CB
+(PI3K/PI3K |Phosphatidylinositide 3-Kinase|pan-PI3K)	PIK3CD
+(PI3K/PI3K |Phosphatidylinositide 3-Kinase|pan-PI3K)	PIK3CG
+PI3K p110beta/delta	PIK3CB
+PI3K p110beta/delta	PIK3CD
+PDGFR	PDGFRB
+(pan-PIM )	PIM1
+(pan-PIM )	PIM2
+(pan-PIM )	PIM3
+MDM2	MDM2
+IDH1	IDH1
+IDH2	IDH2
+IDO1|IDO-1	IDO1
+(TDO|TDO2)	TDO2
+(JAK1 )	JAK1
+(KRAS)	KRAS
+LRP5	LRP5
+(LRP5/6)	LRP5
+(LRP5/6)	LRP6
+(LSD1|Lysine-specific Demethylase 1)	KDM1A
+(PARP-1/2)	PARP1
+(PARP-1/2)	PARP2
+(PARP 1/2)	PARP1
+(PARP 1/2)	PARP2
+(PARP |PARP/)	PARP1
+(PD-L1)	CD274
+(PD1)	PDCD1
+(BRD4 )	BRD4
+(BTK )	BTK
+(PRMT1)	PRMT1
+(PRMT5)	PRMT5
+SHP2	PTPN11
+STAT3	STAT3
+(TGF-beta Receptor 1|TGFbeta)	TGFB1
+(Topoisomerase(-| )(1|I) )	TOP1
+(Topoisomerase I/II)	TOP1
+(Topoisomerase I/II)	TOP2A
+(Topoisomerase I/II)	TOP2B
+(Topoisomerase-II-beta)	TOP2B
+(TrkA)	NTRK1
+(VEGFR |VEGFR/)	KDR
+((P|p)orcupine)	PORCN
+(c-Met|MET )	MET
+(CXCR1/2)	CXCR1
+(CXCR1/2)	CXCR2
+CXCR2	CXCR2
+CXCR4	CXCR4
+(ERK1/2|ERK 1/2)	MAPK3
+(ERK1/2|ERK 1/2)	MAPK1
+(ERK )	MAPK3
+(ERK )	MAPK1
+(MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K1
+(MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K2
+MCL-1|Mcl-1	MCL1	
+EZH1/2	EZH1
+EZH1/2	EZH2
+EZH2	EZH2
+PAK4	PAK4
+Methionine Aminopeptidase 2	METAP2
+(FGFR |FGFR/)	FGFR1
+(FGFR |FGFR/)	FGFR2
+(FGFR |FGFR/)	FGFR3
+(FGFR |FGFR/)	FGFR4
+FGFR4	FGFR4
+FGFR2	FGFR2
+(HER2 )	ERBB2
+FGFR1/2/3	FGFR1
+FGFR1/2/3	FGFR2
+FGFR1/2/3	FGFR3
+(PIM |PIM/)	PIM1
+(Polo-like Kinase 1|PLK1)	PLK1
+(Polo-like Kinase 4)	PLK4
