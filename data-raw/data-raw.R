@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20210510'
+pharmamine_datestamp <- '20210519'
 nci_db_release <- '21.04d'
 chembl_db_release <- 'ChEMBL_28'
 opentargets_version <- '2021.04'
@@ -49,6 +49,9 @@ antineo_agents_local <-
   file.path(path_data_raw,"nci_thesaurus","Antineoplastic_Agent.txt")
 download.file(url = antineo_agents_url, destfile = antineo_agents_local, quiet = T)
 
+
+####---- Dataset of cancer drugs -----####
+
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_version = nci_db_release,
@@ -68,6 +71,7 @@ nci_antineo_chembl <- nci_antineo_all %>%
                 molecule_chembl_id,
                 drug_name_nci,
                 nci_concept_synonym_all) %>%
+  dplyr::filter(!(nci_t == "C1806" & drug_name_nci == "gemtuzumab")) %>%
   dplyr::filter(!is.na(molecule_chembl_id)) %>%
   dplyr::distinct()
 
@@ -132,6 +136,7 @@ ot_nci_set2 <- ot_nci_matched %>%
                    by = c("drug_name_lc" = "drug_name_nci")) %>%
   dplyr::rename(drug_name_nci = drug_name_lc) %>%
   dplyr::filter(!is.na(nci_t)) %>%
+  dplyr::anti_join(ot_nci_set1, by = c("nci_concept_display_name")) %>%
   dplyr::anti_join(ot_nci_set1, by = c("drug_name"))
 
 
@@ -146,7 +151,9 @@ ot_nci_set3 <- ot_nci_matched %>%
                    by = c("drug_name_lc" = "drug_name_nci")) %>%
   dplyr::rename(drug_name_nci = drug_name_lc) %>%
   dplyr::anti_join(ot_nci_set1, by = c("drug_name")) %>%
-  dplyr::anti_join(ot_nci_set2, by = c("drug_name"))
+  dplyr::anti_join(ot_nci_set2, by = c("drug_name")) %>%
+  dplyr::anti_join(ot_nci_set1, by = c("nci_concept_display_name")) %>%
+  dplyr::anti_join(ot_nci_set2, by = c("nci_concept_display_name"))
 
 ot_cancer_drugs <- ot_nci_set1 %>%
   dplyr::bind_rows(ot_nci_set2) %>%
@@ -261,19 +268,26 @@ all_cancer_drugs_final <-
     as.character(drug_action_type)
   ))
 
-cancer_drug <- all_cancer_drugs_final %>%
-  dplyr::distinct()
-
-usethis::use_data(cancer_drug, internal = T, overwrite = T)
-
-unique_chembl_pubchem <- all_cancer_drugs %>%
-  dplyr::select(molecule_chembl_id, nci_concept_display_name) %>%
-  dplyr::filter(!is.na(molecule_chembl_id)) %>%
+oncopharmadb <- all_cancer_drugs_final %>%
+  dplyr::filter(!(is.na(nci_concept_display_name) &
+                    !stringr::str_detect(drug_action_type,"INHIBITOR|BLOCKER"))) %>%
   dplyr::distinct() %>%
-  dplyr::left_join(chembl_pubchem_xref,by="molecule_chembl_id")
+  dplyr::filter(!(is.na(molecule_chembl_id) & nci_concept_display_name == "Sunitinib Malate")) %>%
+  dplyr::mutate(nci_concept_display_name = dplyr::if_else(
+    is.na(nci_concept_display_name),
+    stringr::str_to_title(drug_name),
+    as.character(nci_concept_display_name)
+  ))
 
+usethis::use_data(oncopharmadb, overwrite = T)
+
+
+####---- Dataset of cancer drug aliases-----####
+
+
+## unique drug aliases from NCI Thesaurus
 non_ambiguous_synonyms <- as.data.frame(
-  all_cancer_drugs %>%
+  oncopharmadb %>%
     dplyr::select(molecule_chembl_id, nci_concept_display_name, drug_name_nci) %>%
     dplyr::distinct() %>%
     dplyr::group_by(drug_name_nci) %>%
@@ -281,6 +295,7 @@ non_ambiguous_synonyms <- as.data.frame(
     dplyr::filter(n == 1 & nchar(drug_name_nci) >= 4)
   )
 
+## Drug alias to NCI concept display name (primary name)
 antineopharma_synonyms <- all_cancer_drugs %>%
   dplyr::select(drug_name_nci, nci_concept_display_name, molecule_chembl_id) %>%
   dplyr::inner_join(non_ambiguous_synonyms, by = "drug_name_nci") %>%
@@ -288,6 +303,7 @@ antineopharma_synonyms <- all_cancer_drugs %>%
   dplyr::select(-n) %>%
   dplyr::distinct()
 
+## include also the primary name among aliases
 tmp <- antineopharma_synonyms %>%
   dplyr::select(molecule_chembl_id, nci_concept_display_name) %>%
   dplyr::mutate(alias = tolower(nci_concept_display_name)) %>%
@@ -298,52 +314,49 @@ antineopharma_synonyms <- antineopharma_synonyms %>%
   dplyr::arrange(nci_concept_display_name) %>%
   dplyr::distinct()
 
-i <- 1
-#antineopharma_properties_chembl <- data.frame()
-#antineopharma_moa_chembl <- data.frame()
-antineopharma_properties_pubchem <- data.frame()
-#antineopharma_synonyms_pubchem <- data.frame()
 
-antineopharma_synonyms_pubchem <-
-  readRDS(file = file.path(path_data_tmp_processed, "antineopharma_synonyms.rds"))
-tmp2 <- antineopharma_synonyms_pubchem %>%
+## Extend aliases with those found in PubChem
+
+## get drug set that contains with PubChem cross-references
+unique_chembl_pubchem <- oncopharmadb %>%
+  dplyr::select(molecule_chembl_id, nci_concept_display_name) %>%
   dplyr::filter(!is.na(molecule_chembl_id)) %>%
-  dplyr::select(nci_concept_display_name) %>%
-  dplyr::distinct()
-unique_chembl_pubchem <- unique_chembl_pubchem %>%
-  dplyr::anti_join(tmp2, by = "nci_concept_display_name")
+  dplyr::distinct() %>%
+  dplyr::left_join(chembl_pubchem_xref,by="molecule_chembl_id") %>%
+  dplyr::filter(!is.na(pubchem_cid)) %>%
+  dplyr::select(-c(chembl_db_version))
 
 
-while(i <= nrow(unique_chembl_pubchem)){
-  id_chembl <- unique_chembl_pubchem[i,"molecule_chembl_id"]
-  id_pchem <- unique_chembl_pubchem[i,"pubchem_cid"]
-  name <- unique_chembl_pubchem[i,"nci_concept_display_name"]
-  props <- get_compound_properties(molecule_chembl_id = id_chembl,
-                                   pchem_cid = id_pchem,
-                                   version_chembl = chembl_db_release)
+## Retrieve aliases for drugs with PubChem x-refs
+pubchem_synonym_files <-
+  sort(list.files(path = file.path(here::here(), "data-raw","pubchem"),
+                  pattern = "CID-Synonym-filtered_",
+                  full.names = T))
 
-  for(p in c('properties_pubchem')){
-    if(!is.null(props[[p]]) & !is.null(props[['molecule_chembl_id']])){
-      df <- props[[p]]
-      if('pubchem_synonyms' %in% colnames(df)){
-        synonym_df <- data.frame('molecule_chembl_id' = props[['molecule_chembl_id']],
-                                 'alias' = stringr::str_split(props[[p]]['pubchem_synonyms'],"@@@@")[[1]],
-                                 'nci_concept_display_name' = name,
-                                 stringsAsFactors = F)
-        antineopharma_synonyms_pubchem <- dplyr::bind_rows(antineopharma_synonyms_pubchem, synonym_df)
-        df[,'pubchem_synonyms'] <- NULL
-      }
-    }
+antineopharma_synonyms_pubchem <- data.frame()
+for(f in pubchem_synonym_files){
+  cat(f)
+  cat('\n')
+  synonym_data <- as.data.frame(readr::read_tsv(
+    f, col_names = c('pubchem_cid','alias'),
+    col_types = "dc",
+    progress = F
+  ))
+
+  pubchem_alias_df <- synonym_data %>%
+    dplyr::inner_join(unique_chembl_pubchem,
+                      by = "pubchem_cid")
+
+  if(nrow(pubchem_alias_df) > 0){
+    pubchem_alias_df <- pubchem_alias_df %>%
+      dplyr::select(-pubchem_cid)
+    antineopharma_synonyms_pubchem <-
+      antineopharma_synonyms_pubchem %>%
+      dplyr::bind_rows(pubchem_alias_df)
   }
-  cat(i,name,'\n')
-  if(i %% 50 == 0){
-    saveRDS(antineopharma_synonyms_pubchem, file = file.path(path_data_tmp_processed,
-                                                             paste0("antineopharma_synonyms_",
-                                                          pharmamine_datestamp, "_", i, ".rds")))
-  }
-  i <- i + 1
 }
 
+## Only include drug aliases that are unambiguous
 unambiguous_drug_aliases <- antineopharma_synonyms %>%
   dplyr::bind_rows(antineopharma_synonyms_pubchem) %>%
   dplyr::select(alias, nci_concept_display_name) %>%
@@ -353,12 +366,11 @@ unambiguous_drug_aliases <- antineopharma_synonyms %>%
   dplyr::filter(n == 1) %>%
   dplyr::select(alias)
 
-antineopharma_synonyms <-
+oncopharma_synonyms <-
   dplyr::bind_rows(antineopharma_synonyms, antineopharma_synonyms_pubchem) %>%
   dplyr::distinct() %>%
   dplyr::inner_join(unambiguous_drug_aliases, by = "alias") %>%
   dplyr::distinct()
 
-cancer_drug_synonyms <- antineopharma_synonyms
 
-usethis::use_data(cancer_drug_synonyms, overwrite = T)
+usethis::use_data(oncopharma_synonyms, overwrite = T)

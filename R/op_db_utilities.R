@@ -591,6 +591,33 @@ get_chembl_pubchem_compound_xref <- function(datestamp = '20190705',
   return(chembl_pubchem_compound_xref)
 }
 
+
+
+get_chembl_compound_by_name <- function(name = NULL){
+  df <- NULL
+  if(!is.null(name)){
+    query <-
+      paste0("https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search?format=json&q=",
+             tolower(stringr::str_replace_all(name," ","%20")))
+    result <- jsonlite::fromJSON(query)
+    if(length(result$chembl_id_lookups) > 0){
+      if(nrow(result$chembl_id_lookups) >= 1){
+        recs <- dplyr::filter(result$chembl_id_lookups,
+                              entity_type == "COMPOUND")
+        if(nrow(recs) == 1){
+          df <- data.frame('name' = name,
+                           'molecule_chembl_id' = recs$chembl_id,
+                           stringsAsFactors = F)
+          rlogging::message(paste('Found',nrow(recs), 'records for',
+                                  name,'-',sep=" "))
+          return(df)
+        }
+      }
+    }
+  }
+  return(df)
+}
+
 ### CHEMBL DRUG TARGETS
 
 get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
@@ -795,7 +822,7 @@ get_nci_drugs <- function(nci_version = nci_db_release,
                           path_data_processed = NULL){
   nci_antineo_thesaurus <- NULL
 
-  if(!file.exists(file.path(path_data_raw,"nci_thesaurus","nci_treatment_thesaurus_antineo.rds")) | overwrite == T){
+  if(!file.exists(file.path(path_data_processed,"nci_thesaurus","nci_treatment_thesaurus_antineo.rds")) | overwrite == T){
     sorafenib_definition <- 'A synthetic compound targeting growth signaling and angiogenesis. Sorafenib blocks the enzyme RAF kinase, a critical component of the RAF/MEK/ERK signaling pathway that controls cell division and proliferation; in addition, sorafenib inhibits the VEGFR-2/PDGFR-beta signaling cascade, thereby blocking tumor angiogenesis.'
 
     nci_display_labels <- process_nci_labels(path_data_raw = path_data_raw,
@@ -855,11 +882,16 @@ get_nci_drugs <- function(nci_version = nci_db_release,
 
 
 
-    drug2chembl_all <- dplyr::select(drug2chembl, molecule_chembl_id, drug_claim_name) %>%
+    drug2chembl_all <-
+      dplyr::select(drug2chembl, molecule_chembl_id, drug_claim_name) %>%
       dplyr::rename(drug_name = drug_claim_name) %>%
       dplyr::bind_rows(dplyr::select(drug2chembl, drug_name, molecule_chembl_id)) %>%
       dplyr::filter(!stringr::str_detect(drug_name,"(^[0-9]{1,}$)|^chembl[0-9]{1,}")) %>%
-      dplyr::distinct()
+      dplyr::distinct() %>%
+      dplyr::bind_rows(data.frame('drug_name' = 'gemtuzumab',
+                                  'molecule_chembl_id' = 'CHEMBL2108342',
+                                  stringsAsFactors = F)) %>%
+      dplyr::arrange(drug_name)
 
 
     ## Agents/compounds marked as antineplastic according to NCI
@@ -890,17 +922,17 @@ get_nci_drugs <- function(nci_version = nci_db_release,
           nci_concept_semantic_type,"Chemical|Substance|Therapeutic|Drug|Immunologic")) %>%
       dplyr::left_join(nci_antineo_agents, by = c("nci_t")) %>%
       dplyr::select(-c(nci_concept_name, nci_concept_display_name)) %>%
-      dplyr::filter(
-        nci_concept_status != 'Obsolete_Concept' &
-          nci_concept_status != "Retired_Concept") %>%
-      dplyr::select(-nci_concept_status) %>%
+      # dplyr::filter(
+      #   nci_concept_status != 'Obsolete_Concept' &
+      #     nci_concept_status != "Retired_Concept") %>%
+      #dplyr::select(-nci_concept_status) %>%
       dplyr::mutate(nci_concept_synonym_all = concept_synonym) %>%
       tidyr::separate_rows(concept_synonym,sep="\\|") %>%
       dplyr::mutate(nci_concept_synonym = tolower(concept_synonym)) %>%
       dplyr::select(-concept_synonym) %>%
       dplyr::filter(nci_t != 'C147908' & nci_t != 'C71622') %>% ## Hormone Therapy Agent
       #dplyr::mutate(nci_t = dplyr::if_else(nci_t == 'C2194','C61948',nci_t)) %>% ## redundant Sorafenib entries
-
+      #dplyr::filter(!(nnci))
       dplyr::mutate(
         nci_concept_semantic_type =
           dplyr::if_else(nci_t == 'C61948','Pharmacologic Substance',
@@ -911,10 +943,16 @@ get_nci_drugs <- function(nci_version = nci_db_release,
                          nci_concept_definition)) %>% ## redundant Sorafenib entries
       dplyr::distinct() %>%
       dplyr::left_join(nci_display_labels, by = c("nci_t")) %>%
+      dplyr::filter(!(nci_t == "C1806" & nci_concept_synonym == "gemtuzumab")) %>%
+      dplyr::filter(!(nci_t == "C405" & nci_concept_synonym == "ctx")) %>%
+
       dplyr::left_join(drug2chembl_all, by=c("nci_concept_synonym" = "drug_name")) %>%
       dplyr::mutate(nci_db_version = nci_db_release) %>%
-      dplyr::filter(antineoplastic_agent == T | stringr::str_detect(nci_concept_synonym,"chemother|immunother|radiation|chemother") |
-                      stringr::str_detect(tolower(nci_concept_definition),"immuno|b-cell|t-cell|proliferation|cancer|tumor|carcino|radiation|block|radio|chemotherapy|immune|antigen|antineo")) %>%
+      dplyr::filter(!is.na(nci_concept_display_name)) %>%
+      dplyr::filter(antineoplastic_agent == T |
+                      stringr::str_detect(nci_concept_synonym,"chemother|immunother|radiation|regimen") |
+                      stringr::str_detect(tolower(nci_concept_display_name),"chemother|immunother|radiation|regimen") |
+                      stringr::str_detect(tolower(nci_concept_definition),"immuno|b-cell|t-cell|regimen|proliferation|cancer|tumor|carcino|radiation|block|radio|chemotherapy|immune|antigen|antineo")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name," (Gel|Oil|Cream|Seed|Block|Field|Supplement|Factor)$")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"(Vaccination|Lotion|Therapeutic Heat|Procedure|Rehabilitation|Prevention|Rinse)$")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"(Epitope|Exract|Influenza|Ginseng|Ointment|Management|Injection|Tool)$")) %>%
@@ -924,7 +962,8 @@ get_nci_drugs <- function(nci_version = nci_db_release,
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Chemical Challenge|Prevention of|Magic Mouthwash|Wood Dust|Soot|Cocaine)")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Antibody|Antigen|Antioxidant|Vaccination|Acetate|Antiserum|Asbestos|Aspirate|Autoantigen|Cytokine)$")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name," Spray| Extract| Antidiabetic| Implant|(Green Tea|Living Healthy|Pollutant|Probe|Protective Agent|Supportive Care|Caffe)")) %>%
-      dplyr::filter(!stringr::str_detect(nci_concept_definition,"Chinese "))
+      dplyr::filter(!stringr::str_detect(nci_concept_definition,"Chinese ")) %>%
+      dplyr::filter(!stringr::str_detect(nci_concept_definition,"antidiabet|antidepress|antihyper|antiinflamma|antiarrythm|antiangin|antihist|muscle|neurotransmitter"))
     )
 
     #nci_antineo_thesaurus
@@ -944,7 +983,8 @@ get_nci_drugs <- function(nci_version = nci_db_release,
 
     i <- 1
     while(i <= nrow(nci_antineo_thesaurus)){
-      nci_concept_display_name <- nci_antineo_thesaurus[i,"nci_concept_display_name"]
+      nci_concept_display_name <-
+        nci_antineo_thesaurus[i,"nci_concept_display_name"]
       if(nci_concept_display_name %in% names(nci2chembl_dict)){
         nci_antineo_thesaurus[i,"molecule_chembl_id"] <-
           nci2chembl_dict[[nci_concept_display_name]]
@@ -1049,167 +1089,137 @@ get_nci_drugs <- function(nci_version = nci_db_release,
 
 
     i <- 1
-    nci_no_chembl <- as.data.frame(
+    nci_compounds_no_chembl <- as.data.frame(
       nci_antineo_thesaurus %>%
       dplyr::select(nci_concept_display_name, molecule_chembl_id) %>%
       dplyr::distinct() %>%
+      dplyr::filter(!stringr::str_detect(tolower(nci_concept_display_name),
+                                         "( vaccine)|^[0-9]")) %>%
       dplyr::filter(is.na(molecule_chembl_id)) %>%
       dplyr::select(nci_concept_display_name) %>%
       dplyr::mutate(num_spaces = stringr::str_count(nci_concept_display_name," ")) %>%
-      dplyr::filter(num_spaces <= 1 & !stringr::str_detect(tolower(nci_concept_display_name),"regimen|&|;")) %>%
+      dplyr::filter(num_spaces <= 1 & !stringr::str_detect(tolower(nci_concept_display_name),"regimen|&|/|;|,")) %>%
       dplyr::filter(stringr::str_detect(nci_concept_display_name,"(mab|cin|ide|ib|im|bine|tin|om|lin|stat|one|ate|ole|ane|ine|xel|rol)$")) %>%
       dplyr::distinct()
     )
 
-    all_compounds_found <- data.frame()
-    #
-
-    if(file.exists(file.path(path_data_processed,
-                             "nci_thesaurus",
-                             "nci_treatment_thesaurus_antineo.rds"))){
-      tmp <- readRDS(file = file.path(path_data_processed,
-                                      "nci_thesaurus",
-                                      "nci_treatment_thesaurus_antineo.rds")) %>%
-        dplyr::select(nci_concept_display_name, molecule_chembl_id) %>%
-        dplyr::filter(!is.na(molecule_chembl_id)) %>%
-        dplyr::distinct()
-
-      all_compounds_found <- nci_no_chembl %>%
-        dplyr::inner_join(tmp, by = "nci_concept_display_name") %>%
-        dplyr::select(-num_spaces)
-      nci_no_chembl <- dplyr::anti_join(nci_no_chembl,
-                                        all_compounds_found,
-                                        by = "nci_concept_display_name")
-    }
 
 
-    all_compounds <- data.frame()
-    antineopharma_names_no_chembl <- data.frame()
-    if(file.exists(file.path(
-      path_data_processed,
-      "nci_thesaurus",
-      "antineopharma_names_no_chembl.rds"))){
-      antineopharma_names_no_chembl <-
-        readRDS(file = file.path(path_data_processed, "nci_thesaurus",
-                                 "antineopharma_names_no_chembl.rds"))
-      nci_no_chembl <- nci_no_chembl %>%
-        dplyr::anti_join(antineopharma_names_no_chembl,
-                         by = c("nci_concept_display_name"))
-    }
+    nci_compounds_chembl_match <- data.frame()
+
     i <- 1
-    while(i <= nrow(nci_no_chembl)){
-      query <- paste0("https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search?format=json&q=",
-                      tolower(stringr::str_replace_all(nci_no_chembl[i,"nci_concept_display_name"]," ","%20")))
-      cat(i," - ",nci_no_chembl[i,"nci_concept_display_name"]," - ",nrow(nci_no_chembl),'\n')
-      result <- jsonlite::fromJSON(query)
-      if(length(result$chembl_id_lookups) > 0){
-        if(nrow(result$chembl_id_lookups) >= 1){
-          recs <- dplyr::filter(result$chembl_id_lookups, entity_type == "COMPOUND")
-          if(nrow(recs) == 1){
-            df <- data.frame('nci_concept_display_name' = nci_no_chembl[i,"nci_concept_display_name"],
-                             'molecule_chembl_id' = recs$chembl_id,
-                             stringsAsFactors = F)
-            all_compounds <- dplyr::bind_rows(all_compounds, df)
-            rlogging::message(paste('Found',nrow(recs), 'records for',
-                                    nci_no_chembl[i,"nci_concept_display_name"],'-',
-                                    i, "of", nrow(nci_no_chembl),sep=" "))
-          }else{
-            df <- data.frame('nci_concept_display_name' = nci_no_chembl[i,"nci_concept_display_name"],
-                             stringsAsFactors = F)
-            antineopharma_names_no_chembl <- dplyr::bind_rows(antineopharma_names_no_chembl,df)
-            saveRDS(antineopharma_names_no_chembl, file = file.path(path_data_processed,"nci_thesaurus","antineopharma_names_no_chembl.rds"))
+    while(i <= nrow(nci_compounds_no_chembl)){
+      name <- nci_compounds_no_chembl[i, "nci_concept_display_name"]
+      chembl_hit <- get_chembl_compound_by_name(name)
+      if(!is.null(chembl_hit)){
+        chembl_hit <- chembl_hit %>%
+          dplyr::rename(nci_concept_display_name = name)
+        nci_compounds_chembl_match <- nci_compounds_chembl_match %>%
+          dplyr::bind_rows(chembl_hit)
 
-          }
-          #Sys.sleep(1)
-        }
-      }else{
-
-        df <- data.frame('nci_concept_display_name' = nci_no_chembl[i,"nci_concept_display_name"],
-                         stringsAsFactors = F)
-        antineopharma_names_no_chembl <- dplyr::bind_rows(antineopharma_names_no_chembl,df)
-        saveRDS(antineopharma_names_no_chembl, file = file.path(path_data_processed, "nci_thesaurus", "antineopharma_names_no_chembl.rds"))
-
+      }
+      if(i %% 10 == 0){
+        rlogging::message("Done with querying ChEMBL for ", i, " compound names")
       }
       i <- i + 1
     }
 
-    saveRDS(antineopharma_names_no_chembl,
-            file = file.path(path_data_processed,
-                             "nci_thesaurus",
-                             "antineopharma_names_no_chembl.rds"))
+    nci_antineo_thesaurus_chembl <- nci_antineo_thesaurus %>%
+      dplyr::anti_join(nci_compounds_no_chembl,
+                       by = "nci_concept_display_name")
 
-    new_hits <- dplyr::select(nci_antineo_thesaurus,-molecule_chembl_id) %>%
-      dplyr::inner_join(dplyr::bind_rows(all_compounds, all_compounds_found),
-                        by = c("nci_concept_display_name")) %>%
-      dplyr::distinct()
+    nci_antineo_thesaurus_no_chembl <- nci_antineo_thesaurus %>%
+      dplyr::inner_join(nci_compounds_no_chembl,
+                        by = "nci_concept_display_name") %>%
+      dplyr::select(-c(num_spaces, molecule_chembl_id)) %>%
+      dplyr::left_join(nci_compounds_chembl_match,
+                       by = "nci_concept_display_name")
 
     nci_antineo_thesaurus <-
-      dplyr::anti_join(nci_antineo_thesaurus,
-                       dplyr::select(dplyr::bind_rows(all_compounds_found, all_compounds),
-                                     nci_concept_display_name)) %>%
-      dplyr::bind_rows(new_hits) %>%
+      nci_antineo_thesaurus_chembl %>%
+      dplyr::bind_rows(nci_antineo_thesaurus_no_chembl) %>%
       dplyr::arrange(nci_concept_display_name) %>%
       dplyr::distinct() %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Vorolanib",
-                                                        "CHEMBL3545427",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Gemtuzumab Ozogamicin",
-                                                        "CHEMBL1201506",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Ublituximab",
-                                                        "CHEMBL2108354",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Etoposide",
-                                                        "CHEMBL44657",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Lorvotuzumab Mertansine",
-                                                        "CHEMBL1743037",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Epratuzumab",
-                                                        "CHEMBL2108404",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Ocaratuzumab",
-                                                        "CHEMBL2109665",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Medroxyprogesterone Acetate",
-                                                        "CHEMBL717",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Brigatinib",
-                                                        "CHEMBL3545311",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Brentuximab",
-                                                        "CHEMBL1742994",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Afatinib",
-                                                        "CHEMBL1173655",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Spebrutinib",
-                                                        "CHEMBL3301625",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Dacomitinib",
-                                                        "CHEMBL2110732",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Lucitanib",
-                                                        "CHEMBL2220486",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Tofacitinib",
-                                                        "CHEMBL221959",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Mifamurtide",
-                                                        "CHEMBL2111100",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Umbralisib",
-                                                        "CHEMBL3948730",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Onvansertib",
-                                                        "CHEMBL1738758",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Sulindac",
-                                                        "CHEMBL15770",
-                                                        as.character(molecule_chembl_id))) %>%
-      dplyr::mutate(molecule_chembl_id = dplyr::if_else(nci_concept_display_name == "Calcipotriene",
-                                                        "CHEMBL1200666",
-                                                        as.character(molecule_chembl_id)))
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Vorolanib",
+        "CHEMBL3545427",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Gemtuzumab Ozogamicin",
+        "CHEMBL1201506",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Ublituximab",
+        "CHEMBL2108354",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Etoposide",
+        "CHEMBL44657",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Lorvotuzumab Mertansine",
+        "CHEMBL1743037",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Epratuzumab",
+        "CHEMBL2108404",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Ocaratuzumab",
+        "CHEMBL2109665",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Medroxyprogesterone Acetate",
+        "CHEMBL717",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Brigatinib",
+        "CHEMBL3545311",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Brentuximab",
+        "CHEMBL1742994",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Afatinib",
+        "CHEMBL1173655",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Spebrutinib",
+        "CHEMBL3301625",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Dacomitinib",
+        "CHEMBL2110732",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Lucitanib",
+        "CHEMBL2220486",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Tofacitinib",
+        "CHEMBL221959",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Mifamurtide",
+        "CHEMBL2111100",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Umbralisib",
+        "CHEMBL3948730",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Onvansertib",
+        "CHEMBL1738758",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Sulindac",
+        "CHEMBL15770",
+        as.character(molecule_chembl_id))) %>%
+      dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+        nci_concept_display_name == "Calcipotriene",
+        "CHEMBL1200666",
+        as.character(molecule_chembl_id)))
 
     saveRDS(nci_antineo_thesaurus, file = file.path(path_data_processed, "nci_thesaurus", "nci_treatment_thesaurus_antineo.rds"))
   }else{
@@ -1219,132 +1229,6 @@ get_nci_drugs <- function(nci_version = nci_db_release,
 }
 
 
-#### DGIDB - DRUGS AND DRUG INGTERACTIONS
-
-## Retrieval of drug-target interaction data from DGIdb
-#'
-#' Function that uses the DGIdb (https://dgidb.org) rescource to return all reported compound-target interactions for a given set of human protein targets
-#'
-#' @param genes Comma-separated list of targets (gene symbol)
-#' @return a data frame with the following columns of chemical compound properties:
-#' \itemize{
-#'   \item symbol - Gene/protein symbol
-#'   \item gene_name - Gene/protein description
-#'   \item dgidb_source - Drug databases/resources (DrugBank, TTD, ChEMBL etc) that indicate support for the compound-target interaction
-#'   \item dgidb_interaction_type - Type of drug interaction (agonist, inihibitor etc.)
-#'   \item dgidb_pmid - PubMed IDs that support the reported interaction
-#'   \item dgidb_interaction_id - DGIdb identifier for the interaction
-#'   \item dgidb_gene_categories - Supported gene categories
-#'   \item molecule_chembl_id - ChEMBL molecule (compound) ID
-#'   \item dgidb_drug_name - Drug name from DGIdb
-#'   \item dgidb_score - Confidence for reported interaction (Number of sources (dgidb_source) + Number of PMIDs (dgidb_pmid))
-#'   \item pubchem_cid <- PubChem compound identifier (cid)
-#' }
-#' @examples
-#' ## Retrieve drug interactions for PARP1 + PARP2
-#' \dontrun{
-#' dgidb_drug_interactions(targets = "PARP1,PARP2")
-#' }
-#'
-# get_dgidb_drug_interactions <- function(targets = "PARP1,PARP2"){
-#
-#   if(length(targets) > 1){
-#     stop('Parameter \'targets\' should be a string of comma-separated gene symbols')
-#   }
-#   json_url <- paste0("http://dgidb.org/api/v2/interactions.json?genes=",targets,"&csource_trust_levels=Expert%20curated")
-#   drug_interactions <- jsonlite::fromJSON(json_url, simplifyDataFrame = T)
-#   all_dgidb_interactions <- data.frame()
-#
-#   i <- 1
-#
-#   while(i <= nrow(drug_interactions$matchedTerms)){
-#     gene_interactions <- drug_interactions$matchedTerms[i,]
-#     cat('Target protein: :',gene_interactions$geneName,i, sep=" ")
-#     cat('\n')
-#     if(length(gene_interactions$interactions[[1]]) > 0){
-#       df_interactions <- as.data.frame(gene_interactions$interactions[[1]])
-#       df_interactions$symbol <- gene_interactions$geneName
-#       df_interactions$gene_name <- gene_interactions$geneLongName
-#
-#       j <- 1
-#       all_itypes <- NULL
-#       all_pmids <- NULL
-#       all_sources <- NULL
-#       all_cancer_types <- NULL
-#       while(j <= length(df_interactions$interactionTypes)){
-#         itype <- paste(df_interactions$interactionTypes[[j]],collapse=", ")
-#         itype <- stringr::str_replace(itype,"N/A","NA")
-#         itype <- stringr::str_replace(itype,"NA, ","")
-#         all_itypes <- c(all_itypes,itype)
-#         pmid <- paste(df_interactions$pmids[[j]],collapse=", ")
-#         pmid <- stringr::str_replace(pmid,"^$","NA")
-#         all_pmids <- c(all_pmids,pmid)
-#         source <- paste(df_interactions$sources[[j]],collapse=", ")
-#
-#         all_sources <- c(all_sources,source)
-#         j <- j + 1
-#       }
-#
-#       df_interactions$dgidb_source <- all_sources
-#       df_interactions$dgidb_interaction_type <- all_itypes
-#       df_interactions$dgidb_pmid <- all_pmids
-#       df_interactions$dgidb_nteraction_id <- df_interactions$interactionId
-#       df_interactions$dgidb_gene_categories <- paste(unlist(gene_interactions$geneCategories[[1]]$name), collapse=", ")
-#       df_interactions$molecule_chembl_id <- df_interactions$drugChemblId
-#       df_interactions$dgidb_drug_name <- toupper(df_interactions$drugName)
-#       if(nrow(df_interactions[df_interactions$dgidb_interaction_type == 'NA',]) > 0){
-#         df_interactions[df_interactions$dgidb_interaction_type == 'NA',]$dgidb_interaction_type <- NA
-#       }
-#       if(nrow(df_interactions[!is.na(df_interactions$dgidb_interaction_type) & nchar(df_interactions$dgidb_interaction_type) == 0,]) > 0){
-#         df_interactions[!is.na(df_interactions$dgidb_interaction_type) & nchar(df_interactions$dgidb_interaction_type) == 0,]$dgidb_interaction_type <- NA
-#       }
-#       if(nrow(df_interactions[df_interactions$dgidb_pmid == 'NA',]) > 0){
-#         df_interactions[df_interactions$dgidb_pmid == 'NA',]$dgidb_pmid <- NA
-#       }
-#
-#       score_sources <- data.frame('score' = as.integer(stringr::str_count(df_interactions$dgidb_source,", ") + 1), stringsAsFactors = F)
-#       score_pmid <- data.frame('score' = as.integer(stringr::str_count(df_interactions$dgidb_pmid,", ") + 1), stringsAsFactors = F)
-#       if(length(score_pmid[is.na(score_pmid$score),]) > 0){
-#         score_pmid[is.na(score_pmid$score),] <- 0
-#       }
-#       df_interactions$dgidb_score <- score_sources$score + score_pmid$score
-#       df_interactions <- dplyr::select(df_interactions, -c(interactionId, interactionTypes, sources, pmids, drugChemblId,drugName,score))
-#       all_dgidb_interactions <- rbind(all_dgidb_interactions,df_interactions)
-#     }
-#     i <- i + 1
-#   }
-#   if(nrow(all_dgidb_interactions) > 0){
-#     all_dgidb_interactions <- all_dgidb_interactions %>% dplyr::left_join(pharmaMine::chembl_pubchem_xref, by="molecule_chembl_id")
-#   }
-#
-#   return(all_dgidb_interactions)
-# }
-#
-#
-# get_dgidb_drugs <- function(datestamp = '20190315', chembl_compound_pubchem_xref = NULL, dgidb_version = 'v3.0.2'){
-#   dgidb_drugs_url <- 'http://www.dgidb.org/data/drugs.tsv'
-#   if(!file.exists(paste0('data-raw/dgidb/dgidb_drugs.',datestamp,'.tsv'))){
-#     download.file(dgidb_drugs_url, destfile = paste0('data-raw/dgidb/dgidb_drugs.',datestamp,'.tsv'))
-#   }
-#   dgidb <- read.table(file=paste0('data-raw/dgidb/dgidb_drugs.',datestamp,'.tsv'),header = T,stringsAsFactors = F,quote="",comment.char = "",sep="\t")
-#   dgidb <- as.data.frame(dplyr::select(dgidb, chembl_id, drug_claim_source) %>%
-#                            dplyr::filter(stringr::str_detect(chembl_id, pattern = "^CHEMBL")) %>%
-#                            dplyr::rename(molecule_chembl_id = chembl_id) %>%
-#                            dplyr::group_by(molecule_chembl_id) %>%
-#                            dplyr::summarise(drug_claim_source = paste(unique(drug_claim_source),collapse=",")) %>%
-#                            dplyr::distinct())
-#
-#   if(!is.null(chembl_compound_pubchem_xref) & "molecule_chembl_id" %in% colnames(chembl_compound_pubchem_xref)){
-#     dgidb <- dgidb %>% dplyr::left_join(chembl_compound_pubchem_xref)
-#   }else{
-#     dgidb$pubchem_cid <- NA
-#   }
-#   dgidb$dgidb_db_version <- dgidb_version
-#   return(dgidb)
-# }
-#
-#
-#
 get_compound_properties <- function(molecule_chembl_id = NULL,
                                     pchem_cid = NA,
                                     version_chembl = "ChEMBL_27",
