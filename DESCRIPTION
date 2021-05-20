@@ -1,8 +1,8 @@
 Package: oncoPharmaDB
 Type: Package
 Title: Dataset with targeted and non-targeted anticancer drugs
-Version: 0.3.3
-Date: 2021-05-19
+Version: 0.3.6
+Date: 2021-05-20
 Author: Sigve Nakken
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 Description: This data package collects aticancer drug information from multiple resources,

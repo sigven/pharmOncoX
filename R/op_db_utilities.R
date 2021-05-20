@@ -962,8 +962,10 @@ get_nci_drugs <- function(nci_version = nci_db_release,
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Chemical Challenge|Prevention of|Magic Mouthwash|Wood Dust|Soot|Cocaine)")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Antibody|Antigen|Antioxidant|Vaccination|Acetate|Antiserum|Asbestos|Aspirate|Autoantigen|Cytokine)$")) %>%
       dplyr::filter(!stringr::str_detect(nci_concept_display_name," Spray| Extract| Antidiabetic| Implant|(Green Tea|Living Healthy|Pollutant|Probe|Protective Agent|Supportive Care|Caffe)")) %>%
-      dplyr::filter(!stringr::str_detect(nci_concept_definition,"Chinese ")) %>%
-      dplyr::filter(!stringr::str_detect(nci_concept_definition,"antidiabet|antidepress|antihyper|antiinflamma|antiarrythm|antiangin|antihist|muscle|neurotransmitter"))
+      dplyr::filter(
+        !stringr::str_detect(
+          tolower(nci_concept_definition),
+          "chinese |antidiabet|diabetes|antidepress|analgesic|nutritional|human carcinogen|anesthetic|nonsedating|sedative|antihyper|antiinflamma|antiarrythm|antiangin|antihist|muscle|neurotransmitter"))
     )
 
     #nci_antineo_thesaurus
