@@ -1146,6 +1146,8 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
           chembl2alias, by = c("nci_concept_display_name_lc" = "alias"))
 
 
+      rm(chembl2alias)
+
       if(nrow(hits) > 0){
         hits <- hits %>%
           dplyr::inner_join(
@@ -1158,6 +1160,8 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
         nci_compounds_chembl_match <- nci_compounds_chembl_match %>%
           dplyr::bind_rows(hits)
       }
+      rm(chembl2pubchem)
+
       i <- i + 1
     }
 
