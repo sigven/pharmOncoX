@@ -8,7 +8,7 @@ Currently, the following versions are used to create the mapping:
 
  - Open Targets Platform (2021.04)
  - ChEMBL (v28)
- - NCI Thesaurus (21.04d)
+ - NCI Thesaurus (21.05d)
 
 
 #### Installation & Usage
