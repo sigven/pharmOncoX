@@ -1,15 +1,12 @@
 {
   "R": {
-    "Version": "4.0.5",
+    "Version": "4.1.0",
     "Repositories": [
       {
         "Name": "CRAN",
         "URL": "https://cran.rstudio.com"
       }
     ]
-  },
-  "Bioconductor": {
-    "Version": "3.12"
   },
   "Packages": {
     "BH": {
@@ -19,44 +16,12 @@
       "Repository": "CRAN",
       "Hash": "e4c04affc2cac20c8fec18385cd14691"
     },
-    "BiocGenerics": {
-      "Package": "BiocGenerics",
-      "Version": "0.36.0",
-      "Source": "Bioconductor",
-      "Hash": "1fe8a6250d04cfb040ebec87447770ba"
-    },
-    "BiocManager": {
-      "Package": "BiocManager",
-      "Version": "1.30.15",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "87a690190741d0791c9c10b390c933ff"
-    },
-    "BiocVersion": {
-      "Package": "BiocVersion",
-      "Version": "3.12.0",
-      "Source": "Bioconductor",
-      "Hash": "ee4d027afb8f52fec1f46b9f0a8660e9"
-    },
-    "ChemmineR": {
-      "Package": "ChemmineR",
-      "Version": "3.42.2",
-      "Source": "Bioconductor",
-      "Hash": "4955b78c9f77c9d0ad892b4c44e57cde"
-    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "030aaec5bc6553f35347cbb1e70b1a17"
-    },
-    "DT": {
-      "Package": "DT",
-      "Version": "0.18",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a7d6660c869d4f41f856504828af4645"
     },
     "Formula": {
       "Package": "Formula",
@@ -240,13 +205,6 @@
       "Repository": "CRAN",
       "Hash": "a96728288c75a814c900af9da84387be"
     },
-    "crosstalk": {
-      "Package": "crosstalk",
-      "Version": "1.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "2b06f9e415a62b6762e4b8098d2aecbc"
-    },
     "curl": {
       "Package": "curl",
       "Version": "4.3.1",
@@ -312,10 +270,10 @@
     },
     "fansi": {
       "Package": "fansi",
-      "Version": "0.4.2",
+      "Version": "0.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "fea074fb67fe4c25d47ad09087da847d"
+      "Hash": "d447b40982c576a72b779f0a3b3da227"
     },
     "farver": {
       "Package": "farver",
@@ -534,13 +492,6 @@
       "Repository": "CRAN",
       "Hash": "3d5108641f47470611a32d0bdf357a72"
     },
-    "later": {
-      "Package": "later",
-      "Version": "1.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b61890ae77fea19fc8acadd25db70aa4"
-    },
     "lattice": {
       "Package": "lattice",
       "Version": "0.20-44",
@@ -554,13 +505,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "590829599d6182cf7461787af34666ee"
-    },
-    "lazyeval": {
-      "Package": "lazyeval",
-      "Version": "0.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "d908914ae53b04d4c0c0fd72ecc35370"
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -634,10 +578,10 @@
     },
     "oncoPhenoMap": {
       "Package": "oncoPhenoMap",
-      "Version": "0.1.1",
+      "Version": "0.1.2",
       "Source": "unknown",
       "Remotes": "mjkallen/rlogging",
-      "Hash": "e83a90ff79f7d3f0a50ab33b37ee6d07"
+      "Hash": "57fc076e112c8e864a004a99bf4741f9"
     },
     "openssl": {
       "Package": "openssl",
@@ -687,13 +631,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "14dc9f7a3c91ebb14ec5bb9208a07061"
-    },
-    "promises": {
-      "Package": "promises",
-      "Version": "1.2.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "4ab2c43adb4d4699cf3690acd378d75d"
     },
     "ps": {
       "Package": "ps",
@@ -758,13 +695,6 @@
       "Repository": "CRAN",
       "Hash": "8482bbeef0c194ac236aef7c51ee375f"
     },
-    "rjson": {
-      "Package": "rjson",
-      "Version": "0.2.20",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "7d597f982ee6263716b6a2f28efd29fa"
-    },
     "rlang": {
       "Package": "rlang",
       "Version": "0.4.11",
@@ -780,9 +710,9 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "rlogging",
       "RemoteUsername": "mjkallen",
-      "RemoteRef": "master",
+      "RemoteRef": "HEAD",
       "RemoteSha": "d6f2785c11b50ab29bce9bf06b3c0209bc3238f0",
-      "Hash": "919d9b5f8e492a3a6c8701b3f71829e4"
+      "Hash": "cd65b8e665752c68abd083b76e0f9762"
     },
     "rmarkdown": {
       "Package": "rmarkdown",
@@ -811,13 +741,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "06c85365a03fdaf699966cc1d3cf53ea"
-    },
-    "rsvg": {
-      "Package": "rsvg",
-      "Version": "2.1.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "4ce04f0635867a4af4ff7578a9df776a"
     },
     "rvest": {
       "Package": "rvest",
