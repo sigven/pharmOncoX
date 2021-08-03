@@ -690,8 +690,8 @@ get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2021.04",
-           uniprot_release = "2021_02"){
+           ot_version = "2021.06",
+           uniprot_release = "2021_03"){
 
   phenotype_cancer_efo <- oncoPhenoMap::umls_map$concept %>%
     dplyr::filter(main_term == T) %>%
@@ -1312,7 +1312,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
 
 get_compound_properties <- function(molecule_chembl_id = NULL,
                                     pchem_cid = NA,
-                                    version_chembl = "ChEMBL_27",
+                                    version_chembl = "ChEMBL_29",
                                     version_dgidb = "4.0.2"){
 
   compound_properties <- list()
@@ -1359,7 +1359,7 @@ get_compound_properties <- function(molecule_chembl_id = NULL,
 
 get_uniprot_ensembl_map <-
   function(path_data_raw = NULL,
-           uniprot_release = "2021_02") {
+           uniprot_release = "2021_03") {
 
   ## get NCBI gene info (gene symbols, names, and entrez gene identifiers)
   gene_info <- get_gene_info_ncbi(path_data_raw = path_data_raw,

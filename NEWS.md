@@ -1,3 +1,10 @@
+# Version 0.4.4 (August 2nd 2021)
+
+## Data upgrade
+
+* NCI Thesaurus v21.07d
+* ChEMBL v29
+
 # Version 0.4.3 (July 8th 2021)
 
 ## Data upgrade
