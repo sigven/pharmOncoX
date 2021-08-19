@@ -15,7 +15,21 @@ get_drug(
   drug_minimum_max_phase_any_indication = 0,
   list_per_drug_only = F,
   list_per_indication = T,
-  list_per_drug_synonym = F
+  list_per_drug_synonym = F,
+  is_immune_checkpoint_inhibitor = F,
+  is_angiogenesis_inhibitor = F,
+  is_hdac_inhibitor = F,
+  is_bet_inhibitor = F,
+  is_topoisomerase_inhibitor = F,
+  is_hormone_therapy = F,
+  is_antimetabolite = F,
+  is_alkylating_agent = F,
+  is_monoclonal_antibody = F,
+  is_kinase_inhibitor = F,
+  is_tubulin_inhibitor = F,
+  is_proteasome_inhibitor = F,
+  is_parp_inhibitor = F,
+  is_ar_antagonist = F
 )
 }
 \arguments{
@@ -42,6 +56,32 @@ possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVA
 \item{list_per_indication}{list resulting drug records per drug indication/tumor type}
 
 \item{list_per_drug_synonym}{list resulting drug records per drug synonym}
+
+\item{is_immune_checkpoint_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_hdac_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_bet_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_topoisomerase_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_hormone_therapy}{logical indicating if only this drug class is wanted}
+
+\item{is_antimetabolite}{logical indicating if only this drug class is wanted}
+
+\item{is_alkylating_agent}{logical indicating if only this drug class is wanted}
+
+\item{is_monoclonal_antibody}{logical indicating if only this drug class is wanted}
+
+\item{is_kinase_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_tubulin_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_proteasome_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_parp_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_ar_antagonist}{logical indicating if only this drug class is wanted}
 }
 \description{
 Function that returns various properties of antineoplastic drugs (targeted and non-targeted)
