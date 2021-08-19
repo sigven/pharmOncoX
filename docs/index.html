@@ -16,7 +16,7 @@
     including Open Targets Platform/ChEMBL, NCI Thesaurus, DrugBank etc. The main dataset
     contains a list of all anticancer drugs per indication/tumor type (where this is provided),
     which can further be queried with a range of parameters (minimum clinical phase, approval
-    status, targets etc.)">
+    status, targets, drug category etc.)">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -35,7 +35,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.5</span>
       </span>
     </div>
 
@@ -108,6 +108,14 @@
 <li>
 <p>Get BRAF-targeted drugs, Open Targets Platform only, list per drug only</p>
 <p><code>drugs &lt;- oncoPharmaDB::get_drug(drug_is_targeted = T,  drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T)</code></p>
+</li>
+<li>
+<p>Get immune checkpoint inhibitors</p>
+<p><code>drugs &lt;- oncoPharmaDB::get_drug(is_immune_checkpoint_inhibitor = T, list_per_drug_only = T)</code></p>
+</li>
+<li>
+<p>Get antimetabolites</p>
+<p><code>drugs &lt;- oncoPharmaDB::get_drug(is_antimetabolite = T, list_per_drug_only = T)</code></p>
 </li>
 </ol>
 </div>

@@ -1,8 +1,8 @@
 Package: oncoPharmaDB
 Type: Package
 Title: Dataset with targeted and non-targeted anticancer drugs
-Version: 0.4.4
-Date: 2021-08-02
+Version: 0.4.5
+Date: 2021-08-19
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -14,7 +14,7 @@ Description: This data package collects aticancer drug information from multiple
     including Open Targets Platform/ChEMBL, NCI Thesaurus, DrugBank etc. The main dataset
     contains a list of all anticancer drugs per indication/tumor type (where this is provided),
     which can further be queried with a range of parameters (minimum clinical phase, approval
-    status, targets etc.)
+    status, targets, drug category etc.)
 License: MIT
 Depends: 
     R (>= 3.6.0)

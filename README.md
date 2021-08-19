@@ -2,7 +2,7 @@
 
 #### Overview
 
-This R package provides a dataset of targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. The dataset is largely based on drug-target-indication associations provided by the [Open Targets Platform](https://targetvalidation.org) ([Ochoa et al., Nucleic Acids Res., 2021](https://doi.org/10.1093/nar/gkaa1027)), and where we have limited the associations to cancer-relevant indications only (as provided in [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap)). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), where we append non-targeted cancer drugs (chemotherapies etc.) and different drug regimens.
+This R package provides a dataset of targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. The dataset is largely based on drug-target-indication associations provided by the [Open Targets Platform](https://targetvalidation.org) ([Ochoa et al., Nucleic Acids Res., 2021](https://doi.org/10.1093/nar/gkaa1027)), and where we have limited the associations to cancer-relevant indications only (as provided in [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap)). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), where we append non-targeted cancer drugs (chemotherapies etc.) and different drug regimens. 
 
 Currently (as of August 2021), the following versions are used to create the mapping:
 
@@ -43,6 +43,18 @@ install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")
 
 	`drugs <- oncoPharmaDB::get_drug(drug_is_targeted = T,
 	drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T)`
+	
+
+5. Get immune checkpoint inhibitors
+
+   `drugs <- oncoPharmaDB::get_drug(is_immune_checkpoint_inhibitor = T,
+   list_per_drug_only = T)`
+   
+6. Get antimetabolites
+
+   `drugs <- oncoPharmaDB::get_drug(is_antimetabolite = T,
+   list_per_drug_only = T)`
+
 
 #### Contact
 
