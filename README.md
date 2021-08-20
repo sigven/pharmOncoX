@@ -1,4 +1,4 @@
-### oncoPharmaDB - dataset with targeted and non-targeted anticancer compounds and drug regimens
+### oncoPharmaDB - Targeted and non-targeted anticancer drugs and drug regimens
 
 #### Overview
 
@@ -26,33 +26,33 @@ install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")
 
 1. Get BRAF-targeted drugs, list records per indication
 
-	`drugs <- oncoPharmaDB::get_drug(drug_is_targeted = T,
+	`drugs <- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,
 	drug_target = c('BRAF'))`
 
 2. Get _approved_ BRAF-targeted drugs, list records per indication
 
-	`drugs <- oncoPharmaDB::get_drug(drug_is_targeted = T,
+	`drugs <- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,
 	drug_target = c('BRAF'), drug_is_approved = T)`
 
 3. Get BRAF-targeted drugs, list records per indication and drug synonym
 
-	`drugs <- oncoPharmaDB::get_drug(drug_is_targeted = T,
+	`drugs <- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,
 	drug_target = c('BRAF'), list_per_drug_synonym = T)`
 
 4. Get BRAF-targeted drugs, Open Targets Platform only, list per drug only
 
-	`drugs <- oncoPharmaDB::get_drug(drug_is_targeted = T,
+	`drugs <- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,
 	drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T)`
 	
 
 5. Get immune checkpoint inhibitors
 
-   `drugs <- oncoPharmaDB::get_drug(is_immune_checkpoint_inhibitor = T,
+   `drugs <- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T,
    list_per_drug_only = T)`
    
 6. Get antimetabolites
 
-   `drugs <- oncoPharmaDB::get_drug(is_antimetabolite = T,
+   `drugs <- oncoPharmaDB::get_onco_drugs(is_antimetabolite = T,
    list_per_drug_only = T)`
 
 

@@ -1,6 +1,9 @@
 pattern	symbol
 (KSP )	KIF11
 RIPK1	RIPK1
+Anti-CTLA-4|CTLA-4	CTLA4
+Anti-CD47|CD47	CD47
+A2A Receptor|ADORA2A	ADORA2A
 CD73	NT5E
 CCR4	CCR4
 CENP-E	CENPE
@@ -10,6 +13,14 @@ EBNA-1	EBNA1
 Glutaminase	GLS
 GSK-3	GSK3A
 GSK-3	GSK3B
+Zotatifin	EIF4A1
+Zotatifin	EIF4A2
+Zotatifin	EIF4A3
+Sotorasib	KRAS
+KAT6	KAT6A
+KAT6	KAT6B
+Menin-MLL	KMT2A
+LMP7	PSMB8
 Protein Arginine Methyltransferase 5	PRMT5
 Pyruvate Kinase	PKM
 RAD51	RAD51
@@ -166,8 +177,19 @@ LRP5	LRP5
 (PARP 1/2)	PARP1
 (PARP 1/2)	PARP2
 (PARP |PARP/)	PARP1
+(PARP |PARP/)	PARP2
+polymerase \\(PARP\\)	PARP1
+polymerase \\(PARP\\)	PARP2
+PARP 1, 2 and 3 inhibitor	PARP1
+PARP 1, 2 and 3 inhibitor	PARP2
+PARP 1, 2 and 3 inhibitor	PARP3
 (PD-L1)	CD274
 (PD1)	PDCD1
+Anti-PD-1|PD-1	PDCD1
+Anti-PD-L1|PD-L1	CD274
+Anti-LAG-3|LAG-3	LAG3
+Anti-TIGIT|TIGIT	TIGIT
+Anti-TIM-3|HAVCR2	HAVCR2
 (BRD4 )	BRD4
 (BTK )	BTK
 (PRMT1)	PRMT1
@@ -194,7 +216,7 @@ CXCR4	CXCR4
 (ERK )	MAPK1
 (MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K1
 (MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K2
-MCL-1|Mcl-1	MCL1	
+MCL-1|Mcl-1	MCL1
 EZH1/2	EZH1
 EZH1/2	EZH2
 EZH2	EZH2

@@ -1,3 +1,11 @@
+# Version 0.4.6 (August 21st 2021)
+
+## Added
+
+* Altered name for main function: _get_onco_drugs_
+* Possibility to show extensive or narrow output annotations per drug record (argument _output_style_)
+* Improved argument checks
+
 # Version 0.4.5 (August 19th 2021)
 
 ## Added

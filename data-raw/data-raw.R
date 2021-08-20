@@ -1,7 +1,7 @@
 library(magrittr)
-pharmamine_datestamp <- '20210708'
-nci_db_release <- '21.06e'
-chembl_db_release <- 'ChEMBL_28'
+pharmamine_datestamp <- '20210821'
+nci_db_release <- '21.07d'
+chembl_db_release <- 'ChEMBL_29'
 opentargets_version <- '2021.06'
 uniprot_release <- '2021_03'
 dgidb_db_release <- 'v2021_05'
@@ -36,12 +36,12 @@ nci_thesaurus_files[['owl']] <- paste0("Thesaurus_", nci_db_release,".OWL.zip")
 nci_thesaurus_files[['inf_owl']] <- paste0("ThesaurusInf_", nci_db_release,".OWL.zip")
 
 for(elem in c('flat','owl','inf_owl')){
-  remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
+  #remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
   local_file <- file.path(path_data_raw,"nci_thesaurus",nci_thesaurus_files[[elem]])
-  if(!file.exists(local_file)){
-    download.file(url = remote_file, destfile = local_file, quiet = T)
+  #if(!file.exists(local_file)){
+    #download.file(url = remote_file, destfile = local_file, quiet = T)
     system(paste0('unzip -d ',file.path(path_data_raw, "nci_thesaurus"), ' -o -u ',local_file))
-  }
+  #}
 }
 antineo_agents_url <-
   'https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Drug_or_Substance/Antineoplastic_Agent.txt'
@@ -214,8 +214,10 @@ drug_target_patterns <-
 
 all_inhibitors_no_target <- all_cancer_drugs %>%
   dplyr::filter(is.na(target_symbol)) %>%
-  dplyr::filter(stringr::str_detect(nci_concept_display_name,
-                                    "(I|i)nhibitor|antagonist|blocker") |
+  dplyr::filter(stringr::str_detect(tolower(nci_concept_display_name),
+                                    "inhibitor|antagonist|antibody|blocker") |
+                  stringr::str_detect(tolower(nci_concept_display_name),
+                                      "ib$|mab$|mab/|^anti-") |
                   (stringr::str_detect(nci_concept_definition,"KRAS") &
                      stringr::str_detect(nci_concept_definition,"inhibitor")))
 
@@ -230,7 +232,12 @@ for(i in 1:nrow(drug_target_patterns)){
 
   hits <- all_inhibitors_no_target %>%
     dplyr::filter(stringr::str_detect(nci_concept_display_name,
-                                      pattern = pattern))
+                                      pattern = pattern) |
+                    (stringr::str_detect(nci_concept_display_name,"ib$|mab$|mab/") &
+                    stringr::str_detect(nci_concept_definition, pattern))
+    )
+
+
   if(nrow(hits) > 0){
     hits$target_symbol <- target_symbol
     hits$target_genename <- target_genename
@@ -290,6 +297,126 @@ oncopharmadb <- all_cancer_drugs_final %>%
     "cediranib",
     as.character(drug_name_nci)
   ))
+
+
+oncopharmadb <- oncopharmadb %>%
+  dplyr::distinct() %>%
+  dplyr::mutate(antimetabolite = dplyr::if_else(
+    !is.na(nci_concept_definition) &
+      stringr::str_detect(
+        tolower(nci_concept_definition),
+        "antimetabol|anti-metabol|nucleoside analog"),TRUE,FALSE)
+    ) %>%
+  dplyr::mutate(topoisomerase_inhibitor = dplyr::if_else(
+    (!is.na(nci_concept_definition) &
+      stringr::str_detect(
+        tolower(nci_concept_definition),
+        "topoisomerase( I|II )? \\(.*\\) inhibitor|inhibit(ion|or) of topoisomerase|(stabilizes|interrupts|binds to|interacts with|inhibits( the activity of)?)( the)?( DNA)? (t|T)opoisomerase|topoisomerase( (I|II))? inhibitor")) |
+      (!is.na(target_genename) & stringr::str_detect(target_genename,"topoisomerase")),TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(hdac_inhibitor = dplyr::if_else(
+    !is.na(target_symbol) &
+      stringr::str_detect(
+        tolower(target_symbol),
+        "^hdac"),TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(alkylating_agent = dplyr::if_else(
+    is.na(drug_moa) &
+    !stringr::str_detect(nci_concept_display_name,
+                         "antiangiogenic") &
+    !is.na(nci_concept_definition) &
+      stringr::str_detect(
+        tolower(nci_concept_definition),
+        "alkylating agent|alkylating activities"),TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(parp_inhibitor = dplyr::if_else(
+    !is.na(target_symbol) &
+      stringr::str_detect(
+        target_symbol,
+        "^PARP[0-9]{1}"),TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(bet_inhibitor = dplyr::if_else(
+    !is.na(target_symbol) &
+      stringr::str_detect(
+        target_symbol,
+        "^BRD[0-9]{1}"),TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(tubulin_inhibitor = dplyr::if_else(
+    (!is.na(drug_action_type) &
+       drug_action_type != "STABILISER" &
+       !is.na(target_genename) &
+      stringr::str_detect(
+        tolower(target_genename),
+        "tubulin")) |
+      (!is.na(nci_concept_definition) & stringr::str_detect(
+        tolower(nci_concept_definition),
+        "binds to tubulin|disrupts microtubule|microtubule disrupt")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(ar_antagonist = dplyr::if_else(
+    (!is.na(target_genename) &
+       stringr::str_detect(
+         tolower(target_genename),
+         "androgen receptor")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(kinase_inhibitor = dplyr::if_else(
+    (!is.na(target_symbol) & stringr::str_detect(target_symbol,"EGFR|PTPN11|ABL1|FGFR|PDGFR|CSF1R")) |
+    stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist") &
+      (!is.na(target_genename) &
+         stringr::str_detect(tolower(target_genename),"kinase|eph receptor")) |
+      (!is.na(nci_concept_definition) & stringr::str_detect(nci_concept_definition,"kinase inhibit(or|ion)")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(angiogenesis_inhibitor = dplyr::if_else(
+    stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist") &
+      (!is.na(nci_concept_display_name) & stringr::str_detect(tolower(nci_concept_display_name), "antiangiogenic|angiogenesis inhibitor")) |
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(tolower(nci_concept_definition),"angiogenesis inhibitor|(inhibiting|blocking)( tumor)? angiogenesis|anti(-)?angiogenic|(inhibits|((inhibition|reduction) of))( .*) angiogenesis")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(monoclonal_antibody = dplyr::if_else(
+    stringr::str_detect(tolower(nci_concept_display_name),
+                        "^anti-|mab |mab$|monoclonal antibody") &
+      (!is.na(nci_concept_definition) &
+      stringr::str_detect(nci_concept_definition,"monoclonal antibody")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(proteasome_inhibitor = dplyr::if_else(
+    (stringr::str_detect(tolower(nci_concept_display_name),
+                        "^proteasome") &
+       !stringr::str_detect(tolower(nci_concept_display_name),"vaccine")) |
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(
+           tolower(nci_concept_definition),"proteasome inhibitor|inhibits the proteasome|inhibition of proteasome")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(hormone_therapy = dplyr::if_else(
+    stringr::str_detect(tolower(nci_concept_display_name),
+                        "aromatase inhib|estrogen receptor (inhibitor|degrader|modulator)") |
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(
+           tolower(nci_concept_definition),"inhibitor of estrogen|estrogen receptor (modulator|inhibitor|degrader)|antiestrogen|aromatase inhibit(or|ion)") &
+         !stringr::str_detect(nci_concept_definition,"antiestrogen resistance")) |
+      (!is.na(target_symbol) & stringr::str_detect(target_symbol,"ESR[0-9]")),
+    TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(immune_checkpoint_inhibitor = dplyr::if_else(
+    (!is.na(nci_concept_definition) &
+      stringr::str_detect(
+        tolower(nci_concept_definition),
+        "immune checkpoint inhib")) |
+      (stringr::str_detect(nci_concept_display_name,
+                          "Tremelimumab|Milatuzumab")) |
+      (!is.na(target_symbol) & (target_symbol == "CD274" |
+      target_symbol == "CTLA4" | target_symbol == "PDCD1")) |
+      (!is.na(nci_concept_definition) & !is.na(target_symbol) &
+         stringr::str_detect(nci_concept_definition,
+                          "immunemodulating|immune response") &
+      target_symbol == "ADORA2A"),
+    TRUE,FALSE)
+  )
+
 
 usethis::use_data(oncopharmadb, overwrite = T)
 
