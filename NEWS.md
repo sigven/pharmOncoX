@@ -1,3 +1,17 @@
+# Version 0.4.8
+
+## Fixed
+
+* Fixed bug related to missing drug indications (cancer types)
+
+# Version 0.4.7 (August 23rd 2021)
+
+## Added
+
+* New drug classes: _anthracycline_ and _hedgehog_antagonist_
+* Possibility to show extensive or narrow output annotations per drug record (argument _output_style_)
+* Improved argument checks
+
 # Version 0.4.6 (August 21st 2021)
 
 ## Added
@@ -29,16 +43,4 @@
 * NCI Thesaurus v21.06e
 * Open Targets Platform 2021.06
 
-
-# Version 0.4.1 (June 4th 2021)
-
-## Drug synonym fix
-
-* Paclitaxel, nab-paclitaxel and Ceridanib
-
-# Version 0.4.1 (June 2nd 2021) 
-
-## Data upgrade
-
-* NCI Thesaurus v21.05d
 

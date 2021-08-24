@@ -35,7 +35,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.7</span>
       </span>
     </div>
 
@@ -108,6 +108,10 @@
 <li>
 <p>Get BRAF-targeted drugs, Open Targets Platform only, list per drug only</p>
 <p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,  drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T)</code></p>
+</li>
+<li>
+<p>Get BRAF-targeted drugs, Open Targets Platform only, list per drug only, show key annotations only</p>
+<p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,  drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T,  output_style = 'narrow')</code></p>
 </li>
 <li>
 <p>Get immune checkpoint inhibitors</p>

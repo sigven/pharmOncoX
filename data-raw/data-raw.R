@@ -310,9 +310,18 @@ oncopharmadb <- oncopharmadb %>%
   dplyr::mutate(topoisomerase_inhibitor = dplyr::if_else(
     (!is.na(nci_concept_definition) &
       stringr::str_detect(
-        tolower(nci_concept_definition),
-        "topoisomerase( I|II )? \\(.*\\) inhibitor|inhibit(ion|or) of topoisomerase|(stabilizes|interrupts|binds to|interacts with|inhibits( the activity of)?)( the)?( DNA)? (t|T)opoisomerase|topoisomerase( (I|II))? inhibitor")) |
+        nci_concept_definition,
+        "(T|t)opoisomerase II-mediated|(T|t)opoisomerase( I|II )? \\(.*\\) inhibitor|inhibit(ion|or) of (T|t)opoisomerase|(stabilizes|interrupts|binds to|interacts with|inhibits( the activity of)?)( the)?( DNA)? (t|T)opoisomerase|(T|t)opoisomerase( (I|II))? inhibitor")) |
       (!is.na(target_genename) & stringr::str_detect(target_genename,"topoisomerase")),TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(hedgehog_antagonist = dplyr::if_else(
+    (!is.na(nci_concept_definition) &
+       stringr::str_detect(
+         nci_concept_definition,
+         "Hedgehog") & stringr::str_detect(nci_concept_display_name,"Smoothened Antagonist|(ate|ib)$")) |
+      (!is.na(nci_concept_display_name) &
+         stringr::str_detect(nci_concept_display_name,"Hedgehog Inhibitor|SMO Protein Inhibitor")),
+    TRUE,FALSE)
   ) %>%
   dplyr::mutate(hdac_inhibitor = dplyr::if_else(
     !is.na(target_symbol) &
@@ -401,6 +410,13 @@ oncopharmadb <- oncopharmadb %>%
       (!is.na(target_symbol) & stringr::str_detect(target_symbol,"ESR[0-9]")),
     TRUE,FALSE)
   ) %>%
+  dplyr::mutate(anthracycline = dplyr::if_else(
+    (!is.na(nci_concept_definition) &
+       stringr::str_detect(
+         tolower(nci_concept_definition),
+         "anthracycline|anthracenedione")),
+    TRUE, FALSE)
+  ) %>%
   dplyr::mutate(immune_checkpoint_inhibitor = dplyr::if_else(
     (!is.na(nci_concept_definition) &
       stringr::str_detect(
@@ -417,6 +433,24 @@ oncopharmadb <- oncopharmadb %>%
     TRUE,FALSE)
   )
 
+
+drug_action_types <- as.data.frame(
+  oncopharmadb %>%
+  dplyr::select(nci_concept_display_name, drug_action_type) %>%
+  dplyr::distinct() %>%
+  dplyr::group_by(nci_concept_display_name) %>%
+  dplyr::summarise(drug_action_type = paste(
+    drug_action_type, collapse = "/"
+  ))
+)
+
+oncopharmadb$drug_action_type <- NULL
+oncopharmadb <- oncopharmadb %>%
+  dplyr::left_join(drug_action_types,
+                   by = "nci_concept_display_name") %>%
+  dplyr::select(drug_name, nci_concept_display_name, drug_type,
+                drug_action_type, molecule_chembl_id, drug_moa,
+                drug_max_phase_indication, dplyr::everything())
 
 usethis::use_data(oncopharmadb, overwrite = T)
 
