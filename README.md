@@ -4,6 +4,24 @@
 
 This R package provides a dataset and method to query targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. The dataset is largely based on drug-target-indication associations provided by the [Open Targets Platform](https://targetvalidation.org) ([Ochoa et al., Nucleic Acids Res., 2021](https://doi.org/10.1093/nar/gkaa1027)), and where we have limited the associations to cancer-relevant indications only (as provided in [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap)). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), where we append non-targeted cancer drugs (chemotherapies etc.) and different drug regimens. 
 
+Anti-cancer drugs are currently provided with the following tentative drug categories/types (not necessarily mutually exclusive), indicative of their mechanism-of-action:
+* Alkylating agents
+* Angiogenesis inhibitors
+* Anthracyclines
+* Antimetabolites
+* AR antagonists
+* BET inhibitors
+* Hedgehog antagonists
+* HDAC inhibitors
+* Hormone therapies
+* Immune checkpoint inhibitors
+* Kinase inhibitors
+* Monoclonal antibodies
+* PARP inhibitors
+* Proteasome inhibitors
+* Topoisomerase inhibitors
+* Tubulin inhibitors
+
 Currently (as of August 2021), the following versions are used to create the mapping:
 
  - Open Targets Platform (2021.06)
