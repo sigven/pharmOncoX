@@ -26,7 +26,7 @@ Currently (as of August 2021), the following versions are used to create the map
 
  - Open Targets Platform (2021.06)
  - ChEMBL (v29)
- - NCI Thesaurus (21.07d)
+ - NCI Thesaurus (21.08e)
 
 
 #### Installation & Usage
@@ -60,24 +60,24 @@ install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")
 4. Get BRAF-targeted drugs, Open Targets Platform only, list per drug only
 
 	`drugs <- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,
-	drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T)`
+	drug_target = c('BRAF'), source_opentargets_only = T, output_resolution = "drug" )`
 	
 5. Get BRAF-targeted drugs, Open Targets Platform only, list per drug only, show key annotations only
 
 	`drugs <- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,
-	drug_target = c('BRAF'), source_opentargets_only = T, list_per_drug_only = T,
+	drug_target = c('BRAF'), source_opentargets_only = T, output_resolution = "drug",
 	output_style = 'narrow')`
 	
 
-6. Get immune checkpoint inhibitors
+6. Get immune checkpoint inhibitors, list per drug-target entry
 
    `drugs <- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T,
-   list_per_drug_only = T)`
+   output_resolution = "drug2target", output_style = "narrow")`
    
 7. Get antimetabolites
 
    `drugs <- oncoPharmaDB::get_onco_drugs(is_antimetabolite = T,
-   list_per_drug_only = T)`
+   output_resolution = "drug")`
 
 
 #### Contact

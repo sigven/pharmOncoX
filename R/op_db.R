@@ -1,4 +1,4 @@
-#' Function that returns various properties of antineoplastic drugs (targeted and non-targeted)
+#' Retrieve antineoplastic drugs and drug regimens
 #'
 #' @param drug_is_targeted logical indicating if resulting drug records should contain molecularly targeted drugs only
 #' @param drug_is_approved logical indicating if resulting drug records should contain approved drugs only
@@ -11,9 +11,8 @@
 #' @param drug_approved_later_than only include records for drugs approved later than this date (year)
 #' @param drug_minimum_max_phase_any_indication only include drug records that are in a clinical phase (any indication) greater or equal than this phase
 #' @param output_style comprehensiveness of drug records ('extensive' - all annotations, 'narrow' - main annotations)
-#' @param list_per_indication list resulting drug records per drug indication/tumor type
+#' @param output_resolution output record resolution ('drug','drug2target','drug2target2indication')
 #' @param list_per_drug_synonym list resulting drug records per drug synonym
-#' @param list_per_drug_only list resulting drug records per drug only, ignore targets and indications
 #' @param is_immune_checkpoint_inhibitor logical indicating if only this drug class is wanted
 #' @param is_hdac_inhibitor logical indicating if only this drug class is wanted
 #' @param is_bet_inhibitor logical indicating if only this drug class is wanted
@@ -27,8 +26,10 @@
 #' @param is_proteasome_inhibitor logical indicating if only this drug class is wanted
 #' @param is_parp_inhibitor logical indicating if only this drug class is wanted
 #' @param is_bet_inhibitor logical indicating if only this drug class is wanted
-#' @param is_angiogenesis_inhibitor
+#' @param is_angiogenesis_inhibitor logical indicating if only this drug class is wanted
 #' @param is_ar_antagonist logical indicating if only this drug class is wanted
+#' @param is_hedgehog_antagonist logical indicating if only this drug class is wanted
+#' @param is_anthracycline logical indicating if only this drug class is wanted
 #'
 #' @export
 get_onco_drugs <- function(drug_is_targeted = F,
@@ -39,28 +40,31 @@ get_onco_drugs <- function(drug_is_targeted = F,
                      drug_has_blackbox_warning = F,
                      drug_approved_later_than = 1939,
                      drug_minimum_max_phase_any_indication = 0,
-                     list_per_drug_only = F,
-                     list_per_indication = T,
                      list_per_drug_synonym = F,
+                     output_resolution = "drug2target2indication",
                      output_style = "extensive",
-                     is_immune_checkpoint_inhibitor = F,
-                     is_angiogenesis_inhibitor = F,
-                     is_hdac_inhibitor = F,
-                     is_bet_inhibitor = F,
-                     is_topoisomerase_inhibitor = F,
-                     is_hormone_therapy = F,
-                     is_antimetabolite = F,
                      is_alkylating_agent = F,
-                     is_monoclonal_antibody = F,
+                     is_angiogenesis_inhibitor = F,
+                     is_anthracycline = F,
+                     is_antimetabolite = F,
+                     is_ar_antagonist = F,
+                     is_bet_inhibitor = F,
+                     is_hedgehog_antagonist = F,
+                     is_hdac_inhibitor = F,
+                     is_hormone_therapy = F,
+                     is_immune_checkpoint_inhibitor = F,
                      is_kinase_inhibitor = F,
-                     is_tubulin_inhibitor = F,
-                     is_proteasome_inhibitor = F,
+                     is_monoclonal_antibody = F,
                      is_parp_inhibitor = F,
-                     is_ar_antagonist = F){
+                     is_proteasome_inhibitor = F,
+                     is_topoisomerase_inhibitor = F,
+                     is_tubulin_inhibitor = F
+                     ){
 
   drug_records <- oncoPharmaDB::oncopharmadb
 
   valid_output_styles <- c("extensive","narrow")
+  valid_output_resolutions <- c("drug","drug2target","drug2target2indication")
   valid_drug_action_types <- c("INHIBITOR","AGONIST","MODULATOR","ANTAGONIST",
                                "BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
                                "STABILISER","CROSS-LINKING AGENT",
@@ -76,8 +80,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
        msg = "ERROR: Argument 'drug_approved_later_than' must be of type 'numeric'")
   arg_validation_messages[[2]] <-
     assertthat::validate_that(
-      drug_approved_later_than >= 1939 & drug_approved_later_than <= 2020,
-      msg = "ERROR: Argument 'drug_approved_later_than' must be larger than 1939 and less than 2020")
+      drug_approved_later_than >= 1939 & drug_approved_later_than <= 2021,
+      msg = "ERROR: Argument 'drug_approved_later_than' must be larger than 1939 and less than 2021")
   arg_validation_messages[[3]] <-
     assertthat::validate_that(
       is.logical(drug_is_approved),
@@ -94,16 +98,20 @@ get_onco_drugs <- function(drug_is_targeted = F,
     assertthat::validate_that(
       is.logical(list_per_drug_synonym),
       msg = "ERROR: Argument 'list_per_drug_synonym' must be of type 'logical'")
+  # arg_validation_messages[[7]] <-
+  #   assertthat::validate_that(
+  #     is.logical(list_per_indication),
+  #     msg = "ERROR: Argument 'list_per_indication' must be of type 'logical'")
   arg_validation_messages[[7]] <-
     assertthat::validate_that(
-      is.logical(list_per_indication),
-      msg = "ERROR: Argument 'list_per_indication' must be of type 'logical'")
+      output_resolution %in% valid_output_resolutions,
+      msg = "ERROR: Argument 'output_resolution' must be either 'drug','drug2target', or 'drug2target2indication'")
   arg_validation_messages[[8]] <-
     assertthat::validate_that(
       output_style %in% valid_output_styles,
       msg = "ERROR: Argument 'output_style' must be either 'extensive' or 'narrow'")
 
-  arg_counter <- 9
+  arg_counter <- 10
   if(!is.null(drug_action_type)){
     arg_validation_messages[[arg_counter]] <-
       assertthat::validate_that(
@@ -147,14 +155,50 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
-      is.logical(is_immune_checkpoint_inhibitor),
-      msg = "ERROR: Argument 'is_immune_checkpoint_inhibitor' must be logical (TRUE/FALSE)")
+      is.logical(is_alkylating_agent),
+      msg = "ERROR: Argument 'is_alkylating_agent' must be logical (TRUE/FALSE)")
   arg_counter <- arg_counter + 1
 
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
-      is.logical(is_alkylating_agent),
-      msg = "ERROR: Argument 'is_alkylating_agent' must be logical (TRUE/FALSE)")
+      is.logical(is_angiogenesis_inhibitor),
+      msg = "ERROR: Argument 'is_angiogenesis_inhibitor' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_anthracycline),
+      msg = "ERROR: Argument 'is_anthracycline' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_antimetabolite),
+      msg = "ERROR: Argument 'is_antimetabolite' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_ar_antagonist),
+      msg = "ERROR: Argument 'is_ar_antagonist' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_bet_inhibitor),
+      msg = "ERROR: Argument 'is_bet_inhibitor' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_hdac_inhibitor),
+      msg = "ERROR: Argument 'is_hdac_inhibitor' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_hedgehog_antagonist),
+      msg = "ERROR: Argument 'is_hedgehog_antagonist' must be logical (TRUE/FALSE)")
   arg_counter <- arg_counter + 1
 
   arg_validation_messages[[arg_counter]] <-
@@ -165,8 +209,20 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
-      is.logical(is_bet_inhibitor),
-      msg = "ERROR: Argument 'is_bet_inhibitor' must be logical (TRUE/FALSE)")
+      is.logical(is_immune_checkpoint_inhibitor),
+      msg = "ERROR: Argument 'is_immune_checkpoint_inhibitor' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_kinase_inhibitor),
+      msg = "ERROR: Argument 'is_kinase_inhibitor' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_monoclonal_antibody),
+      msg = "ERROR: Argument 'is_monoclonal_antibody' must be logical (TRUE/FALSE)")
   arg_counter <- arg_counter + 1
 
   arg_validation_messages[[arg_counter]] <-
@@ -183,51 +239,14 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
-      is.logical(is_tubulin_inhibitor),
-      msg = "ERROR: Argument 'is_tubulin_inhibitor' must be logical (TRUE/FALSE)")
-  arg_counter <- arg_counter + 1
-
-  arg_validation_messages[[arg_counter]] <-
-    assertthat::validate_that(
-      is.logical(is_monoclonal_antibody),
-      msg = "ERROR: Argument 'is_monoclonal_antibody' must be logical (TRUE/FALSE)")
-  arg_counter <- arg_counter + 1
-
-  arg_validation_messages[[arg_counter]] <-
-    assertthat::validate_that(
-      is.logical(is_antimetabolite),
-      msg = "ERROR: Argument 'is_antimetabolite' must be logical (TRUE/FALSE)")
-  arg_counter <- arg_counter + 1
-
-  arg_validation_messages[[arg_counter]] <-
-    assertthat::validate_that(
-      is.logical(is_kinase_inhibitor),
-      msg = "ERROR: Argument 'is_kinase_inhibitor' must be logical (TRUE/FALSE)")
-  arg_counter <- arg_counter + 1
-
-  arg_validation_messages[[arg_counter]] <-
-    assertthat::validate_that(
       is.logical(is_topoisomerase_inhibitor),
       msg = "ERROR: Argument 'is_topoisomerase_inhibitor' must be logical (TRUE/FALSE)")
   arg_counter <- arg_counter + 1
 
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
-      is.logical(is_angiogenesis_inhibitor),
-      msg = "ERROR: Argument 'is_angiogenesis_inhibitor' must be logical (TRUE/FALSE)")
-  arg_counter <- arg_counter + 1
-
-  arg_validation_messages[[arg_counter]] <-
-    assertthat::validate_that(
-      is.logical(is_ar_antagonist),
-      msg = "ERROR: Argument 'is_ar_antagonist' must be logical (TRUE/FALSE)")
-  arg_counter <- arg_counter + 1
-
-  arg_validation_messages[[arg_counter]] <-
-    assertthat::validate_that(
-      is.logical(is_hdac_inhibitor),
-      msg = "ERROR: Argument 'is_hdac_inhibitor' must be logical (TRUE/FALSE)")
-
+      is.logical(is_tubulin_inhibitor),
+      msg = "ERROR: Argument 'is_tubulin_inhibitor' must be logical (TRUE/FALSE)")
 
 
   i <- 1
@@ -272,9 +291,15 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
   if(drug_minimum_max_phase_any_indication > 0){
     if(nrow(drug_records) > 0){
+
+      ## include indications customly retrieved in DailyMed (assuming they are all max phase)
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(drug_max_ct_phase)) %>%
-        dplyr::filter(drug_max_ct_phase >= drug_minimum_max_phase_any_indication)
+        dplyr::filter(
+          (!is.na(drug_max_ct_phase) &
+             drug_max_ct_phase >= drug_minimum_max_phase_any_indication) |
+            (is.na(drug_max_ct_phase) &
+               drug_clinical_source == "DailyMedParseSN"))
+
     }
   }
 
@@ -345,7 +370,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
     }
   }
 
-  if(list_per_drug_only == T){
+  if(output_resolution == "drug"){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
         dplyr::select(-c(target_symbol,
@@ -362,6 +387,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          drug_clinical_id,
                          primary_site,
                          drug_moa,
+                         drug_max_ct_phase,
+                         comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source,
                          drug_max_phase_indication)) %>%
@@ -369,23 +396,78 @@ get_onco_drugs <- function(drug_is_targeted = F,
     }
   }
 
-  if(list_per_indication == F){
-    if(list_per_drug_only == F){
-      if(nrow(drug_records) > 0){
-        drug_records <- drug_records %>%
-          dplyr::select(-c(disease_efo_id,
-                           disease_efo_label,
-                           cui,
-                           cui_name,
-                           drug_clinical_id,
-                           primary_site,
-                           drug_approved_indication,
-                           drug_clinical_source,
-                           drug_max_phase_indication)) %>%
-          dplyr::distinct()
-      }
+  if(output_resolution == "drug2target"){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::select(-c(disease_efo_id,
+                         disease_efo_label,
+                         cui,
+                         cui_name,
+                         drug_clinical_id,
+                         primary_site,
+                         drug_moa,
+                         drug_max_ct_phase,
+                         comb_regimen_indication,
+                         drug_approved_indication,
+                         drug_clinical_source,
+                         drug_max_phase_indication)) %>%
+        dplyr::distinct()
     }
   }
+
+  if(output_resolution == "drug2target2indication"){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::select(-c(drug_clinical_id,
+                         drug_moa,
+                         drug_max_ct_phase)) %>%
+        dplyr::distinct()
+    }
+  }
+
+  # if(list_per_drug_only == T){
+  #   if(nrow(drug_records) > 0){
+  #     drug_records <- drug_records %>%
+  #       dplyr::select(-c(target_symbol,
+  #                        target_ensembl_gene_id,
+  #                        target_entrezgene,
+  #                        target_type,
+  #                        target_genename,
+  #                        target_uniprot_id,
+  #                        target_chembl_id,
+  #                        disease_efo_id,
+  #                        disease_efo_label,
+  #                        cui,
+  #                        cui_name,
+  #                        drug_clinical_id,
+  #                        primary_site,
+  #                        drug_moa,
+  #                        comb_regimen_indication,
+  #                        drug_approved_indication,
+  #                        drug_clinical_source,
+  #                        drug_max_phase_indication)) %>%
+  #       dplyr::distinct()
+  #   }
+  # }
+  #
+  # if(list_per_indication == F){
+  #   if(list_per_drug_only == F){
+  #     if(nrow(drug_records) > 0){
+  #       drug_records <- drug_records %>%
+  #         dplyr::select(-c(disease_efo_id,
+  #                          disease_efo_label,
+  #                          cui,
+  #                          cui_name,
+  #                          drug_clinical_id,
+  #                          primary_site,
+  #                          comb_regimen_indication,
+  #                          drug_approved_indication,
+  #                          drug_clinical_source,
+  #                          drug_max_phase_indication)) %>%
+  #         dplyr::distinct()
+  #     }
+  #   }
+  # }
 
   if(is_antimetabolite == T){
     if(nrow(drug_records) > 0){
@@ -472,13 +554,28 @@ get_onco_drugs <- function(drug_is_targeted = F,
     }
   }
 
+  if(is_anthracycline == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(anthracycline) & anthracycline == T)
+    }
+  }
+
+  if(is_hedgehog_antagonist == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(hedgehog_antagonist) & hedgehog_antagonist == T)
+    }
+  }
+
   if(output_style == "narrow"){
     cols_for_stripping_classes <-
       c('angiogenesis_inhibitor','hormone_therapy','tubulin_inhibitor',
         'bet_inhibitor','proteasome_inhibitor','kinase_inhibitor',
         'parp_inhibitor','hdac_inhibitor','alkylating_agent',
         'antimetabolite','ar_antagonist','immune_checkpoint_inhibitor',
-        'topoisomerase_inhibitor','monoclonal_antibody')
+        'topoisomerase_inhibitor','monoclonal_antibody',
+        'anthracycline','hedgehog_antagonist')
 
     cols_for_stripping_target <-
       c('target_genename','target_ensembl_gene_id','target_type',
@@ -488,7 +585,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
       c('drug_name','drug_moa','drug_tradenames','drug_synonyms',
         'drug_clinical_source','drug_description','drug_clinical_id',
         'nci_t','drug_name_nci','nci_concept_synonym_all',
-        'drug_max_ct_phase')
+        'drug_max_ct_phase, comb_regimen_indication')
 
     cols_for_stripping_disease <-
       c('cui','cui_name','cancer_drug')

@@ -1,8 +1,9 @@
-# Version 0.4.8
+# Version 0.4.8 (September 21st 2021)
 
 ## Fixed
 
 * Fixed bug related to missing drug indications (cancer types)
+* Updated oncoPhenoMap
 
 # Version 0.4.7 (August 23rd 2021)
 

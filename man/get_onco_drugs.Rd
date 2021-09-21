@@ -2,7 +2,7 @@
 % Please edit documentation in R/op_db.R
 \name{get_onco_drugs}
 \alias{get_onco_drugs}
-\title{Function that returns various properties of antineoplastic drugs (targeted and non-targeted)}
+\title{Retrieve antineoplastic drugs and drug regimens}
 \usage{
 get_onco_drugs(
   drug_is_targeted = F,
@@ -13,24 +13,25 @@ get_onco_drugs(
   drug_has_blackbox_warning = F,
   drug_approved_later_than = 1939,
   drug_minimum_max_phase_any_indication = 0,
-  list_per_drug_only = F,
-  list_per_indication = T,
   list_per_drug_synonym = F,
+  output_resolution = "drug2target2indication",
   output_style = "extensive",
-  is_immune_checkpoint_inhibitor = F,
-  is_angiogenesis_inhibitor = F,
-  is_hdac_inhibitor = F,
-  is_bet_inhibitor = F,
-  is_topoisomerase_inhibitor = F,
-  is_hormone_therapy = F,
-  is_antimetabolite = F,
   is_alkylating_agent = F,
-  is_monoclonal_antibody = F,
+  is_angiogenesis_inhibitor = F,
+  is_anthracycline = F,
+  is_antimetabolite = F,
+  is_ar_antagonist = F,
+  is_bet_inhibitor = F,
+  is_hedgehog_antagonist = F,
+  is_hdac_inhibitor = F,
+  is_hormone_therapy = F,
+  is_immune_checkpoint_inhibitor = F,
   is_kinase_inhibitor = F,
-  is_tubulin_inhibitor = F,
-  is_proteasome_inhibitor = F,
+  is_monoclonal_antibody = F,
   is_parp_inhibitor = F,
-  is_ar_antagonist = F
+  is_proteasome_inhibitor = F,
+  is_topoisomerase_inhibitor = F,
+  is_tubulin_inhibitor = F
 )
 }
 \arguments{
@@ -52,40 +53,44 @@ possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVA
 
 \item{drug_minimum_max_phase_any_indication}{only include drug records that are in a clinical phase (any indication) greater or equal than this phase}
 
-\item{list_per_drug_only}{list resulting drug records per drug only, ignore targets and indications}
-
-\item{list_per_indication}{list resulting drug records per drug indication/tumor type}
-
 \item{list_per_drug_synonym}{list resulting drug records per drug synonym}
+
+\item{output_resolution}{output record resolution ('drug','drug2target','drug2target2indication')}
 
 \item{output_style}{comprehensiveness of drug records ('extensive' - all annotations, 'narrow' - main annotations)}
 
-\item{is_immune_checkpoint_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_alkylating_agent}{logical indicating if only this drug class is wanted}
 
-\item{is_hdac_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_angiogenesis_inhibitor}{logical indicating if only this drug class is wanted}
 
-\item{is_bet_inhibitor}{logical indicating if only this drug class is wanted}
-
-\item{is_topoisomerase_inhibitor}{logical indicating if only this drug class is wanted}
-
-\item{is_hormone_therapy}{logical indicating if only this drug class is wanted}
+\item{is_anthracycline}{logical indicating if only this drug class is wanted}
 
 \item{is_antimetabolite}{logical indicating if only this drug class is wanted}
 
-\item{is_alkylating_agent}{logical indicating if only this drug class is wanted}
+\item{is_ar_antagonist}{logical indicating if only this drug class is wanted}
 
-\item{is_monoclonal_antibody}{logical indicating if only this drug class is wanted}
+\item{is_bet_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_hedgehog_antagonist}{logical indicating if only this drug class is wanted}
+
+\item{is_hdac_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_hormone_therapy}{logical indicating if only this drug class is wanted}
+
+\item{is_immune_checkpoint_inhibitor}{logical indicating if only this drug class is wanted}
 
 \item{is_kinase_inhibitor}{logical indicating if only this drug class is wanted}
 
-\item{is_tubulin_inhibitor}{logical indicating if only this drug class is wanted}
-
-\item{is_proteasome_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_monoclonal_antibody}{logical indicating if only this drug class is wanted}
 
 \item{is_parp_inhibitor}{logical indicating if only this drug class is wanted}
 
-\item{is_ar_antagonist}{logical indicating if only this drug class is wanted}
+\item{is_proteasome_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_topoisomerase_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_tubulin_inhibitor}{logical indicating if only this drug class is wanted}
 }
 \description{
-Function that returns various properties of antineoplastic drugs (targeted and non-targeted)
+Retrieve antineoplastic drugs and drug regimens
 }

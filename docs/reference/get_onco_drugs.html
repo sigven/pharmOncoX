@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function that returns various properties of antineoplastic drugs (targeted and non-targeted) — get_onco_drugs • oncoPharmaDB</title>
+<title>Retrieve antineoplastic drugs and drug regimens — get_onco_drugs • oncoPharmaDB</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Function that returns various properties of antineoplastic drugs (targeted and non-targeted) — get_onco_drugs" />
-<meta property="og:description" content="Function that returns various properties of antineoplastic drugs (targeted and non-targeted)" />
+<meta property="og:title" content="Retrieve antineoplastic drugs and drug regimens — get_onco_drugs" />
+<meta property="og:description" content="Retrieve antineoplastic drugs and drug regimens" />
 
 
 
@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.8</span>
       </span>
     </div>
 
@@ -106,13 +106,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Function that returns various properties of antineoplastic drugs (targeted and non-targeted)</h1>
+    <h1>Retrieve antineoplastic drugs and drug regimens</h1>
     
     <div class="hidden name"><code>get_onco_drugs.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Function that returns various properties of antineoplastic drugs (targeted and non-targeted)</p>
+    <p>Retrieve antineoplastic drugs and drug regimens</p>
     </div>
 
     <pre class="usage"><span class='fu'>get_onco_drugs</span><span class='op'>(</span>
@@ -124,9 +124,8 @@
   drug_has_blackbox_warning <span class='op'>=</span> <span class='cn'>F</span>,
   drug_approved_later_than <span class='op'>=</span> <span class='fl'>1939</span>,
   drug_minimum_max_phase_any_indication <span class='op'>=</span> <span class='fl'>0</span>,
-  list_per_drug_only <span class='op'>=</span> <span class='cn'>F</span>,
-  list_per_indication <span class='op'>=</span> <span class='cn'>T</span>,
   list_per_drug_synonym <span class='op'>=</span> <span class='cn'>F</span>,
+  output_resolution <span class='op'>=</span> <span class='st'>"drug2target2indication"</span>,
   output_style <span class='op'>=</span> <span class='st'>"extensive"</span>,
   is_alkylating_agent <span class='op'>=</span> <span class='cn'>F</span>,
   is_angiogenesis_inhibitor <span class='op'>=</span> <span class='cn'>F</span>,
@@ -184,16 +183,12 @@ possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVA
       <td><p>only include drug records that are in a clinical phase (any indication) greater or equal than this phase</p></td>
     </tr>
     <tr>
-      <th>list_per_drug_only</th>
-      <td><p>list resulting drug records per drug only, ignore targets and indications</p></td>
-    </tr>
-    <tr>
-      <th>list_per_indication</th>
-      <td><p>list resulting drug records per drug indication/tumor type</p></td>
-    </tr>
-    <tr>
       <th>list_per_drug_synonym</th>
       <td><p>list resulting drug records per drug synonym</p></td>
+    </tr>
+    <tr>
+      <th>output_resolution</th>
+      <td><p>output record resolution ('drug','drug2target','drug2target2indication')</p></td>
     </tr>
     <tr>
       <th>output_style</th>
