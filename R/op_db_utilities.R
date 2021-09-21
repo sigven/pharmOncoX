@@ -2306,3 +2306,42 @@ get_drug_indications_dm <- function(xml_fname = NULL,
 }
 
 
+# drugs <- oncoPharmaDB::get_onco_drugs(
+#   drug_is_targeted = T,
+#   drug_target = c('BRAF'))
+#
+#
+# drugs2 <- oncoPharmaDB::get_onco_drugs(
+#   drug_is_targeted = T,
+#   drug_target = c('BRAF'),
+#   drug_is_approved = T)
+#
+# drugs3 <- oncoPharmaDB::get_onco_drugs(
+#   drug_is_targeted = T,
+#   drug_target = c('BRAF'),
+#   list_per_drug_synonym = T)
+#
+# drugs4 <- oncoPharmaDB::get_onco_drugs(
+#   drug_is_targeted = T,
+#   drug_target = c('BRAF'),
+#   source_opentargets_only = T,
+#   output_resolution = "drug")
+#
+#
+# drugs5 <- oncoPharmaDB::get_onco_drugs(
+#   drug_is_targeted = T,
+#   drug_target = c('BRAF'),
+#   source_opentargets_only = T,
+#   output_resolution = "drug",
+#   output_style = 'narrow')
+#
+# drugs6 <- oncoPharmaDB::get_onco_drugs(
+#   is_immune_checkpoint_inhibitor = T,
+#   output_resolution = "drug2target",
+#   output_style = "narrow")
+#
+#
+# drugs7 <- oncoPharmaDB::get_onco_drugs(
+#   is_antimetabolite = T,
+#   output_resolution = "drug")
+#

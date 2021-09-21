@@ -98,10 +98,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
     assertthat::validate_that(
       is.logical(list_per_drug_synonym),
       msg = "ERROR: Argument 'list_per_drug_synonym' must be of type 'logical'")
-  # arg_validation_messages[[7]] <-
-  #   assertthat::validate_that(
-  #     is.logical(list_per_indication),
-  #     msg = "ERROR: Argument 'list_per_indication' must be of type 'logical'")
   arg_validation_messages[[7]] <-
     assertthat::validate_that(
       output_resolution %in% valid_output_resolutions,
@@ -387,7 +383,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          drug_clinical_id,
                          primary_site,
                          drug_moa,
-                         drug_max_ct_phase,
+                         #drug_max_ct_phase,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source,
@@ -406,7 +402,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          drug_clinical_id,
                          primary_site,
                          drug_moa,
-                         drug_max_ct_phase,
+                         #drug_max_ct_phase,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source,
@@ -419,55 +415,11 @@ get_onco_drugs <- function(drug_is_targeted = F,
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
         dplyr::select(-c(drug_clinical_id,
-                         drug_moa,
-                         drug_max_ct_phase)) %>%
+                         drug_moa)) %>%
+                         #drug_max_ct_phase)) %>%
         dplyr::distinct()
     }
   }
-
-  # if(list_per_drug_only == T){
-  #   if(nrow(drug_records) > 0){
-  #     drug_records <- drug_records %>%
-  #       dplyr::select(-c(target_symbol,
-  #                        target_ensembl_gene_id,
-  #                        target_entrezgene,
-  #                        target_type,
-  #                        target_genename,
-  #                        target_uniprot_id,
-  #                        target_chembl_id,
-  #                        disease_efo_id,
-  #                        disease_efo_label,
-  #                        cui,
-  #                        cui_name,
-  #                        drug_clinical_id,
-  #                        primary_site,
-  #                        drug_moa,
-  #                        comb_regimen_indication,
-  #                        drug_approved_indication,
-  #                        drug_clinical_source,
-  #                        drug_max_phase_indication)) %>%
-  #       dplyr::distinct()
-  #   }
-  # }
-  #
-  # if(list_per_indication == F){
-  #   if(list_per_drug_only == F){
-  #     if(nrow(drug_records) > 0){
-  #       drug_records <- drug_records %>%
-  #         dplyr::select(-c(disease_efo_id,
-  #                          disease_efo_label,
-  #                          cui,
-  #                          cui_name,
-  #                          drug_clinical_id,
-  #                          primary_site,
-  #                          comb_regimen_indication,
-  #                          drug_approved_indication,
-  #                          drug_clinical_source,
-  #                          drug_max_phase_indication)) %>%
-  #         dplyr::distinct()
-  #     }
-  #   }
-  # }
 
   if(is_antimetabolite == T){
     if(nrow(drug_records) > 0){
@@ -621,6 +573,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
                   dplyr::everything()
                   ) %>%
     dplyr::arrange(desc(drug_year_first_approval),
+                   desc(drug_max_ct_phase),
                    desc(opentargets_version),
                    nchar(nci_concept_display_name))
 
