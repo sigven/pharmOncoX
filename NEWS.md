@@ -1,3 +1,11 @@
+# Version 0.4.9 (September 22nd 2021)
+
+## Fixed
+
+* Fixed bug related to kinase drug category 
+* Added uniprot identifiers to custom targets (experimental drugs, NCI)
+* Added imports (tidyverse, assertthat)
+
 # Version 0.4.8 (September 21st 2021)
 
 ## Fixed
@@ -29,19 +37,3 @@
   _bet_inhibitor_ (TRUE/FALSE), _immune_checkpoint_inhibitor_ (TRUE/FALSE),
   _antimetabolite_ (TRUE/FALSE) etc. Note that categories are not necessarily
   mutually exclusive. 
-
-# Version 0.4.4 (August 2nd 2021)
-
-## Data upgrade
-
-* NCI Thesaurus v21.07d
-* ChEMBL v29
-
-# Version 0.4.3 (July 8th 2021)
-
-## Data upgrade
-
-* NCI Thesaurus v21.06e
-* Open Targets Platform 2021.06
-
-

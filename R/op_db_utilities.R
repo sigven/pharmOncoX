@@ -2306,6 +2306,108 @@ get_drug_indications_dm <- function(xml_fname = NULL,
 }
 
 
+get_uniprot_map <- function(basedir = NULL,
+                            uniprot_release = "2020_03"){
+
+  ## corum protein-complex data
+
+  #download.file("http://mips.helmholtz-muenchen.de/corum/download/coreComplexes.txt.zip",destfile="data-raw/chorum/coreComplexes.txt.zip", quiet = T)
+  # corum_complexes <-
+  #   read.table(file=paste0(basedir,"/data-raw/corum/coreComplexes.txt"),
+  #              sep="\t",header=T, quote="",comment.char="",stringsAsFactors = F) %>%
+  #   dplyr::select(c(Organism, ComplexID, subunits.UniProt.IDs.,
+  #                   ComplexName,FunCat.description)) %>%
+  #   dplyr::filter(Organism == 'Human') %>%
+  #   dplyr::mutate(n_complexes = nrow(.)) %>%
+  #   dplyr::rename(uniprot_acc = subunits.UniProt.IDs.,
+  #                 corum_id = ComplexID, corum_name = ComplexName,
+  #                 corum_funcat_description = FunCat.description) %>%
+  #   tidyr::separate_rows(uniprot_acc, sep=";") %>%
+  #   dplyr::select(-Organism)
+
+  # n_complexes <- unique(corum_complexes$n_complexes)
+  # n_protein_complex_interactions <- nrow(corum_complexes)
+  # rlogging::message("Retrieving protein complex annotation from CORUM")
+  # rlogging::message("A total of ", n_complexes,
+  #                   " protein complexes were parsed, containing ",
+  #                   n_protein_complex_interactions," protein-complex interactions")
+  #
+  # uniprot_acc_to_corum_ids <- as.data.frame(
+  #   dplyr::group_by(corum_complexes, uniprot_acc) %>%
+  #     dplyr::summarise(corum_id = paste(unique(corum_id), collapse = "&"), .groups = "drop"))
+  rlogging::message("Retrieving UniProtKB annotation")
+
+  ## read uniprot ID mapping
+  idmapping_fname <- paste0(basedir,'/data-raw/uniprot/',uniprot_release,'/HUMAN_9606_idmapping.dat.gz')
+  idmapping_up_kb <- read.table(gzfile(idmapping_fname),sep="\t",header = F,quote = "", stringsAsFactors = F) %>%
+    dplyr::filter(V2 == 'Ensembl_TRS' | V2 == 'UniProtKB-ID' | V2 == 'Ensembl' | V2 == 'GeneID' | V2 == 'RefSeq_NT') %>%
+    magrittr::set_colnames(c('acc','type','name')) %>%
+    dplyr::mutate(acc = stringr::str_replace(acc,"-[0-9]{1,}",""))
+
+  reviewed_uniprot_accs <-
+    readRDS(file=paste0(basedir,"/data-raw/uniprot/",uniprot_release,"/reviewed_uniprot_accessions.rds"))
+
+  ## UniProt accession to Ensembl transcript ID
+  ensembl_up_acc <- dplyr::filter(idmapping_up_kb, type == 'Ensembl_TRS') %>%
+    dplyr::select(acc, name) %>%
+    dplyr::rename(uniprot_acc = acc, ensembl_transcript_id = name) %>%
+    dplyr::distinct()
+  ## remove transcripts mapped to more than one UniProt acc
+  unique_ensembl_trans <- as.data.frame(
+    dplyr::group_by(ensembl_up_acc, ensembl_transcript_id) %>%
+      dplyr::summarise(n_trans = dplyr::n(), .groups = "drop") %>%
+      dplyr::filter(n_trans == 1))
+  ensembl_up_acc <- dplyr::semi_join(
+    ensembl_up_acc,
+    dplyr::select(unique_ensembl_trans, ensembl_transcript_id),
+    by=c("ensembl_transcript_id"))
+
+  ## UniProt accession to UniProt ID
+  up_id_acc <- as.data.frame(
+    dplyr::filter(idmapping_up_kb, type == 'UniProtKB-ID') %>%
+      dplyr::group_by(acc) %>%
+      dplyr::summarise(uniprot_id = paste(unique(name), collapse="&"),
+                       .groups = "drop") %>%
+      dplyr::rename(uniprot_acc = acc))
+
+  ## UniProt accession to UniProt ID
+  ensembl_id_acc <- as.data.frame(
+    dplyr::filter(idmapping_up_kb, type == 'Ensembl') %>%
+      dplyr::group_by(acc) %>%
+      dplyr::summarise(ensembl_gene_id = paste(unique(name), collapse="&"),
+                       .groups = "drop") %>%
+      dplyr::rename(uniprot_acc = acc))
+
+  rlogging::message("A total of ",nrow(up_id_acc)," UniProt protein accessions were parsed")
+
+
+  ## UniProt accession to RefSeq ID
+  refseq_id_acc <- as.data.frame(
+    dplyr::filter(idmapping_up_kb, type == 'RefSeq_NT') %>%
+      dplyr::mutate(name = stringr::str_replace(name,"\\.[0-9]{1,}$","")) %>%
+      dplyr::group_by(acc) %>%
+      dplyr::summarise(refseq_mrna = paste(unique(name), collapse="&"),
+                       .groups = "drop") %>%
+      dplyr::rename(uniprot_acc = acc))
+
+
+  uniprot_map <- dplyr::full_join(
+    dplyr::left_join(refseq_id_acc, up_id_acc,by=c("uniprot_acc")),
+    dplyr::left_join(ensembl_up_acc, up_id_acc,by=c("uniprot_acc")),
+    by=c("uniprot_acc","uniprot_id")) %>%
+    dplyr::left_join(ensembl_id_acc)
+
+  ## UniProt accession and ID for Ensembl transcript IDs
+  uniprot_map <- uniprot_map %>%
+    #dplyr::left_join(uniprot_acc_to_corum_ids,by=c("uniprot_acc")) %>%
+    dplyr::left_join(reviewed_uniprot_accs, by=c("uniprot_acc","uniprot_id")) %>%
+    dplyr::rename(uniprot_reviewed = reviewed)
+
+  return(list('uniprot_map' = uniprot_map))
+
+}
+
+
 # drugs <- oncoPharmaDB::get_onco_drugs(
 #   drug_is_targeted = T,
 #   drug_target = c('BRAF'))

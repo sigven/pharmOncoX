@@ -383,7 +383,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          drug_clinical_id,
                          primary_site,
                          drug_moa,
-                         #drug_max_ct_phase,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source,
@@ -402,7 +401,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          drug_clinical_id,
                          primary_site,
                          drug_moa,
-                         #drug_max_ct_phase,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source,
@@ -416,7 +414,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
       drug_records <- drug_records %>%
         dplyr::select(-c(drug_clinical_id,
                          drug_moa)) %>%
-                         #drug_max_ct_phase)) %>%
         dplyr::distinct()
     }
   }
