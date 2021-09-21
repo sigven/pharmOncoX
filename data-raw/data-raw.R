@@ -1,10 +1,11 @@
 library(magrittr)
-pharmamine_datestamp <- '20210821'
-nci_db_release <- '21.07d'
+pharmamine_datestamp <- '20210921'
+nci_db_release <- '21.08e'
 chembl_db_release <- 'ChEMBL_29'
 opentargets_version <- '2021.06'
 uniprot_release <- '2021_03'
 dgidb_db_release <- 'v2021_05'
+update_dailymed <- F
 
 .libPaths("/Library/Frameworks/R.framework/Resources/library")
 
@@ -35,13 +36,19 @@ nci_thesaurus_files[['flat']] <- paste0("Thesaurus_", nci_db_release,".FLAT.zip"
 nci_thesaurus_files[['owl']] <- paste0("Thesaurus_", nci_db_release,".OWL.zip")
 nci_thesaurus_files[['inf_owl']] <- paste0("ThesaurusInf_", nci_db_release,".OWL.zip")
 
+
+
+drug_indications_dailymed <-
+  get_dailymed_drug_indications(update = update_dailymed,
+                                path_data_raw = path_data_raw)
+
 for(elem in c('flat','owl','inf_owl')){
-  #remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
+  remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
   local_file <- file.path(path_data_raw,"nci_thesaurus",nci_thesaurus_files[[elem]])
-  #if(!file.exists(local_file)){
-    #download.file(url = remote_file, destfile = local_file, quiet = T)
+  if(!file.exists(local_file)){
+    download.file(url = remote_file, destfile = local_file, quiet = T)
     system(paste0('unzip -d ',file.path(path_data_raw, "nci_thesaurus"), ' -o -u ',local_file))
-  #}
+  }
 }
 antineo_agents_url <-
   'https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Drug_or_Substance/Antineoplastic_Agent.txt'
@@ -275,9 +282,33 @@ all_cancer_drugs_final <-
       stringr::str_detect(drug_action_type,"^(SUBSTRATE|HYDROLYTIC ENZYME|RELEASING AGENT)"),
     paste0(drug_action_type,"_OTHER"),
     as.character(drug_action_type)
-  ))
+  )) %>%
+  dplyr::mutate(comb_regimen_indication = F)
 
-oncopharmadb <- all_cancer_drugs_final %>%
+
+
+## Add indications retrieved from DailyMed
+
+all_drugs2targets_no_indications <- all_cancer_drugs_final %>%
+  dplyr::select(-c(cui, cui_name, disease_efo_id, disease_efo_label,
+                   drug_clinical_source, drug_approved_indication,
+                   primary_site, drug_max_ct_phase, drug_clinical_id,
+                   drug_max_phase_indication, comb_regimen_indication)) %>%
+  dplyr::distinct()
+
+supplemental_drug_indications <- drug_indications_dailymed %>%
+  dplyr::select(-drugname_trade) %>%
+  dplyr::inner_join(all_drugs2targets_no_indications, by = "drug_name_nci") %>%
+  dplyr::select(-drug_name_nci) %>%
+  dplyr::mutate(drug_name_nci = tolower(nci_concept_synonym_all)) %>%
+  tidyr::separate_rows(drug_name_nci, sep="\\|") %>%
+  dplyr::distinct()
+
+all_cancer_drugs_final2 <- all_cancer_drugs_final %>%
+  dplyr::bind_rows(supplemental_drug_indications) %>%
+  dplyr::arrange(nci_concept_display_name)
+
+oncopharmadb <- all_cancer_drugs_final2 %>%
   dplyr::filter(!(is.na(nci_concept_display_name) &
                     !stringr::str_detect(drug_action_type,"INHIBITOR|BLOCKER"))) %>%
   dplyr::distinct() %>%
@@ -326,8 +357,11 @@ oncopharmadb <- oncopharmadb %>%
   dplyr::mutate(hdac_inhibitor = dplyr::if_else(
     !is.na(target_symbol) &
       stringr::str_detect(
-        tolower(target_symbol),
-        "^hdac"),TRUE,FALSE)
+        target_symbol,
+        "^HDAC") |
+      !is.na(nci_concept_definition) &
+      stringr::str_detect(nci_concept_definition,"inhibitor of histone deacetylase"),
+    TRUE,FALSE)
   ) %>%
   dplyr::mutate(alkylating_agent = dplyr::if_else(
     is.na(drug_moa) &
@@ -348,7 +382,9 @@ oncopharmadb <- oncopharmadb %>%
     !is.na(target_symbol) &
       stringr::str_detect(
         target_symbol,
-        "^BRD[0-9]{1}"),TRUE,FALSE)
+        "^BRD(T|[1-9]{1})") |
+      (!is.na(nci_concept_display_name) &
+      stringr::str_detect(nci_concept_display_name,"BET( Bromodomain)? Inhibitor")),TRUE,FALSE)
   ) %>%
   dplyr::mutate(tubulin_inhibitor = dplyr::if_else(
     (!is.na(drug_action_type) &
@@ -381,7 +417,7 @@ oncopharmadb <- oncopharmadb %>%
     stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist") &
       (!is.na(nci_concept_display_name) & stringr::str_detect(tolower(nci_concept_display_name), "antiangiogenic|angiogenesis inhibitor")) |
       (!is.na(nci_concept_definition) &
-         stringr::str_detect(tolower(nci_concept_definition),"angiogenesis inhibitor|(inhibiting|blocking)( tumor)? angiogenesis|anti(-)?angiogenic|(inhibits|((inhibition|reduction) of))( .*) angiogenesis")),
+         stringr::str_detect(tolower(nci_concept_definition),"antiangiogenic activities|angiogenesis inhibitor|(inhibiting|blocking)( tumor)? angiogenesis|anti(-)?angiogenic|(inhibits|((inhibition|reduction) of))( .*) angiogenesis")),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(monoclonal_antibody = dplyr::if_else(
