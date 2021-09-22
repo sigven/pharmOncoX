@@ -1,14 +1,47 @@
 pattern	symbol
+Anti-CD19	CD19
+Anti-CD37	CD37
+Anti-Met( |/)	MET
+Anti-ROR1|ROR1	ROR1
+inhibitor of the serine-threonine kinase Aurora B	AURKB
 (KSP )	KIF11
+MMP-1,2,3,9,and 13|MMP Inhibitor	MMP1
+MMP-1,2,3,9,and 13|MMP Inhibitor	MMP2
+MMP-1,2,3,9,and 13|MMP Inhibitor	MMP3
+MMP-1,2,3,9,and 13|MMP Inhibitor	MMP9
+MMP-1,2,3,9,and 13|MMP Inhibitor	MMP13
 RIPK1	RIPK1
 Anti-CTLA-4|CTLA-4|Anti-CTLA4	CTLA4
 Anti-CD47|CD47	CD47
+Anti-OX40	TNFRSF4
+Anti-TROP2	TACSTD2
+JAK1/2	JAK1
+JAK1/2	JAK2
+JAK3	JAK3
+CDK Inhibitor	CDK1
+CDK Inhibitor	CDK2
+CDK Inhibitor	CDK4
+CDK4/CDK6	CDK4
+CDK4/CDK6	CDK6
+inhibitor of checkpoint kinase 2	CHEK2
+inhibitor of Bruton	BTK
+inhibitor of spleen tyrosine	SYK
+Anti-5T4	TPBG
 Anti-ENPP3	ENPP3
 Anti-EphA2	EPHA2
 Anti-ErbB3	ERBB3
+Anti-CD117	KIT
+Anti-CD122	IL2RB
 Anti-CD20(-|/| )	MS4A1
 Anti-MUC1(-|/| )	MUC1
+Anti-MUC16(-|/| )	MUC16
+Anti-MUC17(-|/| )	MUC17
+Anti-BTN3A	BTN3A1
 A2A Receptor|ADORA2A	ADORA2A
+Anti-BCL6	BCL6
+BCL2 Inhibitor	BCL2
+Adenosine A2B Receptor	ADORA2B
+antibody targeting B7-H4|Anti-B7-H4	VTCN1
 CD73	NT5E
 CCR4	CCR4
 CENP-E	CENPE
@@ -26,6 +59,19 @@ KAT6	KAT6A
 KAT6	KAT6B
 Menin-MLL	KMT2A
 LMP7	PSMB8
+Anti-ADAM9	ADAM9
+Anti-B7(-)?H3	CD276
+ADAM10	ADAM10
+ADAM17	ADAM17
+Anti-IL-18	IL18
+Anti-IL17A	IL17A
+Anti-ILT2	LILRB1
+Anti-ILT4	LILRB2
+Anti-LAMP1	LAMP1
+TGF-beta 1|TGFb1	TGFB1
+Anti-CCR8	CCR8
+Anti-CCR7	CCR7
+interleukin-13|IL-13	IL13
 Protein Arginine Methyltransferase 5	PRMT5
 Pyruvate Kinase	PKM
 RAD51	RAD51
@@ -224,8 +270,6 @@ CXCR2	CXCR2
 CXCR4	CXCR4
 (ERK1/2|ERK 1/2)	MAPK3
 (ERK1/2|ERK 1/2)	MAPK1
-(ERK )	MAPK3
-(ERK )	MAPK1
 (MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K1
 (MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K2
 MCL-1|Mcl-1	MCL1

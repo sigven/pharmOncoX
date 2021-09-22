@@ -31,6 +31,23 @@ gene_info <- as.data.frame(
     dplyr::filter(!is.na(target_ensembl_gene_id))
 )
 
+####---UniProt---####
+uniprot_map <-
+  get_uniprot_map(
+    basedir = here::here(),
+    uniprot_release = uniprot_release)
+
+ensembl2up <- uniprot_map$uniprot_map %>%
+  dplyr::filter(!is.na(uniprot_reviewed)) %>%
+  dplyr::select(ensembl_gene_id, uniprot_id) %>%
+  dplyr::rename(target_ensembl_gene_id = ensembl_gene_id,
+                target_uniprot_id = uniprot_id) %>%
+  dplyr::distinct()
+
+gene_info <- gene_info %>%
+  dplyr::left_join(ensembl2up, by = "target_ensembl_gene_id")
+
+
 nci_thesaurus_files <- list()
 nci_thesaurus_files[['flat']] <- paste0("Thesaurus_", nci_db_release,".FLAT.zip")
 nci_thesaurus_files[['owl']] <- paste0("Thesaurus_", nci_db_release,".OWL.zip")
@@ -66,9 +83,9 @@ nci_antineo_all <- get_nci_drugs(
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
-system(paste0('rm -f ',path_data_raw, "/nci_thesaurus/*.owl"))
-system(paste0('rm -f ',path_data_raw, "/nci_thesaurus/*.txt"))
-system(paste0('rm -f ',path_data_raw, "/nci_thesaurus/*.tsv"))
+#system(paste0('rm -f ',path_data_raw, "/nci_thesaurus/*.owl"))
+#system(paste0('rm -f ',path_data_raw, "/nci_thesaurus/*.txt"))
+#system(paste0('rm -f ',path_data_raw, "/nci_thesaurus/*.tsv"))
 
 ## NCI anticancer drugs (targeted) - with compound identifier (CHEMBL)
 nci_antineo_chembl <- nci_antineo_all %>%
@@ -236,6 +253,7 @@ for(i in 1:nrow(drug_target_patterns)){
   target_entrezgene <- drug_target_patterns[i, "target_entrezgene"]
   target_type <- drug_target_patterns[i, "target_type"]
   target_ensembl_gene_id <- drug_target_patterns[i, "target_ensembl_gene_id"]
+  target_uniprot_id <- drug_target_patterns[i, "target_uniprot_id"]
 
   hits <- all_inhibitors_no_target %>%
     dplyr::filter(stringr::str_detect(nci_concept_display_name,
@@ -245,16 +263,41 @@ for(i in 1:nrow(drug_target_patterns)){
     )
 
 
+
   if(nrow(hits) > 0){
-    hits$target_symbol <- target_symbol
-    hits$target_genename <- target_genename
-    hits$target_type <- target_type
-    hits$target_entrezgene <- target_entrezgene
-    hits$target_ensembl_gene_id <- target_ensembl_gene_id
-    hits$drug_clinical_source <- "nci_thesaurus_custom"
-    hits$cancer_drug <- TRUE
-    custom_nci_targeted_drugs <- custom_nci_targeted_drugs %>%
-      dplyr::bind_rows(hits)
+
+    for(n in 1:nrow(hits)){
+      hit <- hits[n,]
+
+      if(stringr::str_detect(hit$nci_concept_display_name,"mab$|monoclonal antibody")){
+        hit$drug_type <- "Antibody"
+      }else{
+        hit$drug_type <- "Small molecule"
+      }
+
+      hit$drug_action_type <- "INHIBITOR"
+      if(stringr::str_detect(
+        tolower(hit$nci_concept_display_name),
+        "antagonist")){
+        hit$drug_action_type <- "ANTAGONIST"
+      }
+      if(stringr::str_detect(
+        tolower(hit$nci_concept_display_name),
+        "blocker")){
+        hit$drug_action_type <- "BLOCKER"
+      }
+      hit$target_symbol <- target_symbol
+      hit$target_genename <- target_genename
+      hit$target_type <- target_type
+      hit$target_entrezgene <- target_entrezgene
+      hit$target_ensembl_gene_id <- target_ensembl_gene_id
+      hit$target_uniprot_id <- target_uniprot_id
+      hit$drug_clinical_source <- "nci_thesaurus_custom"
+      hit$cancer_drug <- TRUE
+      custom_nci_targeted_drugs <- custom_nci_targeted_drugs %>%
+        dplyr::bind_rows(hit)
+
+    }
   }
 }
 
@@ -289,6 +332,11 @@ all_cancer_drugs_final <-
 
 ## Add indications retrieved from DailyMed
 
+drugs2max_ct_phase <- all_cancer_drugs_final %>%
+  dplyr::filter(!is.na(drug_max_ct_phase)) %>%
+  dplyr::select(drug_name_nci, drug_max_ct_phase) %>%
+  dplyr::distinct()
+
 all_drugs2targets_no_indications <- all_cancer_drugs_final %>%
   dplyr::select(-c(cui, cui_name, disease_efo_id, disease_efo_label,
                    drug_clinical_source, drug_approved_indication,
@@ -302,6 +350,9 @@ supplemental_drug_indications <- drug_indications_dailymed %>%
   dplyr::select(-drug_name_nci) %>%
   dplyr::mutate(drug_name_nci = tolower(nci_concept_synonym_all)) %>%
   tidyr::separate_rows(drug_name_nci, sep="\\|") %>%
+  dplyr::select(-drug_max_ct_phase) %>%
+  dplyr::distinct() %>%
+  dplyr::left_join(drugs2max_ct_phase, by = "drug_name_nci") %>%
   dplyr::distinct()
 
 all_cancer_drugs_final2 <- all_cancer_drugs_final %>%
@@ -407,9 +458,11 @@ oncopharmadb <- oncopharmadb %>%
   ) %>%
   dplyr::mutate(kinase_inhibitor = dplyr::if_else(
     (!is.na(target_symbol) & stringr::str_detect(target_symbol,"EGFR|PTPN11|ABL1|FGFR|PDGFR|CSF1R")) |
-    stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist") &
+    (((!is.na(drug_action_type) &
+        stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist")) |
+       stringr::str_detect(tolower(nci_concept_display_name),"ib$")) &
       (!is.na(target_genename) &
-         stringr::str_detect(tolower(target_genename),"kinase|eph receptor")) |
+         stringr::str_detect(tolower(target_genename),"kinase|eph receptor"))) |
       (!is.na(nci_concept_definition) & stringr::str_detect(nci_concept_definition,"kinase inhibit(or|ion)")),
     TRUE,FALSE)
   ) %>%

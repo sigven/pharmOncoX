@@ -1,3 +1,9 @@
+# Version 0.5.0 (September 22nd 2021)
+
+## Added
+
+* Mapped several new targets for drugs listed in NCI thesaurus
+
 # Version 0.4.9 (September 22nd 2021)
 
 ## Fixed
