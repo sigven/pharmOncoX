@@ -1,19 +1,58 @@
 pattern	symbol
+Anti-(c|C)laudin( )?18.2	CLDN18
+Claudin18.2 Bispecific	CLDN18
+Nek2 Inhibitor	NEK2
+Hec1/Nek2	NDC80
+Fadraciclib	CDK2
+Fadraciclib	CDK5
+Fadraciclib	CDK9
+Anti-DR5	TNFRSF10B
+Anti-GARP	LRRC32
+Anti-gremlin-1	GREM1
+Anti-HGF	HGF
+Anti-integrin Beta-1	ITGB1
+Anti-integrin Beta-6	ITGB6
+Anti-LILRB2	LILRB2
+Anti-LILRB4	LILRB4
+Anti-NRP1	NRP1
+Anty-NY-ESO-1	CTAG1B
+Anti-PSMA	FOLH1
 Anti-CD19	CD19
 Anti-CD37	CD37
-Anti-Met( |/)	MET
+Anti-Met( |/)|Anti-[A-Z]{1,}/c-Met	MET
 Anti-ROR1|ROR1	ROR1
+Anti-RANKL	TNFSF11
+Anti-CD40	CD40
+Anti-CD30	TNFRSF8
+Anti-CD39	ENTPD1
+TUBB3	TUBB3
+Anti-TREM1	TREM1
+Anti-TREM2	TREM2
+ULK1/2	ULK2
+ULK1/2	ULK1
+targeting Ephrin receptor A2	EPHA2
 inhibitor of the serine-threonine kinase Aurora B	AURKB
 (KSP )	KIF11
-MMP-1,2,3,9,and 13|MMP Inhibitor	MMP1
-MMP-1,2,3,9,and 13|MMP Inhibitor	MMP2
-MMP-1,2,3,9,and 13|MMP Inhibitor	MMP3
-MMP-1,2,3,9,and 13|MMP Inhibitor	MMP9
-MMP-1,2,3,9,and 13|MMP Inhibitor	MMP13
+PI3K-alpha Inhibitor	PIK3CA
+KIF18A Inhibitor	KIF18A
+PPAR Alpha Antagonist	PPARA
+CRTH2 Antagonist	PTGDR2
+Avotaciclib	CDK1
+BRG1/BRM Inhibitor	SMARCA4
+BRG1/BRM Inhibitor	SMARCA2
+SMO Protein Inhibitor	SMO
+PTPN2 Inhibitor	PTPN2
+Hpk1 Inhibitor	MAP4K1
+Vactosertib	TGFBR1
+MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP1
+MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP2
+MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP3
+MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP9
+MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP13
 RIPK1	RIPK1
 Anti-CTLA-4|CTLA-4|Anti-CTLA4	CTLA4
 Anti-CD47|CD47	CD47
-Anti-OX40	TNFRSF4
+Anti-OX40|/OX40|Ivuxolimab|Cudarolimab|Revdofilimab|Vonlerolizumab|Tavolimab	TNFRSF4
 Anti-TROP2	TACSTD2
 JAK1/2	JAK1
 JAK1/2	JAK2
@@ -29,7 +68,8 @@ inhibitor of spleen tyrosine	SYK
 Anti-5T4	TPBG
 Anti-ENPP3	ENPP3
 Anti-EphA2	EPHA2
-Anti-ErbB3	ERBB3
+Anti-ErbB3|Anti-[A-Z]{1,}/([A-Z]{1,}[0-9]{0,}/)?HER3|Anti-HER3|Barecetamab|Istiratumab	ERBB3
+Istiratumab|IGF-1R Inhibitor	IGF1R
 Anti-CD117	KIT
 Anti-CD122	IL2RB
 Anti-CD20(-|/| )	MS4A1
@@ -37,7 +77,10 @@ Anti-MUC1(-|/| )	MUC1
 Anti-MUC16(-|/| )	MUC16
 Anti-MUC17(-|/| )	MUC17
 Anti-BTN3A	BTN3A1
-A2A Receptor|ADORA2A	ADORA2A
+Anti-CD96	CD96
+Anti-HLA-G	HLA-G
+bapotulimab	ILDR2
+A2A Receptor Antagonist|A2AR Antagonist|ADORA2A	ADORA2A
 Anti-BCL6	BCL6
 BCL2 Inhibitor	BCL2
 Adenosine A2B Receptor	ADORA2B
@@ -51,10 +94,17 @@ EBNA-1	EBNA1
 Glutaminase	GLS
 GSK-3	GSK3A
 GSK-3	GSK3B
+belvarafenib	BRAF
+belvarafenib	CRAF
+nhibitor of 6-phosphofructo-2-kinase	PFKFB3
+belumosudil binds to and inhibits	ROCK2
+protein kinase C (PKC) inhibitor	PRKCA
+protein kinase C (PKC) inhibitor	PRKCB
+ataxia telangiectasia and Rad3-	ATR
 Zotatifin	EIF4A1
 Zotatifin	EIF4A2
 Zotatifin	EIF4A3
-Sotorasib	KRAS
+Sotorasib|Pan-KRAS Inhibitor|KRAS( )?G12C Inhibitor	KRAS
 KAT6	KAT6A
 KAT6	KAT6B
 Menin-MLL	KMT2A
@@ -113,7 +163,8 @@ ALK2	ACVR1
 Bcr-Abl	ABL1
 ROS1	ROS1
 DNMT1	DNMT1
-Epidermal Growth Factor Receptor	EGFR
+Epidermal Growth Factor Receptor|Anti-[A-Za-z]{1,}[0-9]{0,}/EGFR|EGFR (.+)?Antagonist	EGFR
+Abivertinib|Alflutinib|Almonertinib|Amivantamab|Depatuxizumab|Hemay022|BPI-15086|Icotinib|Keynatinib|Lazertinib|Mavelertinib|Modotuximab|Naquotinib|Zorifertinib|Tomuzotuximab|Pimurutamab|Rezivertinib	EGFR
 Galectin-1	LGALS1
 Galectin-3	LGALS3
 CD73	CD73
@@ -177,7 +228,7 @@ MNK1/2	MKNK2
 (CDK4 )	CDK4
 CDK7	CDK7
 CDK9	CDK9
-BRAF	BRAF
+BRAF Inhibitor|pan-Raf Inhibitor|BRAFV600|(Kinase Inhibitor (ABM-1310|RO5212054))	BRAF
 (BET |BET-bromo)	BRD1
 (BET |BET-bromo)	BRD2
 (BET |BET-bromo)	BRD3
@@ -190,8 +241,7 @@ Axl/Mer	MERTK
 Inosine Monophosphate Dehydrogenase	IMPDH2
 Inosine Monophosphate Dehydrogenase	IMPDH1
 MARCKS	MARCKS
-(^EGFR| EGFR)	EGFR
-Anti-EGFR	EGFR
+Anti-EGFR|EGFR Inhibitor|(^EGFR(/)?.+ (Inhibitor|Antibody))	EGFR
 Anti-GITR	TNFRSF18
 Anti-BCMA	TNFRSF17
 Anti-CD123	IL3RA
@@ -201,12 +251,17 @@ FLT3|Flt3|Flt-3	FLT3
 AXL|Axl	AXL
 CSF1R|CSF-1R	CSF1R
 KIT|c-Kit	KIT
-VEGFR2	KDR
+Anti-VEGFR2|VEGFR2|VEGFR-2	KDR
 (VEFGR |VEGFR/)	KDR
 (VEFGR |VEGFR/)	FLT1
 (VEFGR |VEGFR/)	FLT4
 Wee1	WEE1
 Anti-CD137	TNFRSF9
+Anti-APRIL	TNFSF13
+Anti-CEACAM6	CEACAM6
+Anti-FOXP3	FOXP3
+Anti-PVRIG	PVRIG
+Anti-ICOS	ICOS
 (PI3K Alpha)	PIK3CA
 PI3K-delta	PIK3CD
 (PI3K/PI3K |Phosphatidylinositide 3-Kinase|pan-PI3K)	PIK3CA
@@ -222,10 +277,12 @@ PDGFR	PDGFRB
 MDM2	MDM2
 IDH1	IDH1
 IDH2	IDH2
+xevinapant	XIAP
+xevinapant	BIRC2
+xevinapant	BIRC3
 IDO1|IDO-1	IDO1
 (TDO|TDO2)	TDO2
 (JAK1 )	JAK1
-(KRAS)	KRAS
 LRP5	LRP5
 (LRP5/6)	LRP5
 (LRP5/6)	LRP6
@@ -241,13 +298,19 @@ polymerase \\(PARP\\)	PARP2
 PARP 1, 2 and 3 inhibitor	PARP1
 PARP 1, 2 and 3 inhibitor	PARP2
 PARP 1, 2 and 3 inhibitor	PARP3
-(PD-L1)	CD274
-(PD1)	PDCD1
-Anti-PD-1|PD-1	PDCD1
-Anti-PD-L1|PD-L1	CD274
-Anti-LAG-3|LAG-3	LAG3
+Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab	CD274
+Geptanolimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1	
+Anti-LAG-3/PD-L1	CD274
+Anti-PD-1	PDCD1
+Anti-PD-L1	CD274
+PD-L1 Inhibitor	CD274
+Chk2 Inhibitor	CHEK2
+Class 1/4 Histone Deacetylase Inhibitor	HDAC1
+Class 1/4 Histone Deacetylase Inhibitor	HDAC4
+Anti-LAG-3|LAG-3|LAG3|Anti-LAG3	LAG3
 Anti-TIGIT|TIGIT	TIGIT
-Anti-TIM-3|HAVCR2	HAVCR2
+Anti-TIM(-)?3|HAVCR2	HAVCR2
+Anti-SIRPa	SIRPA
 (BRD4 )	BRD4
 (BTK )	BTK
 (PRMT1)	PRMT1
@@ -268,10 +331,11 @@ STAT3	STAT3
 (CXCR1/2)	CXCR2
 CXCR2	CXCR2
 CXCR4	CXCR4
+PERK Inhibitor	EIF2AK3
 (ERK1/2|ERK 1/2)	MAPK3
 (ERK1/2|ERK 1/2)	MAPK1
-(MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K1
-(MEK 1/2|MEK |MEK/|Mitogen-Activated Protein Kinase)	MAP2K2
+(MEK 1/2|MEK (I|i)nhibitor|inhibitor of mitogen-activated protein kinase)	MAP2K1
+(MEK 1/2|MEK (I|i)nhibitor|inhibitor of mitogen-activated protein kinase)	MAP2K2
 MCL-1|Mcl-1	MCL1
 EZH1/2	EZH1
 EZH1/2	EZH2
