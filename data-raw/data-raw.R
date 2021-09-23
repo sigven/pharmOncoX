@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20210921'
+pharmamine_datestamp <- '20210922'
 nci_db_release <- '21.08e'
 chembl_db_release <- 'ChEMBL_29'
 opentargets_version <- '2021.06'
@@ -232,7 +232,7 @@ drug_target_patterns <-
     path_data_raw,
     "custom_drug_target_regex_nci.tsv"),
     sep = "\t", header = T, stringsAsFactors = F, quote = "") %>%
-  dplyr::inner_join(gene_info) %>%
+  dplyr::inner_join(gene_info, by = "symbol") %>%
   dplyr::distinct()
 
 
@@ -258,7 +258,7 @@ for(i in 1:nrow(drug_target_patterns)){
   hits <- all_inhibitors_no_target %>%
     dplyr::filter(stringr::str_detect(nci_concept_display_name,
                                       pattern = pattern) |
-                    (stringr::str_detect(nci_concept_display_name,"ib$|mab$|mab/") &
+                    (stringr::str_detect(nci_concept_display_name,"^(Inhibitor of|Anti-)|ib$|Inhibitor|targeting|ine$|ate$|ide$|mab$|antibody|ant$|mab/") &
                     stringr::str_detect(nci_concept_definition, pattern))
     )
 
@@ -307,8 +307,11 @@ all_cancer_drugs_final <-
   dplyr::bind_rows(custom_nci_targeted_drugs) %>%
   dplyr::arrange(target_symbol, nci_concept_display_name) %>%
   dplyr::mutate(drug_action_type = dplyr::if_else(
-    stringr::str_detect(tolower(nci_concept_display_name),"inhibitor") &
-      is.na(drug_action_type),
+    (stringr::str_detect(tolower(nci_concept_display_name),"inhibitor") &
+      is.na(drug_action_type)) |
+      (!is.na(nci_concept_display_name) &
+      stringr::str_detect(nci_concept_display_name,"mab$") &
+        is.na(drug_action_type)),
     "INHIBITOR",
     as.character(drug_action_type))) %>%
   dplyr::mutate(cancer_drug = dplyr::if_else(
@@ -406,12 +409,14 @@ oncopharmadb <- oncopharmadb %>%
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(hdac_inhibitor = dplyr::if_else(
-    !is.na(target_symbol) &
+    (!is.na(target_symbol) &
       stringr::str_detect(
         target_symbol,
-        "^HDAC") |
-      !is.na(nci_concept_definition) &
-      stringr::str_detect(nci_concept_definition,"inhibitor of histone deacetylase"),
+        "^HDAC")) |
+      (!is.na(nci_concept_definition) &
+      stringr::str_detect(nci_concept_definition,"inhibitor of histone deacetylase")) |
+      (!is.na(nci_concept_display_name) &
+         stringr::str_detect(nci_concept_display_name,"HDAC Inhibitor")),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(alkylating_agent = dplyr::if_else(
@@ -514,7 +519,7 @@ oncopharmadb <- oncopharmadb %>%
       (stringr::str_detect(nci_concept_display_name,
                           "Tremelimumab|Milatuzumab")) |
       (!is.na(target_symbol) & (target_symbol == "CD274" |
-      target_symbol == "CTLA4" | target_symbol == "PDCD1")) |
+      target_symbol == "CTLA4" | target_symbol == "PDCD1" | target_symbol == "TIGIT")) |
       (!is.na(nci_concept_definition) & !is.na(target_symbol) &
          stringr::str_detect(nci_concept_definition,
                           "immunemodulating|immune response") &

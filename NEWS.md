@@ -1,3 +1,9 @@
+# Version 0.5.1 (September 23rd 2021)
+
+## Added
+
+* Improved mapping of drug targets for drugs (monoclonal antibodies, kinase inhibitors etc.) listed solely in NCI thesaurus
+
 # Version 0.5.0 (September 22nd 2021)
 
 ## Added
@@ -18,28 +24,3 @@
 
 * Fixed bug related to missing drug indications (cancer types)
 * Updated oncoPhenoMap
-
-# Version 0.4.7 (August 23rd 2021)
-
-## Added
-
-* New drug classes: _anthracycline_ and _hedgehog_antagonist_
-* Possibility to show extensive or narrow output annotations per drug record (argument _output_style_)
-* Improved argument checks
-
-# Version 0.4.6 (August 21st 2021)
-
-## Added
-
-* Altered name for main function: _get_onco_drugs_
-* Possibility to show extensive or narrow output annotations per drug record (argument _output_style_)
-* Improved argument checks
-
-# Version 0.4.5 (August 19th 2021)
-
-## Added
-
-* Added 14 provisional drug categories, as logical variables pr. drug, e.g.
-  _bet_inhibitor_ (TRUE/FALSE), _immune_checkpoint_inhibitor_ (TRUE/FALSE),
-  _antimetabolite_ (TRUE/FALSE) etc. Note that categories are not necessarily
-  mutually exclusive. 
