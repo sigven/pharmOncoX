@@ -164,7 +164,7 @@ Bcr-Abl	ABL1
 ROS1	ROS1
 DNMT1	DNMT1
 Epidermal Growth Factor Receptor|Anti-[A-Za-z]{1,}[0-9]{0,}/EGFR|EGFR (.+)?Antagonist	EGFR
-Abivertinib|Alflutinib|Almonertinib|Amivantamab|Depatuxizumab|Hemay022|BPI-15086|Icotinib|Keynatinib|Lazertinib|Mavelertinib|Modotuximab|Naquotinib|Zorifertinib|Tomuzotuximab|Pimurutamab|Rezivertinib	EGFR
+Abivertinib|Alflutinib|Almonertinib|PD-168393|Amivantamab|Depatuxizumab|Hemay022|BPI-15086|Icotinib|Keynatinib|Lazertinib|Mavelertinib|Modotuximab|Naquotinib|Zorifertinib|Tomuzotuximab|Pimurutamab|Rezivertinib	EGFR
 Galectin-1	LGALS1
 Galectin-3	LGALS3
 CD73	CD73
@@ -298,7 +298,7 @@ polymerase \\(PARP\\)	PARP2
 PARP 1, 2 and 3 inhibitor	PARP1
 PARP 1, 2 and 3 inhibitor	PARP2
 PARP 1, 2 and 3 inhibitor	PARP3
-Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab	CD274
+Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab	CD274
 Geptanolimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1	
 Anti-LAG-3/PD-L1	CD274
 Anti-PD-1	PDCD1

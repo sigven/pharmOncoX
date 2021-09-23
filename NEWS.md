@@ -1,3 +1,9 @@
+# Version 0.5.2.1 (September 23rd 2021)
+
+## Added
+
+* Debugging immune checkpoint inhibitor targets from NCI drugs (CTLA4, PD-1, PD-L1)
+
 # Version 0.5.1 (September 23rd 2021)
 
 ## Added
