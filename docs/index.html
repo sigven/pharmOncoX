@@ -35,7 +35,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
       </span>
     </div>
 
@@ -135,6 +135,10 @@
 <li>
 <p>Get immune checkpoint inhibitors, list per drug-target entry</p>
 <p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T, output_resolution = "drug2target", output_style = "narrow")</code></p>
+</li>
+<li>
+<p>Get immune checkpoint inhibitors indicated for tumor subtypes within “Colon/Rectum”, list per drug-target entry</p>
+<p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T, output_resolution = "drug2target", disease_indication_main = "Colon/Rectum", output_style = "narrow")</code></p>
 </li>
 <li>
 <p>Get antimetabolites</p>

@@ -5,6 +5,7 @@
 This R package provides a dataset and method to query targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. The dataset is largely based on drug-target-indication associations provided by the [Open Targets Platform](https://targetvalidation.org) ([Ochoa et al., Nucleic Acids Res., 2021](https://doi.org/10.1093/nar/gkaa1027)), and where we have limited the associations to cancer-relevant indications only (as provided in [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap)). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), where we append non-targeted cancer drugs (chemotherapies etc.) and different drug regimens. 
 
 Anti-cancer drugs are currently provided with the following tentative drug categories/types (not necessarily mutually exclusive), indicative of their mechanism-of-action:
+
 * Alkylating agents
 * Angiogenesis inhibitors
 * Anthracyclines
@@ -74,7 +75,12 @@ install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")
    `drugs <- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T,
    output_resolution = "drug2target", output_style = "narrow")`
    
-7. Get antimetabolites
+7. Get immune checkpoint inhibitors indicated for tumor subtypes within "Colon/Rectum", list per drug-target entry
+
+   `drugs <- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T,
+   output_resolution = "drug2target", disease_indication_main = "Colon/Rectum", output_style = "narrow")`
+   
+8. Get antimetabolites
 
    `drugs <- oncoPharmaDB::get_onco_drugs(is_antimetabolite = T,
    output_resolution = "drug")`

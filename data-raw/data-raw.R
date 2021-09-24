@@ -546,6 +546,25 @@ oncopharmadb <- oncopharmadb %>%
                 drug_action_type, molecule_chembl_id, drug_moa,
                 drug_max_phase_indication, dplyr::everything())
 
+
+drug_max_ct_phase <- as.data.frame(
+  oncopharmadb %>%
+    dplyr::select(nci_concept_display_name, drug_max_ct_phase) %>%
+    dplyr::group_by(nci_concept_display_name) %>%
+    dplyr::summarise(drug_max_ct_phase = max(drug_max_ct_phase))
+)
+
+oncopharmadb$drug_max_ct_phase <- NULL
+oncopharmadb <- oncopharmadb %>%
+  dplyr::left_join(drug_max_ct_phase,
+                   by = "nci_concept_display_name") %>%
+  dplyr::select(drug_name, nci_concept_display_name, drug_type,
+                drug_action_type, molecule_chembl_id, drug_moa,
+                drug_max_phase_indication, drug_max_ct_phase,
+                dplyr::everything())
+
+
+
 usethis::use_data(oncopharmadb, overwrite = T)
 
 rm(all_cancer_drugs)

@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.3</span>
       </span>
     </div>
 
@@ -109,12 +109,31 @@
       
     </div>
 
-    <div id="version-0521-september-23rd-2021" class="section level1">
-<h1 class="page-header" data-toc-text="0.5.2.1">
-<a href="#version-0521-september-23rd-2021" class="anchor"></a>Version 0.5.2.1 (September 23rd 2021)</h1>
+    <div id="version-053-september-24th-2021" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.3">
+<a href="#version-053-september-24th-2021" class="anchor"></a>Version 0.5.3 (September 24th 2021)</h1>
 <div id="added" class="section level2">
 <h2 class="hasAnchor">
 <a href="#added" class="anchor"></a>Added</h2>
+<ul>
+<li>Added multiple warnings in output when conditions result in zero drug record hits</li>
+<li>Added argument ‘disease_indication_main’, to retrieve drugs indicated for given tumor type(s)</li>
+<li>When <em>output_resolution</em> is <strong>drug</strong> or <strong>drug2target</strong>, each record is appended with the following info:
+<ul>
+<li>disease_indication (list of tumor subtypes within each <em>primary_site</em> that are indicated for the drug)</li>
+<li>disease_indication_max_phase (maximum phase for the indications.. random order (currently not optimal))</li>
+<li>disease_main_group (list of primary tumors/tissues indicated for drug, i.e. <em>primary_site</em>)</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+    <div id="version-0521-september-23rd-2021" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.2.1">
+<a href="#version-0521-september-23rd-2021" class="anchor"></a>Version 0.5.2.1 (September 23rd 2021)</h1>
+<div id="added-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#added-1" class="anchor"></a>Added</h2>
 <ul>
 <li>Debugging immune checkpoint inhibitor targets from NCI drugs (CTLA4, PD-1, PD-L1)</li>
 </ul>
@@ -123,9 +142,9 @@
     <div id="version-051-september-23rd-2021" class="section level1">
 <h1 class="page-header" data-toc-text="0.5.1">
 <a href="#version-051-september-23rd-2021" class="anchor"></a>Version 0.5.1 (September 23rd 2021)</h1>
-<div id="added-1" class="section level2">
+<div id="added-2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#added-1" class="anchor"></a>Added</h2>
+<a href="#added-2" class="anchor"></a>Added</h2>
 <ul>
 <li>Improved mapping of drug targets for drugs (monoclonal antibodies, kinase inhibitors etc.) listed solely in NCI thesaurus</li>
 </ul>
@@ -134,9 +153,9 @@
     <div id="version-050-september-22nd-2021" class="section level1">
 <h1 class="page-header" data-toc-text="0.5.0">
 <a href="#version-050-september-22nd-2021" class="anchor"></a>Version 0.5.0 (September 22nd 2021)</h1>
-<div id="added-2" class="section level2">
+<div id="added-3" class="section level2">
 <h2 class="hasAnchor">
-<a href="#added-2" class="anchor"></a>Added</h2>
+<a href="#added-3" class="anchor"></a>Added</h2>
 <ul>
 <li>Mapped several new targets for drugs listed in NCI thesaurus</li>
 </ul>
