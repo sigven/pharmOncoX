@@ -86,6 +86,10 @@ install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")
    output_resolution = "drug")`
 
 
-#### Contact
+### Contact
 
 sigven AT ifi.uio.no
+
+### Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoPharmaDB/blob/master/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
