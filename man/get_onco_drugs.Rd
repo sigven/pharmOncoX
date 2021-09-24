@@ -9,10 +9,11 @@ get_onco_drugs(
   drug_is_approved = F,
   drug_target = NULL,
   drug_action_type = NULL,
+  drug_indication_main = NULL,
   source_opentargets_only = F,
   drug_has_blackbox_warning = F,
   drug_approved_later_than = 1939,
-  drug_minimum_max_phase_any_indication = 0,
+  drug_minimum_phase_any_indication = 0,
   list_per_drug_synonym = F,
   output_resolution = "drug2target2indication",
   output_style = "extensive",
@@ -45,13 +46,19 @@ get_onco_drugs(
 possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
 "STABILISER","CROSS-LINKING AGENT",DISRUPTING AGENT","OTHER"}
 
+\item{drug_indication_main}{character vector with main tumor types for which drug(s) are indicated
+possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","Breast","Cervix","CNS/Brain",
+"Colon/Rectum","Esophagus/Stomach","Eye","Head and Neck","Kidney","Liver","Lung","Lymphoid","Myeloid","Ovary/Fallopian Tube",
+"Pancreas","Penis","Peripheral Nervous System","Peritoneum","Pleura","Prostate","Skin","Soft Tissue","Testis","Thymus",
+"Thyroid","Uterus","Vulva/Vagina"}
+
 \item{source_opentargets_only}{logical indicating if resulting drug records should contain drug records from Open Targets Platform only}
 
 \item{drug_has_blackbox_warning}{logical indicating if resulting drug records should contain drugs with black box warnings only}
 
 \item{drug_approved_later_than}{only include records for drugs approved later than this date (year)}
 
-\item{drug_minimum_max_phase_any_indication}{only include drug records that are in a clinical phase (any indication) greater or equal than this phase}
+\item{drug_minimum_phase_any_indication}{only include drug records that are in a clinical phase (any indication) greater or equal than this phase}
 
 \item{list_per_drug_synonym}{list resulting drug records per drug synonym}
 

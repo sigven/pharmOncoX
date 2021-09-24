@@ -120,10 +120,11 @@
   drug_is_approved <span class='op'>=</span> <span class='cn'>F</span>,
   drug_target <span class='op'>=</span> <span class='cn'>NULL</span>,
   drug_action_type <span class='op'>=</span> <span class='cn'>NULL</span>,
+  drug_indication_main <span class='op'>=</span> <span class='cn'>NULL</span>,
   source_opentargets_only <span class='op'>=</span> <span class='cn'>F</span>,
   drug_has_blackbox_warning <span class='op'>=</span> <span class='cn'>F</span>,
   drug_approved_later_than <span class='op'>=</span> <span class='fl'>1939</span>,
-  drug_minimum_max_phase_any_indication <span class='op'>=</span> <span class='fl'>0</span>,
+  drug_minimum_phase_any_indication <span class='op'>=</span> <span class='fl'>0</span>,
   list_per_drug_synonym <span class='op'>=</span> <span class='cn'>F</span>,
   output_resolution <span class='op'>=</span> <span class='st'>"drug2target2indication"</span>,
   output_style <span class='op'>=</span> <span class='st'>"extensive"</span>,
@@ -167,6 +168,14 @@ possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVA
 "STABILISER","CROSS-LINKING AGENT",DISRUPTING AGENT","OTHER"</p></td>
     </tr>
     <tr>
+      <th>drug_indication_main</th>
+      <td><p>character vector with main tumor types for which drug(s) are indicated
+possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","Breast","Cervix","CNS/Brain",
+"Colon/Rectum","Esophagus/Stomach","Eye","Head and Neck","Kidney","Liver","Lung","Lymphoid","Myeloid","Ovary/Fallopian Tube",
+"Pancreas","Penis","Peripheral Nervous System","Peritoneum","Pleura","Prostate","Skin","Soft Tissue","Testis","Thymus",
+"Thyroid","Uterus","Vulva/Vagina"</p></td>
+    </tr>
+    <tr>
       <th>source_opentargets_only</th>
       <td><p>logical indicating if resulting drug records should contain drug records from Open Targets Platform only</p></td>
     </tr>
@@ -179,7 +188,7 @@ possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVA
       <td><p>only include records for drugs approved later than this date (year)</p></td>
     </tr>
     <tr>
-      <th>drug_minimum_max_phase_any_indication</th>
+      <th>drug_minimum_phase_any_indication</th>
       <td><p>only include drug records that are in a clinical phase (any indication) greater or equal than this phase</p></td>
     </tr>
     <tr>

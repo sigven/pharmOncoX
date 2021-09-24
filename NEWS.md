@@ -1,3 +1,15 @@
+# Version 0.5.3 (September 24th 2021)
+
+## Added
+
+* Added multiple warnings in output when conditions result in zero drug record hits
+* Added argument 'disease_indication_main', to retrieve drugs indicated for given tumor type(s)
+* When *output_resolution* is **drug** or **drug2target**, each record is appended with the following info:
+  * disease_indication (list of tumor subtypes within each *primary_site* that are indicated for the drug)
+  * disease_indication_max_phase (maximum phase for the indications.. random order (currently not optimal))
+  * disease_main_group (list of primary tumors/tissues indicated for drug, i.e. *primary_site*)
+
+
 # Version 0.5.2.1 (September 23rd 2021)
 
 ## Added
