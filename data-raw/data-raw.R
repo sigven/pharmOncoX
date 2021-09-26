@@ -397,15 +397,18 @@ oncopharmadb <- oncopharmadb %>%
       stringr::str_detect(
         nci_concept_definition,
         "(T|t)opoisomerase II-mediated|(T|t)opoisomerase( I|II )? \\(.*\\) inhibitor|inhibit(ion|or) of (T|t)opoisomerase|(stabilizes|interrupts|binds to|interacts with|inhibits( the activity of)?)( the)?( DNA)? (t|T)opoisomerase|(T|t)opoisomerase( (I|II))? inhibitor")) |
-      (!is.na(target_genename) & stringr::str_detect(target_genename,"topoisomerase")),TRUE,FALSE)
+      (!is.na(target_genename) &
+         stringr::str_detect(target_genename,"topoisomerase")),TRUE,FALSE)
   ) %>%
   dplyr::mutate(hedgehog_antagonist = dplyr::if_else(
     (!is.na(nci_concept_definition) &
        stringr::str_detect(
          nci_concept_definition,
-         "Hedgehog") & stringr::str_detect(nci_concept_display_name,"Smoothened Antagonist|(ate|ib)$")) |
+         "Hedgehog") & stringr::str_detect(
+           nci_concept_display_name,"Smoothened Antagonist|(ate|ib)$")) |
       (!is.na(nci_concept_display_name) &
-         stringr::str_detect(nci_concept_display_name,"Hedgehog Inhibitor|SMO Protein Inhibitor")),
+         stringr::str_detect(
+           nci_concept_display_name,"Hedgehog Inhibitor|SMO Protein Inhibitor")),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(hdac_inhibitor = dplyr::if_else(
@@ -440,7 +443,8 @@ oncopharmadb <- oncopharmadb %>%
         target_symbol,
         "^BRD(T|[1-9]{1})") |
       (!is.na(nci_concept_display_name) &
-      stringr::str_detect(nci_concept_display_name,"BET( Bromodomain)? Inhibitor")),TRUE,FALSE)
+      stringr::str_detect(
+        nci_concept_display_name,"BET( Bromodomain)? Inhibitor")),TRUE,FALSE)
   ) %>%
   dplyr::mutate(tubulin_inhibitor = dplyr::if_else(
     (!is.na(drug_action_type) &
@@ -468,21 +472,27 @@ oncopharmadb <- oncopharmadb %>%
        stringr::str_detect(tolower(nci_concept_display_name),"ib$")) &
       (!is.na(target_genename) &
          stringr::str_detect(tolower(target_genename),"kinase|eph receptor"))) |
-      (!is.na(nci_concept_definition) & stringr::str_detect(nci_concept_definition,"kinase inhibit(or|ion)")),
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(nci_concept_definition,"kinase inhibit(or|ion)")),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(angiogenesis_inhibitor = dplyr::if_else(
     stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist") &
-      (!is.na(nci_concept_display_name) & stringr::str_detect(tolower(nci_concept_display_name), "antiangiogenic|angiogenesis inhibitor")) |
+      (!is.na(nci_concept_display_name) &
+         stringr::str_detect(tolower(nci_concept_display_name),
+                             "antiangiogenic|angiogenesis inhibitor")) |
       (!is.na(nci_concept_definition) &
-         stringr::str_detect(tolower(nci_concept_definition),"antiangiogenic activities|angiogenesis inhibitor|(inhibiting|blocking)( tumor)? angiogenesis|anti(-)?angiogenic|(inhibits|((inhibition|reduction) of))( .*) angiogenesis")),
+         stringr::str_detect(
+           tolower(nci_concept_definition),
+           "antiangiogenic activities|angiogenesis inhibitor|(inhibiting|blocking)( tumor)? angiogenesis|anti(-)?angiogenic|(inhibits|((inhibition|reduction) of))( .*) angiogenesis")),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(monoclonal_antibody = dplyr::if_else(
-    stringr::str_detect(tolower(nci_concept_display_name),
+    (!is.na(drug_type) & drug_type == "Antibody") |
+    (stringr::str_detect(tolower(nci_concept_display_name),
                         "^anti-|mab |mab$|monoclonal antibody") &
       (!is.na(nci_concept_definition) &
-      stringr::str_detect(nci_concept_definition,"monoclonal antibody")),
+      stringr::str_detect(nci_concept_definition,"monoclonal antibody"))),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(proteasome_inhibitor = dplyr::if_else(
