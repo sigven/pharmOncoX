@@ -1,3 +1,13 @@
+# Version 0.5.4 (September 29th 2021)
+
+## Fixed
+
+* Bug in assignment of drug categories (some drugs were assigned ambiguous categories)
+
+## Added
+
+* Data update: NCI Thesaurus version 21.09d
+
 # Version 0.5.3 (September 24th 2021)
 
 ## Added
