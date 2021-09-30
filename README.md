@@ -78,7 +78,7 @@ install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")
 7. Get immune checkpoint inhibitors indicated for tumor subtypes within "Colon/Rectum", list per drug-target entry
 
    `drugs <- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T,
-   output_resolution = "drug2target", disease_indication_main = "Colon/Rectum", output_style = "narrow")`
+   output_resolution = "drug2target", drug_indication_main = "Colon/Rectum", output_style = "narrow")`
    
 8. Get antimetabolites
 
