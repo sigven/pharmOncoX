@@ -23,9 +23,9 @@ Anti-cancer drugs are currently provided with the following tentative drug categ
 * Topoisomerase inhibitors
 * Tubulin inhibitors
 
-Currently (as of September 29th 2021), the following versions are used to create the mapping:
+Currently (as of September 30th 2021), the following versions are used to create the mapping:
 
- - Open Targets Platform (2021.06)
+ - Open Targets Platform (2021.09)
  - ChEMBL (v29)
  - NCI Thesaurus (21.09d)
 

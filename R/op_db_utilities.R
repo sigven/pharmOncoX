@@ -690,7 +690,7 @@ get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2021.06",
+           ot_version = "2021.09",
            uniprot_release = "2021_03"){
 
   phenotype_cancer_efo <- oncoPhenoMap::auxiliary_maps$umls$concept %>%

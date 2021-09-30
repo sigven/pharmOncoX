@@ -1,3 +1,7 @@
+# Version 0.6.0 (September 30th 2021)
+
+* Data update: Open Targets Platform (2021.09)
+
 # Version 0.5.4 (September 29th 2021)
 
 ## Fixed
