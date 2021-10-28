@@ -1,3 +1,19 @@
+# Version 0.6.1 (October 28th 2021)
+
+* Data update: NCI Thesaurus (21.10d)
+* Removed some redundant/non-informative columns of main data frame (**oncopharmadb**)
+  * `target_chembl_id`
+  * `drug_synonyms`
+  * `drug_description`
+  * `drug_moa`
+  * `drug_tradenames`
+  * `cancer_drug`
+* Documented exported data objects (**oncopharmadb** and **oncopharma_synonyms**)
+* Annotated gonadotropin releasing hormone analogues with *hormone_therapy*  label
+* Added *platinum_compound* as a dedicated drug category (and as a column in **oncopharmadb**) 
+  * New argument `is_platinum_compound` to `get_onco_drugs()`
+
+
 # Version 0.6.0 (September 30th 2021)
 
 * Data update: Open Targets Platform (2021.09)

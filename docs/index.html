@@ -35,7 +35,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -108,15 +108,16 @@
 <li>Kinase inhibitors</li>
 <li>Monoclonal antibodies</li>
 <li>PARP inhibitors</li>
+<li>Platinum compounds</li>
 <li>Proteasome inhibitors</li>
 <li>Topoisomerase inhibitors</li>
 <li>Tubulin inhibitors</li>
 </ul>
-<p>Currently (as of September 30th 2021), the following versions are used to create the mapping:</p>
+<p>Currently (as of October 28th 2021), the following versions are used to create the mapping:</p>
 <ul>
 <li>Open Targets Platform (2021.09)</li>
 <li>ChEMBL (v29)</li>
-<li>NCI Thesaurus (21.09d)</li>
+<li>NCI Thesaurus (21.10d)</li>
 </ul>
 </div>
 <div id="installation--usage" class="section level4">
@@ -158,7 +159,7 @@
 </li>
 <li>
 <p>Get immune checkpoint inhibitors indicated for tumor subtypes within “Colon/Rectum”, list per drug-target entry</p>
-<p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T, output_resolution = "drug2target", disease_indication_main = "Colon/Rectum", output_style = "narrow")</code></p>
+<p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(is_immune_checkpoint_inhibitor = T, output_resolution = "drug2target", drug_indication_main = "Colon/Rectum", output_style = "narrow")</code></p>
 </li>
 <li>
 <p>Get antimetabolites</p>

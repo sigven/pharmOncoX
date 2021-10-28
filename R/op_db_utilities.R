@@ -1607,7 +1607,6 @@ get_dailymed_drug_indications <- function(update = F,
                   indication) %>%
     dplyr::filter(!is.na(indication)) %>%
     dplyr::inner_join(tmp, by = c("xml_fname", "indication")) %>%
-    #dplyr::select(-c(xml_fname, indication)) %>%
     dplyr::distinct()
 
   dm_drugs_with_mapped_indications2 <- all_drug_indications %>%

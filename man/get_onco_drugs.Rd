@@ -30,6 +30,7 @@ get_onco_drugs(
   is_kinase_inhibitor = F,
   is_monoclonal_antibody = F,
   is_parp_inhibitor = F,
+  is_platinum_compound = F,
   is_proteasome_inhibitor = F,
   is_topoisomerase_inhibitor = F,
   is_tubulin_inhibitor = F
@@ -91,6 +92,8 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
 \item{is_monoclonal_antibody}{logical indicating if only this drug class is wanted}
 
 \item{is_parp_inhibitor}{logical indicating if only this drug class is wanted}
+
+\item{is_platinum_compound}{logical indicating if only this drug class is wanted}
 
 \item{is_proteasome_inhibitor}{logical indicating if only this drug class is wanted}
 

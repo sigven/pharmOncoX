@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -158,6 +158,7 @@
   is_kinase_inhibitor <span class='op'>=</span> <span class='cn'>F</span>,
   is_monoclonal_antibody <span class='op'>=</span> <span class='cn'>F</span>,
   is_parp_inhibitor <span class='op'>=</span> <span class='cn'>F</span>,
+  is_platinum_compound <span class='op'>=</span> <span class='cn'>F</span>,
   is_proteasome_inhibitor <span class='op'>=</span> <span class='cn'>F</span>,
   is_topoisomerase_inhibitor <span class='op'>=</span> <span class='cn'>F</span>,
   is_tubulin_inhibitor <span class='op'>=</span> <span class='cn'>F</span>
@@ -270,6 +271,10 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
     </tr>
     <tr>
       <th>is_parp_inhibitor</th>
+      <td><p>logical indicating if only this drug class is wanted</p></td>
+    </tr>
+    <tr>
+      <th>is_platinum_compound</th>
       <td><p>logical indicating if only this drug class is wanted</p></td>
     </tr>
     <tr>

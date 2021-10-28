@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.1</span>
       </span>
     </div>
 
@@ -126,6 +126,31 @@
       <small>Source: <a href='https://github.com/sigven/oncoPharmaDB/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="version-061-october-28th-2021" class="section level1">
+<h1 class="page-header" data-toc-text="0.6.1">
+<a href="#version-061-october-28th-2021" class="anchor"></a>Version 0.6.1 (October 28th 2021)</h1>
+<ul>
+<li>Data update: NCI Thesaurus (21.10d)</li>
+<li>Removed some redundant/non-informative columns of main data frame (<strong>oncopharmadb</strong>)
+<ul>
+<li><code>target_chembl_id</code></li>
+<li><code>drug_synonyms</code></li>
+<li><code>drug_description</code></li>
+<li><code>drug_moa</code></li>
+<li><code>drug_tradenames</code></li>
+<li><code>cancer_drug</code></li>
+</ul>
+</li>
+<li>Documented exported data objects (<strong>oncopharmadb</strong> and <strong>oncopharma_synonyms</strong>)</li>
+<li>Annotated gonadotropin releasing hormone analogues with <em>hormone_therapy</em> label</li>
+<li>Added <em>platinum_compound</em> as a dedicated drug category (and as a column in <strong>oncopharmadb</strong>)
+<ul>
+<li>New argument <code>is_platinum_compound</code> to <code><a href="../reference/get_onco_drugs.html">get_onco_drugs()</a></code>
+</li>
+</ul>
+</li>
+</ul>
+</div>
     <div id="version-060-september-30th-2021" class="section level1">
 <h1 class="page-header" data-toc-text="0.6.0">
 <a href="#version-060-september-30th-2021" class="anchor"></a>Version 0.6.0 (September 30th 2021)</h1>

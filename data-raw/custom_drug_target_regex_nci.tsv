@@ -6,6 +6,9 @@ Hec1/Nek2	NDC80
 Fadraciclib	CDK2
 Fadraciclib	CDK5
 Fadraciclib	CDK9
+Narsoplimab	MASP2
+Neihulizumab	SELPLG
+Nidanilimab	IL1RAP
 Anti-DR5	TNFRSF10B
 Anti-GARP	LRRC32
 Anti-gremlin-1	GREM1
@@ -118,7 +121,14 @@ Anti-IL17A	IL17A
 Anti-ILT2	LILRB1
 Anti-ILT4	LILRB2
 Anti-LAMP1	LAMP1
-TGF-beta 1|TGFb1	TGFB1
+TGF-beta 1|TGFb1|Anti-TGF-beta Monoclonal	TGFB1
+Anti-TGF-beta RII	TGFBR2
+Mobocertinib|Befotertinib	EGFR
+Karonudib	NUDT1
+Empesertib	TTK
+Amdizalisib	PIK3CD
+Razuprotafib	PTPRB
+Zunsemetinib	MAP2K2
 Anti-CCR8	CCR8
 Anti-CCR7	CCR7
 interleukin-13|IL-13	IL13
@@ -229,12 +239,22 @@ MNK1/2	MKNK2
 CDK7	CDK7
 CDK9	CDK9
 BRAF Inhibitor|pan-Raf Inhibitor|BRAFV600|(Kinase Inhibitor (ABM-1310|RO5212054))	BRAF
-(BET |BET-bromo)	BRD1
-(BET |BET-bromo)	BRD2
-(BET |BET-bromo)	BRD3
-(BET |BET-bromo)	BRD4
+(BET |BET-bromo|Mivebresib)	BRD1
+(BET |BET-bromo|Mivebresib)	BRD2
+(BET |BET-bromo|Mivebresib)	BRD3
+(BET |BET-bromo|Mivebresib)	BRD4
 (ATM )	ATM
+Apomab	TNFRSF10B
+Astegolimab	ST2
+Burosumab	FGF23
 BCL-2|Bcl-2	BCL2
+Empesertib	MPS1
+Enavatuzumab	TNFRSF12A
+Enokizumab	IL9
+Enoticumab	DLL4
+Ertiprotafib	PTPN1
+Ertiprotafib	PPARA
+Ertiprotafib	PPARG
 Axl/Mer	MERTK
 (Hsp90|HSP90|Heat Shock Protein)	HSP90AA1
 (Hsp90|HSP90|Heat Shock Protein)	HSP90AB1

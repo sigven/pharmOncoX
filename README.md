@@ -19,15 +19,16 @@ Anti-cancer drugs are currently provided with the following tentative drug categ
 * Kinase inhibitors
 * Monoclonal antibodies
 * PARP inhibitors
+* Platinum compounds
 * Proteasome inhibitors
 * Topoisomerase inhibitors
 * Tubulin inhibitors
 
-Currently (as of September 30th 2021), the following versions are used to create the mapping:
+Currently (as of October 28th 2021), the following versions are used to create the mapping:
 
  - Open Targets Platform (2021.09)
  - ChEMBL (v29)
- - NCI Thesaurus (21.09d)
+ - NCI Thesaurus (21.10d)
 
 
 #### Installation & Usage

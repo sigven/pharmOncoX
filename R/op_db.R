@@ -18,23 +18,23 @@
 #' @param output_style comprehensiveness of drug records ('extensive' - all annotations, 'narrow' - main annotations)
 #' @param output_resolution output record resolution ('drug','drug2target','drug2target2indication')
 #' @param list_per_drug_synonym list resulting drug records per drug synonym
-#' @param is_immune_checkpoint_inhibitor logical indicating if only this drug class is wanted
-#' @param is_hdac_inhibitor logical indicating if only this drug class is wanted
-#' @param is_bet_inhibitor logical indicating if only this drug class is wanted
-#' @param is_topoisomerase_inhibitor logical indicating if only this drug class is wanted
-#' @param is_hormone_therapy logical indicating if only this drug class is wanted
-#' @param is_antimetabolite logical indicating if only this drug class is wanted
 #' @param is_alkylating_agent logical indicating if only this drug class is wanted
-#' @param is_monoclonal_antibody logical indicating if only this drug class is wanted
-#' @param is_kinase_inhibitor logical indicating if only this drug class is wanted
-#' @param is_tubulin_inhibitor logical indicating if only this drug class is wanted
-#' @param is_proteasome_inhibitor logical indicating if only this drug class is wanted
-#' @param is_parp_inhibitor logical indicating if only this drug class is wanted
-#' @param is_bet_inhibitor logical indicating if only this drug class is wanted
 #' @param is_angiogenesis_inhibitor logical indicating if only this drug class is wanted
-#' @param is_ar_antagonist logical indicating if only this drug class is wanted
-#' @param is_hedgehog_antagonist logical indicating if only this drug class is wanted
 #' @param is_anthracycline logical indicating if only this drug class is wanted
+#' @param is_antimetabolite logical indicating if only this drug class is wanted
+#' @param is_ar_antagonist logical indicating if only this drug class is wanted
+#' @param is_bet_inhibitor logical indicating if only this drug class is wanted
+#' @param is_hedgehog_antagonist logical indicating if only this drug class is wanted
+#' @param is_hdac_inhibitor logical indicating if only this drug class is wanted
+#' @param is_hormone_therapy logical indicating if only this drug class is wanted
+#' @param is_immune_checkpoint_inhibitor logical indicating if only this drug class is wanted
+#' @param is_kinase_inhibitor logical indicating if only this drug class is wanted
+#' @param is_monoclonal_antibody logical indicating if only this drug class is wanted
+#' @param is_parp_inhibitor logical indicating if only this drug class is wanted
+#' @param is_platinum_compound logical indicating if only this drug class is wanted
+#' @param is_proteasome_inhibitor logical indicating if only this drug class is wanted
+#' @param is_topoisomerase_inhibitor logical indicating if only this drug class is wanted
+#' @param is_tubulin_inhibitor logical indicating if only this drug class is wanted
 #'
 #' @export
 get_onco_drugs <- function(drug_is_targeted = F,
@@ -62,6 +62,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
                      is_kinase_inhibitor = F,
                      is_monoclonal_antibody = F,
                      is_parp_inhibitor = F,
+                     is_platinum_compound = F,
                      is_proteasome_inhibitor = F,
                      is_topoisomerase_inhibitor = F,
                      is_tubulin_inhibitor = F
@@ -265,6 +266,12 @@ get_onco_drugs <- function(drug_is_targeted = F,
     assertthat::validate_that(
       is.logical(is_parp_inhibitor),
       msg = "ERROR: Argument 'is_parp_inhibitor' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
+      is.logical(is_platinum_compound),
+      msg = "ERROR: Argument 'is_platinum_compound' must be logical (TRUE/FALSE)")
   arg_counter <- arg_counter + 1
 
   arg_validation_messages[[arg_counter]] <-
@@ -503,7 +510,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(list_per_drug_synonym == F){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::select(-drug_name_nci) %>%
+        dplyr::select(-nci_concept_synonym) %>%
         dplyr::distinct()
     }
   }
@@ -517,18 +524,13 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          target_type,
                          target_genename,
                          target_uniprot_id,
-                         target_chembl_id,
                          disease_efo_id,
-                         #disease_efo_label,
                          cui,
                          cui_name,
                          drug_clinical_id,
-                         #primary_site,
-                         drug_moa,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source)) %>%
-                         #drug_max_phase_indication)) %>%
         dplyr::distinct()
 
       drug_records <- as.data.frame(drug_records %>%
@@ -547,16 +549,12 @@ get_onco_drugs <- function(drug_is_targeted = F,
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
         dplyr::select(-c(disease_efo_id,
-                         #disease_efo_label,
                          cui,
                          cui_name,
                          drug_clinical_id,
-                         #primary_site,
-                         drug_moa,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source)) %>%
-                         #drug_max_phase_indication)) %>%
         dplyr::distinct()
 
       drug_records <- as.data.frame(
@@ -573,90 +571,19 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(output_resolution == "drug2target2indication"){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::select(-c(drug_clinical_id,
-                         drug_moa)) %>%
+        dplyr::select(-c(drug_clinical_id)) %>%
         dplyr::distinct()
     }
   }
 
-  if(is_antimetabolite == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(antimetabolite) & antimetabolite == T)
-    }
-  }
+
   if(is_alkylating_agent == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
         dplyr::filter(!is.na(alkylating_agent) & alkylating_agent == T)
     }
   }
-  if(is_kinase_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(kinase_inhibitor) & kinase_inhibitor == T)
-    }
-  }
-  if(is_topoisomerase_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(topoisomerase_inhibitor) & topoisomerase_inhibitor == T)
-    }
-  }
-  if(is_hdac_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(hdac_inhibitor) & hdac_inhibitor == T)
-    }
-  }
-  if(is_proteasome_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(proteasome_inhibitor) & proteasome_inhibitor == T)
-    }
-  }
-  if(is_ar_antagonist == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(ar_antagonist) & ar_antagonist == T)
-    }
-  }
-  if(is_bet_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(bet_inhibitor) & bet_inhibitor == T)
-    }
-  }
-  if(is_monoclonal_antibody == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(monoclonal_antibody) & monoclonal_antibody == T)
-    }
-  }
-  if(is_immune_checkpoint_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(immune_checkpoint_inhibitor) & immune_checkpoint_inhibitor == T)
-    }
-  }
-  if(is_parp_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(parp_inhibitor) & parp_inhibitor == T)
-    }
-  }
-  if(is_tubulin_inhibitor == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(tubulin_inhibitor) & tubulin_inhibitor == T)
-    }
-  }
-  if(is_hormone_therapy == T){
-    if(nrow(drug_records) > 0){
-      drug_records <- drug_records %>%
-        dplyr::filter(!is.na(hormone_therapy) & hormone_therapy == T)
-    }
-  }
+
   if(is_angiogenesis_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
@@ -671,12 +598,102 @@ get_onco_drugs <- function(drug_is_targeted = F,
     }
   }
 
+  if(is_antimetabolite == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(antimetabolite) & antimetabolite == T)
+    }
+  }
+
+  if(is_ar_antagonist == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(ar_antagonist) & ar_antagonist == T)
+    }
+  }
+  if(is_bet_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(bet_inhibitor) & bet_inhibitor == T)
+    }
+  }
+
   if(is_hedgehog_antagonist == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
         dplyr::filter(!is.na(hedgehog_antagonist) & hedgehog_antagonist == T)
     }
   }
+  if(is_hdac_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(hdac_inhibitor) & hdac_inhibitor == T)
+    }
+  }
+
+  if(is_hormone_therapy == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(hormone_therapy) & hormone_therapy == T)
+    }
+  }
+
+  if(is_immune_checkpoint_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(immune_checkpoint_inhibitor) & immune_checkpoint_inhibitor == T)
+    }
+  }
+
+  if(is_kinase_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(kinase_inhibitor) & kinase_inhibitor == T)
+    }
+  }
+
+  if(is_monoclonal_antibody == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(monoclonal_antibody) & monoclonal_antibody == T)
+    }
+  }
+
+  if(is_parp_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(parp_inhibitor) & parp_inhibitor == T)
+    }
+  }
+
+  if(is_platinum_compound == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(platinum_compound) & platinum_compound == T)
+    }
+  }
+
+  if(is_proteasome_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(proteasome_inhibitor) & proteasome_inhibitor == T)
+    }
+  }
+
+  if(is_topoisomerase_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(topoisomerase_inhibitor) & topoisomerase_inhibitor == T)
+    }
+  }
+
+  if(is_tubulin_inhibitor == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records %>%
+        dplyr::filter(!is.na(tubulin_inhibitor) & tubulin_inhibitor == T)
+    }
+  }
+
 
   if(output_style == "narrow"){
     cols_for_stripping_classes <-
@@ -685,20 +702,20 @@ get_onco_drugs <- function(drug_is_targeted = F,
         'parp_inhibitor','hdac_inhibitor','alkylating_agent',
         'antimetabolite','ar_antagonist','immune_checkpoint_inhibitor',
         'topoisomerase_inhibitor','monoclonal_antibody',
-        'anthracycline','hedgehog_antagonist')
+        'anthracycline','hedgehog_antagonist','platinum_compound')
 
     cols_for_stripping_target <-
       c('target_genename','target_ensembl_gene_id','target_type',
-        'target_entrezgene','target_uniprot_id','target_chembl_id')
+        'target_entrezgene','target_uniprot_id')
 
     cols_for_stripping_drug <-
-      c('drug_name','drug_moa','drug_tradenames','drug_synonyms',
-        'drug_clinical_source','drug_description','drug_clinical_id',
-        'nci_t','drug_name_nci','nci_concept_synonym_all',
+      c('drug_name',
+        'drug_clinical_source','drug_clinical_id',
+        'nci_t','nci_concept_synonym','nci_concept_synonym_all',
         'drug_max_ct_phase, comb_regimen_indication')
 
     cols_for_stripping_disease <-
-      c('cui','cui_name','cancer_drug')
+      c('cui','cui_name')
 
     for(c in cols_for_stripping_classes){
       if(c %in% colnames(drug_records)){
