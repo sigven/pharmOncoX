@@ -527,7 +527,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
                          disease_efo_id,
                          cui,
                          cui_name,
-                         drug_clinical_id,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source)) %>%
@@ -551,7 +550,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
         dplyr::select(-c(disease_efo_id,
                          cui,
                          cui_name,
-                         drug_clinical_id,
                          comb_regimen_indication,
                          drug_approved_indication,
                          drug_clinical_source)) %>%
@@ -571,7 +569,6 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(output_resolution == "drug2target2indication"){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::select(-c(drug_clinical_id)) %>%
         dplyr::distinct()
     }
   }
@@ -694,6 +691,17 @@ get_onco_drugs <- function(drug_is_targeted = F,
     }
   }
 
+  if(nrow(drug_records) > 0){
+
+    drug_records <- as.data.frame(
+      drug_records %>%
+        dplyr::group_by(dplyr::across(-c(drug_clinical_id))) %>%
+        dplyr::summarise(drug_clinical_id = paste(
+          unique(sort(drug_clinical_id)),
+          collapse=","), .groups = "drop")
+    )
+  }
+
 
   if(output_style == "narrow"){
     cols_for_stripping_classes <-
@@ -740,6 +748,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
   }
 
   if(nrow(drug_records) > 0){
+
     drug_records <- drug_records %>%
       dplyr::select(nci_concept_display_name,
                     drug_type,
