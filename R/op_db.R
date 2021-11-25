@@ -308,21 +308,21 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
   if(drug_is_targeted == T){
     drug_records <- drug_records %>%
-      dplyr::filter(!is.na(target_symbol))
+      dplyr::filter(!is.na(.data$target_symbol))
 
   }
   if(source_opentargets_only == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(opentargets_version))
+        dplyr::filter(!is.na(.data$opentargets_version))
     }
   }
 
   if(drug_has_blackbox_warning == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(is.na(drug_blackbox_warning) |
-                        drug_blackbox_warning == T)
+        dplyr::filter(is.na(.data$drug_blackbox_warning) |
+                        .data$drug_blackbox_warning == T)
 
       if(nrow(drug_records) == 0){
         cat(paste0("WARNING: For the conditions listed below, NO drugs were found with a blackbox warning\n"))
@@ -335,8 +335,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
   if(nrow(drug_records) > 0){
     drug_records <- drug_records %>%
-      dplyr::filter(is.na(drug_year_first_approval) |
-                      drug_year_first_approval >= drug_approved_later_than)
+      dplyr::filter(is.na(.data$drug_year_first_approval) |
+                      .data$drug_year_first_approval >= drug_approved_later_than)
 
     if(nrow(drug_records) == 0){
       cat(paste0("WARNING: For the conditions listed below, NO drugs were found with an approval date greater than or equal to: ",
@@ -355,10 +355,10 @@ get_onco_drugs <- function(drug_is_targeted = F,
       ## include indications customly retrieved in DailyMed (assuming they are all max phase)
       drug_records <- drug_records %>%
         dplyr::filter(
-          (!is.na(drug_max_ct_phase) &
-             drug_max_ct_phase >= drug_minimum_phase_any_indication) |
-            (is.na(drug_max_ct_phase) &
-               drug_clinical_source == "DailyMedParseSN"))
+          (!is.na(.data$drug_max_ct_phase) &
+             .data$drug_max_ct_phase >= drug_minimum_phase_any_indication) |
+            (is.na(.data$drug_max_ct_phase) &
+               .data$drug_clinical_source == "DailyMedParseSN"))
 
       if(nrow(drug_records) == 0){
         cat(paste0("WARNING: For the conditions listed below, NO drugs were found with a clinical phase greater or equal than: ",
@@ -376,8 +376,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(drug_is_approved == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(drug_approved_indication) &
-                        drug_approved_indication == T)
+        dplyr::filter(!is.na(.data$drug_approved_indication) &
+                        .data$drug_approved_indication == T)
     }
     if(nrow(drug_records) == 0){
       cat(paste0("WARNING: For the conditions listed below, NO approved drugs were found\n"))
@@ -416,7 +416,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
         cat('\n')
       }else{
         drug_records <- drug_records %>%
-          dplyr::arrange(desc(drug_max_ct_phase), desc(drug_year_first_approval))
+          dplyr::arrange(dplyr::desc(.data$drug_max_ct_phase),
+                         dplyr::desc(.data$drug_year_first_approval))
       }
     }
 
@@ -432,8 +433,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
         recs <- drug_records %>%
           dplyr::filter(
-            !is.na(atype) &
-              stringr::str_detect(atype, actype)
+            !is.na(.data$atype) &
+              stringr::str_detect(.data$atype, actype)
           )
         if(nrow(recs) > 0){
           drug_records_action_type <- drug_records_action_type %>%
@@ -457,7 +458,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
         cat('\n')
       }else{
         drug_records <- drug_records_action_type %>%
-          dplyr::select(-atype)
+          dplyr::select(-.data$atype)
       }
     }
 
@@ -473,8 +474,8 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
         recs <- drug_records %>%
           dplyr::filter(
-            !is.na(primary_site) &
-              stringr::str_detect(primary_site, ind)
+            !is.na(.data$primary_site) &
+              stringr::str_detect(.data$primary_site, ind)
           )
         if(nrow(recs) > 0){
           drug_records_indication <- drug_records_indication %>%
@@ -510,7 +511,7 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(list_per_drug_synonym == F){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::select(-nci_concept_synonym) %>%
+        dplyr::select(-.data$nci_concept_synonym) %>%
         dplyr::distinct()
     }
   }
@@ -518,26 +519,30 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(output_resolution == "drug"){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::select(-c(target_symbol,
-                         target_ensembl_gene_id,
-                         target_entrezgene,
-                         target_type,
-                         target_genename,
-                         target_uniprot_id,
-                         disease_efo_id,
-                         cui,
-                         cui_name,
-                         comb_regimen_indication,
-                         drug_approved_indication,
-                         drug_clinical_source)) %>%
+        dplyr::select(-c(.data$target_symbol,
+                         .data$target_ensembl_gene_id,
+                         .data$target_entrezgene,
+                         .data$target_type,
+                         .data$target_genename,
+                         .data$target_uniprot_id,
+                         .data$disease_efo_id,
+                         .data$cui,
+                         .data$cui_name,
+                         .data$comb_regimen_indication,
+                         .data$drug_approved_indication,
+                         .data$drug_clinical_source)) %>%
         dplyr::distinct()
 
       drug_records <- as.data.frame(drug_records %>%
-        dplyr::group_by(dplyr::across(-c(disease_efo_label, primary_site, drug_max_phase_indication))) %>%
-        dplyr::summarise(disease_indication = paste(unique(sort(disease_efo_label)), collapse="|"),
-                         disease_indicaton_max_phase = paste(unique(sort(drug_max_phase_indication)), collapse="|"),
-                         disease_main_group = paste(unique(sort(primary_site)), collapse="|"),
-                         .groups = "drop")
+        dplyr::group_by(dplyr::across(-c(.data$disease_efo_label,
+                                         .data$primary_site,
+                                         .data$drug_max_phase_indication))) %>%
+          dplyr::summarise(
+            disease_indication = paste(
+              unique(sort(.data$disease_efo_label)), collapse="|"),
+            disease_indicaton_max_phase = paste(unique(sort(.data$drug_max_phase_indication)), collapse="|"),
+            disease_main_group = paste(unique(sort(.data$primary_site)), collapse="|"),
+            .groups = "drop")
       )
 
 
@@ -547,21 +552,24 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(output_resolution == "drug2target"){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::select(-c(disease_efo_id,
-                         cui,
-                         cui_name,
-                         comb_regimen_indication,
-                         drug_approved_indication,
-                         drug_clinical_source)) %>%
+        dplyr::select(-c(.data$disease_efo_id,
+                         .data$cui,
+                         .data$cui_name,
+                         .data$comb_regimen_indication,
+                         .data$drug_approved_indication,
+                         .data$drug_clinical_source)) %>%
         dplyr::distinct()
 
       drug_records <- as.data.frame(
         drug_records %>%
-          dplyr::group_by(dplyr::across(-c(disease_efo_label, primary_site, drug_max_phase_indication))) %>%
-          dplyr::summarise(disease_indication = paste(unique(sort(disease_efo_label)), collapse="|"),
-                           disease_indicaton_max_phase = paste(unique(sort(drug_max_phase_indication)), collapse="|"),
-                           disease_main_group = paste(unique(sort(primary_site)), collapse="|"),
-                           .groups = "drop")
+          dplyr::group_by(dplyr::across(-c(.data$disease_efo_label,
+                                           .data$primary_site,
+                                           .data$drug_max_phase_indication))) %>%
+          dplyr::summarise(
+            disease_indication = paste(unique(sort(.data$disease_efo_label)), collapse="|"),
+            disease_indicaton_max_phase = paste(unique(sort(.data$drug_max_phase_indication)), collapse="|"),
+            disease_main_group = paste(unique(sort(.data$primary_site)), collapse="|"),
+            .groups = "drop")
       )
     }
   }
@@ -577,117 +585,134 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(is_alkylating_agent == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(alkylating_agent) & alkylating_agent == T)
+        dplyr::filter(!is.na(.data$alkylating_agent) &
+                        .data$alkylating_agent == T)
     }
   }
 
   if(is_angiogenesis_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(angiogenesis_inhibitor) & angiogenesis_inhibitor == T)
+        dplyr::filter(!is.na(.data$angiogenesis_inhibitor) &
+                        .data$angiogenesis_inhibitor == T)
     }
   }
 
   if(is_anthracycline == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(anthracycline) & anthracycline == T)
+        dplyr::filter(!is.na(.data$anthracycline) &
+                        .data$anthracycline == T)
     }
   }
 
   if(is_antimetabolite == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(antimetabolite) & antimetabolite == T)
+        dplyr::filter(!is.na(.data$antimetabolite) &
+                        .data$antimetabolite == T)
     }
   }
 
   if(is_ar_antagonist == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(ar_antagonist) & ar_antagonist == T)
+        dplyr::filter(!is.na(.data$ar_antagonist) &
+                        .data$ar_antagonist == T)
     }
   }
   if(is_bet_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(bet_inhibitor) & bet_inhibitor == T)
+        dplyr::filter(!is.na(.data$bet_inhibitor) &
+                        .data$bet_inhibitor == T)
     }
   }
 
   if(is_hedgehog_antagonist == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(hedgehog_antagonist) & hedgehog_antagonist == T)
+        dplyr::filter(!is.na(.data$hedgehog_antagonist) &
+                        .data$hedgehog_antagonist == T)
     }
   }
   if(is_hdac_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(hdac_inhibitor) & hdac_inhibitor == T)
+        dplyr::filter(!is.na(.data$hdac_inhibitor) &
+                        .data$hdac_inhibitor == T)
     }
   }
 
   if(is_hormone_therapy == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(hormone_therapy) & hormone_therapy == T)
+        dplyr::filter(!is.na(.data$hormone_therapy) &
+                        .data$hormone_therapy == T)
     }
   }
 
   if(is_immune_checkpoint_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(immune_checkpoint_inhibitor) & immune_checkpoint_inhibitor == T)
+        dplyr::filter(!is.na(.data$immune_checkpoint_inhibitor) &
+                        .data$immune_checkpoint_inhibitor == T)
     }
   }
 
   if(is_kinase_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(kinase_inhibitor) & kinase_inhibitor == T)
+        dplyr::filter(!is.na(.data$kinase_inhibitor) &
+                        .data$kinase_inhibitor == T)
     }
   }
 
   if(is_monoclonal_antibody == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(monoclonal_antibody) & monoclonal_antibody == T)
+        dplyr::filter(!is.na(.data$monoclonal_antibody) &
+                        .data$monoclonal_antibody == T)
     }
   }
 
   if(is_parp_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(parp_inhibitor) & parp_inhibitor == T)
+        dplyr::filter(!is.na(.data$parp_inhibitor) &
+                        .data$parp_inhibitor == T)
     }
   }
 
   if(is_platinum_compound == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(platinum_compound) & platinum_compound == T)
+        dplyr::filter(!is.na(.data$platinum_compound) &
+                        .data$platinum_compound == T)
     }
   }
 
   if(is_proteasome_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(proteasome_inhibitor) & proteasome_inhibitor == T)
+        dplyr::filter(!is.na(.data$proteasome_inhibitor) &
+                        .data$proteasome_inhibitor == T)
     }
   }
 
   if(is_topoisomerase_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(topoisomerase_inhibitor) & topoisomerase_inhibitor == T)
+        dplyr::filter(!is.na(.data$topoisomerase_inhibitor) &
+                        .data$topoisomerase_inhibitor == T)
     }
   }
 
   if(is_tubulin_inhibitor == T){
     if(nrow(drug_records) > 0){
       drug_records <- drug_records %>%
-        dplyr::filter(!is.na(tubulin_inhibitor) & tubulin_inhibitor == T)
+        dplyr::filter(!is.na(.data$tubulin_inhibitor) &
+                        .data$tubulin_inhibitor == T)
     }
   }
 
@@ -695,9 +720,9 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
     drug_records <- as.data.frame(
       drug_records %>%
-        dplyr::group_by(dplyr::across(-c(drug_clinical_id))) %>%
+        dplyr::group_by(dplyr::across(-c(.data$drug_clinical_id))) %>%
         dplyr::summarise(drug_clinical_id = paste(
-          unique(sort(drug_clinical_id)),
+          unique(sort(.data$drug_clinical_id)),
           collapse=","), .groups = "drop")
     )
   }
@@ -750,25 +775,30 @@ get_onco_drugs <- function(drug_is_targeted = F,
   if(nrow(drug_records) > 0){
 
     drug_records <- drug_records %>%
-      dplyr::select(nci_concept_display_name,
-                    drug_type,
-                    molecule_chembl_id,
-                    drug_action_type,
-                    nci_concept_definition,
+      dplyr::select(.data$nci_concept_display_name,
+                    .data$drug_type,
+                    .data$molecule_chembl_id,
+                    .data$drug_action_type,
+                    .data$nci_concept_definition,
                     dplyr::everything()
                     ) %>%
-      dplyr::arrange(desc(drug_year_first_approval),
-                     desc(drug_max_ct_phase),
-                     desc(opentargets_version),
-                     nchar(nci_concept_display_name))
+      dplyr::arrange(dplyr::desc(.data$drug_year_first_approval),
+                     dplyr::desc(.data$drug_max_ct_phase),
+                     dplyr::desc(.data$opentargets_version),
+                     nchar(.data$nci_concept_display_name))
 
     drug_records_content <- drug_records %>%
-      dplyr::select(-c(nci_version, chembl_version, opentargets_version))
+      dplyr::select(-c(.data$nci_version,
+                       .data$chembl_version,
+                       .data$opentargets_version))
     drug_records_version <- drug_records %>%
-      dplyr::select(nci_version, chembl_version, opentargets_version)
+      dplyr::select(.data$nci_version,
+                    .data$chembl_version,
+                    .data$opentargets_version)
 
-    drug_records <- dplyr::bind_cols(drug_records_content,
-                                     drug_records_version)
+    drug_records <- dplyr::bind_cols(
+      drug_records_content,
+      drug_records_version)
   }
 
 
@@ -776,3 +806,25 @@ get_onco_drugs <- function(drug_is_targeted = F,
 
 
 }
+
+#' Pipe operator
+#'
+#' See \code{magrittr::\link[magrittr]{\%>\%}} for details.
+#'
+#' @name %>%
+#' @rdname pipe
+#' @keywords internal
+#' @importFrom magrittr %>%
+NULL
+
+#' Tidy eval helpers
+#'
+#' <https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html>
+#'
+#' @name tidyeval
+#' @keywords internal
+#' @importFrom rlang .data :=
+NULL
+
+utils::globalVariables(c("."))
+

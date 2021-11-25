@@ -1,21 +1,21 @@
 library(magrittr)
-pharmamine_datestamp <- '20210922'
-nci_db_release <- '21.08e'
+pharmamine_datestamp <- '20211027'
+nci_db_release <- '21.10d'
 chembl_db_release <- 'ChEMBL_29'
-opentargets_version <- '2021.06'
+opentargets_version <- '2021.09'
 uniprot_release <- '2021_03'
 dgidb_db_release <- 'v2021_05'
 update_dailymed <- F
 
 .libPaths("/Library/Frameworks/R.framework/Resources/library")
 
-suppressPackageStartupMessages(source('R/op_db_utilities.R'))
+suppressPackageStartupMessages(source('R/data-raw/op_db_utilities.R'))
 
 nci_ftp_base <- paste0("https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/archive/",
                        nci_db_release,
                        "_Release/")
 path_data_raw <- file.path(here::here(),"data-raw")
-path_data_tmp_processed <- file.path(here::here(), "tmp_processed")
+path_data_tmp_processed <- file.path(path_data_raw, "tmp_processed")
 
 ## Append targets for recently developed targeted drugs in NCI thesaurus
 gene_info <- as.data.frame(
@@ -511,7 +511,7 @@ oncopharmadb <- oncopharmadb %>%
          stringr::str_detect(
            tolower(nci_concept_definition),"inhibitor of estrogen|estrogen receptor (modulator|inhibitor|degrader)|antiestrogen|aromatase inhibit(or|ion)") &
          !stringr::str_detect(nci_concept_definition,"antiestrogen resistance")) |
-      (!is.na(target_symbol) & stringr::str_detect(target_symbol,"ESR[0-9]")),
+      (!is.na(target_symbol) & stringr::str_detect(target_symbol,"ESR[0-9]|GNRHR")),
     TRUE,FALSE)
   ) %>%
   dplyr::mutate(anthracycline = dplyr::if_else(
@@ -535,7 +535,66 @@ oncopharmadb <- oncopharmadb %>%
                           "immunemodulating|immune response") &
       target_symbol == "ADORA2A"),
     TRUE,FALSE)
+  ) %>%
+  dplyr::mutate(immune_checkpoint_inihbitor = dplyr::if_else(
+    !is.na(nci_concept_display_name) &
+      stringr::str_detect(nci_concept_display_name,"NLM-001|CEA-MUC-1"),
+    as.logical(FALSE),
+    as.logical(immune_checkpoint_inhibitor)
+  )) %>%
+  dplyr::mutate(platinum_compound = dplyr::if_else(
+    !is.na(drug_name) &
+      stringr::str_detect(drug_name,"PLATIN$"),
+    as.logical(TRUE),
+    as.logical(FALSE)
+  ))
+
+## Make sure each drug is assigned an unambiguous value for each category
+nciCDN2Category <- list()
+for(c in c('immune_checkpoint_inhibitor',
+           'topoisomerase_inhibitor',
+           'tubulin_inhibitor',
+           'kinase_inhibitor',
+           'hdac_inhibitor',
+           'parp_inhibitor',
+           'bet_inhibitor',
+           'ar_antagonist',
+           'monoclonal_antibody',
+           'antimetabolite',
+           'angiogenesis_inhibitor',
+           'alkylating_agent',
+           'anthracycline',
+           'platinum_compound',
+           'proteasome_inhibitor',
+           'hormone_therapy',
+           'hedgehog_antagonist')){
+
+  cat <- oncopharmadb[,c]
+  name <- oncopharmadb$nci_concept_display_name
+
+  nciCDN2Category[[c]] <- as.data.frame(
+    data.frame(
+    'nci_concept_display_name' = name,
+    stringsAsFactors = F
+  ) %>%
+    dplyr::mutate(!!c := cat) %>%
+    dplyr::distinct() %>%
+  dplyr::group_by(nci_concept_display_name) %>%
+    dplyr::summarise(!!c := paste(!!dplyr::sym(c), collapse="/")) %>%
+    dplyr::mutate(!!c := dplyr::if_else(
+      stringr::str_detect(!!dplyr::sym(c),"/"),
+      TRUE,
+      as.logical(!!dplyr::sym(c))))
   )
+
+  oncopharmadb[,c] <- NULL
+  oncopharmadb <- oncopharmadb %>%
+    dplyr::left_join(
+      nciCDN2Category[[c]], by = "nci_concept_display_name"
+    )
+
+}
+
 
 
 drug_action_types <- as.data.frame(
@@ -565,13 +624,43 @@ drug_max_ct_phase <- as.data.frame(
 )
 
 oncopharmadb$drug_max_ct_phase <- NULL
+
+#tmp2 <- tmp %>%
 oncopharmadb <- oncopharmadb %>%
   dplyr::left_join(drug_max_ct_phase,
                    by = "nci_concept_display_name") %>%
+  #dplyr::filter(!is.na(cancer_drug)) %>%
+  dplyr::select(-c(drug_moa, cancer_drug, target_chembl_id)) %>%
+
+  dplyr::rename(nci_concept_synonym = drug_name_nci) %>%
+  dplyr::mutate(nci_concept_synonym2 = dplyr::if_else(
+    is.na(nci_concept_synonym_all) & !is.na(drug_synonyms),
+    as.character(tolower(drug_synonyms)),
+    as.character(tolower(nci_concept_synonym_all))
+  )) %>%
+  dplyr::mutate(nci_concept_synonym_all2 = nci_concept_synonym_all) %>%
+  dplyr::rename(nci_concept_synonym_old = nci_concept_synonym) %>%
+  tidyr::separate_rows(nci_concept_synonym2,
+                       sep="\\|") %>%
+  dplyr::rename(nci_concept_synonym = nci_concept_synonym2) %>%
+  dplyr::select(-c(nci_concept_synonym_old,
+                   nci_concept_synonym_all2,
+                   drug_synonyms,
+                   drug_tradenames,
+                   drug_description)) %>%
+  dplyr::distinct() %>%
   dplyr::select(drug_name, nci_concept_display_name, drug_type,
-                drug_action_type, molecule_chembl_id, drug_moa,
+                drug_action_type, molecule_chembl_id,
                 drug_max_phase_indication, drug_max_ct_phase,
-                dplyr::everything())
+                target_genename, target_symbol,
+                target_type, target_ensembl_gene_id,
+                target_entrezgene, target_uniprot_id,
+                disease_efo_id, disease_efo_label,
+                cui, cui_name, primary_site,
+                nci_concept_synonym,
+                nci_concept_synonym_all,
+                dplyr::everything()) %>%
+  dplyr::filter(!stringr::str_detect(nci_concept_synonym,"^([a-z]{3,4})$"))
 
 
 
@@ -587,18 +676,18 @@ rm(all_cancer_drugs_final)
 ## unique drug aliases from NCI Thesaurus
 non_ambiguous_synonyms <- as.data.frame(
   oncopharmadb %>%
-    dplyr::select(molecule_chembl_id, nci_concept_display_name, drug_name_nci) %>%
+    dplyr::select(molecule_chembl_id, nci_concept_display_name, nci_concept_synonym) %>%
     dplyr::distinct() %>%
-    dplyr::group_by(drug_name_nci) %>%
+    dplyr::group_by(nci_concept_synonym) %>%
     dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-    dplyr::filter(n == 1 & nchar(drug_name_nci) >= 4)
+    dplyr::filter(n == 1 & nchar(nci_concept_synonym) >= 4)
   )
 
 ## Drug alias to NCI concept display name (primary name)
 antineopharma_synonyms <- oncopharmadb %>%
-  dplyr::select(drug_name_nci, nci_concept_display_name, molecule_chembl_id) %>%
-  dplyr::inner_join(non_ambiguous_synonyms, by = "drug_name_nci") %>%
-  dplyr::rename(alias = drug_name_nci) %>%
+  dplyr::select(nci_concept_synonym, nci_concept_display_name, molecule_chembl_id) %>%
+  dplyr::inner_join(non_ambiguous_synonyms, by = "nci_concept_synonym") %>%
+  dplyr::rename(alias = nci_concept_synonym) %>%
   dplyr::select(-n) %>%
   dplyr::distinct()
 
