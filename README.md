@@ -24,9 +24,10 @@ Anti-cancer drugs are currently provided with the following tentative drug categ
 * Topoisomerase inhibitors
 * Tubulin inhibitors
 
-Currently (as of October 28th 2021), the following versions are used to create the mapping:
+Currently (as of November 25th 2021), `oncoPharmaDB` is built upon the following 
+releases of external databases:
 
- - Open Targets Platform (2021.09)
+ - Open Targets Platform (2021.11)
  - ChEMBL (v29)
  - NCI Thesaurus (21.10d)
 
@@ -93,4 +94,4 @@ sigven AT ifi.uio.no
 
 ### Code of Conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoPharmaDB/blob/master/.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/sigven/oncoPharmaDB/blob/main/.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.

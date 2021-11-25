@@ -1,3 +1,8 @@
+# Version 0.6.2 (November 25th 2021)
+
+* Data update: Open Targets Platform (2021.11)
+* General code/documentation improvements - following `devtools::check()`
+
 # Version 0.6.1 (October 28th 2021)
 
 * Data update: NCI Thesaurus (21.10d)
