@@ -5,7 +5,7 @@
 \alias{oncopharma_synonyms}
 \title{Dataset of drug synonyms - linking known drug aliases to a primary identifier}
 \format{
-\bold{oncopharma_synonyms} - A data frame with 9,946 rows and 52 columns:
+\bold{oncopharma_synonyms} - A data frame with 151,796 rows and 3 columns:
 \itemize{
 \item \emph{alias} - drug alias
 \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)

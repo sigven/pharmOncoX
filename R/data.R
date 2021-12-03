@@ -4,7 +4,7 @@
 #' data has been harvested from the Open Targets Platform, the NCI Thesaurus, and ChEMBL. Note that each entry corresponds
 #' to a "drug synonym-target-indication association"
 #'
-#' @format \bold{oncopharmadb} - A data frame with 418,620 rows and 49 columns:
+#' @format \bold{oncopharmadb} - A data frame with 427,034 rows and 49 columns:
 #' \itemize{
 #'   \item \emph{drug_name} - Primary drug name (upper case, NCI Thesaurus)
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -36,7 +36,7 @@
 #'   \item \emph{nci_version} - version of NCI used for this version of oncoPharmaDB
 #'   \item \emph{chembl_version} - version of ChEMBL used for this version of oncoPharmaDB
 #'   \item \emph{opentargets_version} - version of Open Target Platform used for this version of oncoPharmaDB
-#'   \item \emph{comb_regimen_indication} - type of drug molecule (Antibody, small molecule etc)
+#'   \item \emph{comb_regimen_indication} - logical for whether use of drug in a given condition is in the context of a drug combination
 #'   \item \emph{immune_checkpoint_inhibitor} - logical indicating if drug is an immune checkpoint inhibitor
 #'   \item \emph{topoisomerase_inhibitor} - logical indicating if drug is a topoisomerase inhibitor
 #'   \item \emph{tubulin_inhibitor} - logical indicating if drug is a tubulin inhibitor
@@ -64,7 +64,7 @@
 
 #' Dataset of drug synonyms - linking known drug aliases to a primary identifier
 #'
-#' @format \bold{oncopharma_synonyms} - A data frame with 9,946 rows and 52 columns:
+#' @format \bold{oncopharma_synonyms} - A data frame with 151,796 rows and 3 columns:
 #' \itemize{
 #'   \item \emph{alias} - drug alias
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
