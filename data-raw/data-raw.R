@@ -1,35 +1,39 @@
 library(magrittr)
-pharmamine_datestamp <- '20211027'
-nci_db_release <- '21.10d'
+pharmamine_datestamp <- '20211213'
+nci_db_release <- '21.11e'
 chembl_db_release <- 'ChEMBL_29'
-opentargets_version <- '2021.09'
-uniprot_release <- '2021_03'
+opentargets_version <- '2021.11'
+uniprot_release <- '2021_04'
 dgidb_db_release <- 'v2021_05'
 update_dailymed <- F
 
 .libPaths("/Library/Frameworks/R.framework/Resources/library")
 
-suppressPackageStartupMessages(source('R/data-raw/op_db_utilities.R'))
+suppressPackageStartupMessages(source('data-raw/op_db_utilities.R'))
 
 nci_ftp_base <- paste0("https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/archive/",
                        nci_db_release,
                        "_Release/")
-path_data_raw <- file.path(here::here(),"data-raw")
-path_data_tmp_processed <- file.path(path_data_raw, "tmp_processed")
+path_data_raw <-
+  file.path(here::here(), "data-raw")
+path_data_tmp_processed <-
+  file.path(path_data_raw, "tmp_processed")
 
 ## Append targets for recently developed targeted drugs in NCI thesaurus
-gene_info <- as.data.frame(
-  read.table(gzfile(file.path(path_data_raw,
-                              "gene_info","Homo_sapiens.gene_info.gz")),
-             sep = "\t", header = T, stringsAsFactors = F, quote = "", comment.char = "") %>%
-    dplyr::select(Symbol, GeneID, dbXrefs, description) %>%
-    dplyr::rename(symbol = Symbol, target_entrezgene = GeneID, genename = description) %>%
-    dplyr::mutate(association_sourceID = "nci_thesaurus_custom", target_type = "single_protein") %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(target_ensembl_gene_id = stringr::str_match(dbXrefs,"ENSG[0-9]{1,}")[[1]]) %>%
-    dplyr::select(-dbXrefs) %>%
-    dplyr::filter(!is.na(target_ensembl_gene_id))
-)
+
+gene_info <-
+  get_gene_info_ncbi(
+    path_data_raw = path_data_raw, update = F) %>%
+  dplyr::select(-c(symbol, hgnc_id,
+                   gene_biotype, synonyms)) %>%
+  dplyr::rename(symbol = symbol_entrez,
+                genename = name,
+                target_entrezgene = entrezgene,
+                target_ensembl_gene_id = ensembl_gene_id) %>%
+  dplyr::mutate(association_sourceID = "nci_thesaurus_custom",
+                target_type = "single_protein") %>%
+  dplyr::filter(!is.na(target_ensembl_gene_id))
+
 
 ####---UniProt---####
 uniprot_map <-
@@ -126,7 +130,7 @@ opentargets_targeted_cancer_drugs <-
 ## 1) By molecule chembl id
 ## 2) By name (if molecule chembl id does not provide any cross-ref)
 
-ot_nci_matched <- opentargets_targeted_cancer_drugs %>%
+ot_nci_matched1 <- opentargets_targeted_cancer_drugs$targeted %>%
   dplyr::left_join(nci_antineo_chembl, by = c("molecule_chembl_id")) %>%
   dplyr::mutate(
     nci_concept_display_name =
@@ -142,6 +146,29 @@ ot_nci_matched <- opentargets_targeted_cancer_drugs %>%
   dplyr::mutate(nci_version = nci_db_release) %>%
   dplyr::mutate(chembl_version = chembl_db_release) %>%
   dplyr::mutate(opentargets_version = opentargets_version)
+
+ot_nci_matched2 <- opentargets_targeted_cancer_drugs$untargeted %>%
+  dplyr::left_join(nci_antineo_chembl, by = c("molecule_chembl_id")) %>%
+  dplyr::mutate(
+    nci_concept_display_name =
+      dplyr::if_else(is.na(nci_concept_display_name) &
+                       !stringr::str_detect(drug_name,"[0-9]"),
+                     Hmisc::capitalize(tolower(drug_name)),
+                     nci_concept_display_name)) %>%
+  dplyr::mutate(
+    nci_concept_display_name =
+      dplyr::if_else(is.na(nci_concept_display_name) &
+                       stringr::str_detect(drug_name,"[0-9]"),
+                     drug_name,nci_concept_display_name)) %>%
+  dplyr::mutate(nci_version = nci_db_release) %>%
+  dplyr::mutate(chembl_version = chembl_db_release) %>%
+  dplyr::mutate(opentargets_version = opentargets_version)
+
+
+ot_nci_matched <- dplyr::bind_rows(
+  ot_nci_matched1,
+  ot_nci_matched2
+)
 
 ot_nci_set1 <- ot_nci_matched %>%
   dplyr::filter(!is.na(nci_t))
@@ -185,17 +212,22 @@ ot_cancer_drugs <- ot_nci_set1 %>%
   dplyr::left_join(
     dplyr::select(gene_info, target_ensembl_gene_id,
                   target_entrezgene),
-    by = "target_ensembl_gene_id")
+    by = "target_ensembl_gene_id") %>%
+  dplyr::distinct()
 
 
 ## NCI drugs/regimens with ChEMBL identifier (not present in Open Targets)
 other_nci_chembl_chemotherapies <- nci_antineo_all %>%
   dplyr::filter(!is.na(molecule_chembl_id)) %>%
-  dplyr::select(nci_t, molecule_chembl_id, nci_concept_display_name,
-                nci_concept_definition, drug_name_nci, nci_concept_synonym_all) %>%
+  dplyr::select(nci_t, molecule_chembl_id,
+                nci_concept_display_name,
+                nci_concept_definition,
+                drug_name_nci,
+                nci_concept_synonym_all) %>%
   dplyr::anti_join(ot_cancer_drugs, by = c("molecule_chembl_id")) %>%
   dplyr::mutate(nci_version = nci_db_release) %>%
-  dplyr::mutate(chembl_version = chembl_db_release, opentargets_version = NA,
+  dplyr::mutate(chembl_version = chembl_db_release,
+                opentargets_version = NA,
                 drug_name = toupper(nci_concept_display_name)) %>%
   dplyr::anti_join(ot_cancer_drugs, by = c("drug_name"))
 
@@ -219,7 +251,7 @@ all_cancer_drugs <- ot_cancer_drugs %>%
                                  as.character(molecule_chembl_id))) %>%
   dplyr::select(target_genename, target_symbol, target_type,
                 target_ensembl_gene_id, target_entrezgene,
-                target_uniprot_id, target_chembl_id,
+                target_uniprot_id,
                 dplyr::everything()) %>%
   dplyr::arrange(drug_name) %>%
   dplyr::distinct()
@@ -238,12 +270,17 @@ drug_target_patterns <-
 
 all_inhibitors_no_target <- all_cancer_drugs %>%
   dplyr::filter(is.na(target_symbol)) %>%
-  dplyr::filter(stringr::str_detect(tolower(nci_concept_display_name),
-                                    "inhibitor|antagonist|antibody|blocker") |
-                  stringr::str_detect(tolower(nci_concept_display_name),
-                                      "ib$|mab$|mab/|^anti-") |
-                  (stringr::str_detect(nci_concept_definition,"KRAS") &
-                     stringr::str_detect(nci_concept_definition,"inhibitor")))
+  dplyr::filter(stringr::str_detect(
+    tolower(nci_concept_display_name),
+    "inhibitor|antagonist|antibody|blocker") |
+      stringr::str_detect(
+        tolower(nci_concept_display_name),
+        "ib$|mab$|mab/|^anti-") |
+      (stringr::str_detect(nci_concept_definition,"KRAS") &
+         stringr::str_detect(nci_concept_definition,"inhibitor"))) %>%
+  dplyr::filter(!stringr::str_detect(
+    nci_concept_display_name,
+    " CAR T|SARS-CoV-2| Regimen$"))
 
 custom_nci_targeted_drugs <- data.frame()
 for(i in 1:nrow(drug_target_patterns)){
@@ -300,6 +337,20 @@ for(i in 1:nrow(drug_target_patterns)){
     }
   }
 }
+
+
+### CHECK HOW MANY TARGET-LACKING INHIBITORS ARE MISSING
+### FROM THE CUSTOM NCI MATCHING ROUTINE
+
+inhibitors_no_target_nonmapped <- all_inhibitors_no_target %>%
+  dplyr::anti_join(custom_nci_targeted_drugs, by = "nci_concept_display_name") %>%
+  dplyr::filter(!stringr::str_detect(
+    nci_concept_definition, "(A|a)ntibody(-| )drug conjugate \\(ADC\\)"
+  )) %>%
+  dplyr::select(nci_concept_display_name,
+                nci_concept_definition) %>%
+  dplyr::distinct()
+
 
 all_cancer_drugs_final <-
   dplyr::anti_join(all_cancer_drugs, custom_nci_targeted_drugs,
@@ -630,7 +681,7 @@ oncopharmadb <- oncopharmadb %>%
   dplyr::left_join(drug_max_ct_phase,
                    by = "nci_concept_display_name") %>%
   #dplyr::filter(!is.na(cancer_drug)) %>%
-  dplyr::select(-c(drug_moa, cancer_drug, target_chembl_id)) %>%
+  dplyr::select(-c(drug_moa, cancer_drug)) %>%
 
   dplyr::rename(nci_concept_synonym = drug_name_nci) %>%
   dplyr::mutate(nci_concept_synonym2 = dplyr::if_else(
@@ -660,7 +711,22 @@ oncopharmadb <- oncopharmadb %>%
                 nci_concept_synonym,
                 nci_concept_synonym_all,
                 dplyr::everything()) %>%
-  dplyr::filter(!stringr::str_detect(nci_concept_synonym,"^([a-z]{3,4})$"))
+  dplyr::mutate(nci_concept_definition =
+                  stringi::stri_enc_toascii(nci_concept_definition)) %>%
+  dplyr::mutate(nci_concept_synonym_all =
+                  stringi::stri_enc_toascii(nci_concept_synonym_all)) %>%
+  dplyr::mutate(nci_concept_synonym =
+                  stringi::stri_enc_toascii(nci_concept_synonym)) %>%
+  dplyr::mutate(drug_name =
+                  stringi::stri_enc_toascii(drug_name)) %>%
+  dplyr::mutate(
+    nci_concept_display_name =
+      stringi::stri_enc_toascii(nci_concept_display_name)
+  ) %>%
+  dplyr::filter(!stringr::str_detect(nci_concept_synonym,"^([a-z]{3,4})$")) %>%
+  dplyr::mutate(drug_action_type = stringr::str_replace_all(
+    drug_action_type, "/NA|NA/",""
+  ))
 
 
 
@@ -766,7 +832,14 @@ oncopharma_synonyms <-
     alias == "nab-paclitaxel" & nci_concept_display_name == "Paclitaxel",
     "paclitaxel",
     as.character(alias)
-  ))
+  )) %>%
+  dplyr::mutate(
+    alias = stringi::stri_enc_toascii(alias)
+  ) %>%
+  dplyr::mutate(
+    nci_concept_display_name =
+      stringi::stri_enc_toascii(nci_concept_display_name)
+  )
 
 
 usethis::use_data(oncopharma_synonyms, overwrite = T)

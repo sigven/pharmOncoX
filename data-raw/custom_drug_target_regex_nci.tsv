@@ -10,6 +10,7 @@ Narsoplimab	MASP2
 Neihulizumab	SELPLG
 Nidanilimab	IL1RAP
 Anti-DR5	TNFRSF10B
+Anti-TNFR2	TNFRSF1B
 Anti-GARP	LRRC32
 Anti-gremlin-1	GREM1
 Anti-HGF	HGF
@@ -75,8 +76,10 @@ Anti-ErbB3|Anti-[A-Z]{1,}/([A-Z]{1,}[0-9]{0,}/)?HER3|Anti-HER3|Barecetamab|Istir
 Istiratumab|IGF-1R Inhibitor	IGF1R
 Anti-CD117	KIT
 Anti-CD122	IL2RB
+Anti-NKG2A	KLRC1
+Anti-netrin-1	NTN1
 Anti-CD20(-|/| )	MS4A1
-Anti-MUC1(-|/| )	MUC1
+Anti-MUC1(-|/| )|Anti-MUC-1|Anti-mucin-1	MUC1
 Anti-MUC16(-|/| )	MUC16
 Anti-MUC17(-|/| )	MUC17
 Anti-BTN3A	BTN3A1
@@ -261,9 +264,20 @@ Axl/Mer	MERTK
 Inosine Monophosphate Dehydrogenase	IMPDH2
 Inosine Monophosphate Dehydrogenase	IMPDH1
 MARCKS	MARCKS
+KRAS-G12C Inhibitor	KRAS
+Menin Inhibitor	MEN1
+FGF Receptor Antagonist HGS1036	FGFR1
+Gunagratinib	FGFR1
+Gunagratinib	FGFR2
+Gunagratinib	FGFR3
+Gunagratinib	FGFR4
+Vofatamab	FGFR3
 Anti-EGFR|EGFR Inhibitor|(^EGFR(/)?.+ (Inhibitor|Antibody))	EGFR
-Anti-GITR	TNFRSF18
+Anti-NY-ESO(-)?1	CTAG1B
+Anti-GITR|Anti-human GITR	TNFRSF18
 Anti-BCMA	TNFRSF17
+17beta-Hydroxysteroid Dehydrogenase Type 5 Inhibitor	AKR1C3
+Adagrasib	KRAS
 Anti-CD123	IL3RA
 Anti-CD33(-|/| )	CD33
 Anti-CD38(-|/| )	CD38
@@ -326,7 +340,27 @@ Anti-PD-L1	CD274
 PD-L1 Inhibitor	CD274
 Chk2 Inhibitor	CHEK2
 Class 1/4 Histone Deacetylase Inhibitor	HDAC1
-Class 1/4 Histone Deacetylase Inhibitor	HDAC4
+Class 1/4 Histone Deacetylase Inhibitor	HDAC2
+Class 1/4 Histone Deacetylase Inhibitor	HDAC3
+Class 1/4 Histone Deacetylase Inhibitor	HDAC8
+Class 1/4 Histone Deacetylase Inhibitor	HDAC11
+HDAC Class I/IIb Inhibitor	HDAC1
+HDAC Class I/IIb Inhibitor	HDAC2
+HDAC Class I/IIb Inhibitor	HDAC3
+HDAC Class I/IIb Inhibitor	HDAC8
+HDAC Class I/IIb Inhibitor	HDAC6
+HDAC Class I/IIb Inhibitor	HDAC10
+HDAC Inhibitor	HDAC1
+HDAC Inhibitor	HDAC2
+HDAC Inhibitor	HDAC3
+HDAC Inhibitor	HDAC8
+HDAC Inhibitor	HDAC11
+HDAC Inhibitor	HDAC4
+HDAC Inhibitor	HDAC5
+HDAC Inhibitor	HDAC7
+HDAC Inhibitor	HDAC9
+HDAC Inhibitor	HDAC6
+HDAC Inhibitor	HDAC10
 Anti-LAG-3|LAG-3|LAG3|Anti-LAG3	LAG3
 Anti-TIGIT|TIGIT	TIGIT
 Anti-TIM(-)?3|HAVCR2	HAVCR2
@@ -343,6 +377,18 @@ STAT3	STAT3
 (Topoisomerase I/II)	TOP2A
 (Topoisomerase I/II)	TOP2B
 (Topoisomerase-II-beta)	TOP2B
+(TRK Inhibitor )	NTRK1
+(TRK Inhibitor )	NTRK2
+(TRK Inhibitor )	NTRK3
+Tubulin (Polymerization )?Inhibitor	TUBB
+Tubulin (Polymerization )?Inhibitor	TUBB2A
+Tubulin (Polymerization )?Inhibitor	TUBB8
+Tubulin (Polymerization )?Inhibitor	TUBB1
+Tubulin (Polymerization )?Inhibitor	TUBB2B
+Tubulin (Polymerization )?Inhibitor	TUBB3
+Tubulin (Polymerization )?Inhibitor	TUBB4A
+Tubulin (Polymerization )?Inhibitor	TUBB4B
+Tubulin (Polymerization )?Inhibitor	TUBB6
 (TrkA)	NTRK1
 (VEGFR |VEGFR/)	KDR
 ((P|p)orcupine)	PORCN

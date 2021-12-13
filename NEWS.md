@@ -1,3 +1,9 @@
+# Version 0.6.3 (December 13th 2021)
+
+* Added missing entries from Open Targets Platform (bug with non-targeted drugs)
+* Preparing addition of biomarkers for forthcoming release, providing users a list of
+known molecular biomarkers pr. anti-cancer drug (mutations, copy number amplificiations etc., as retrieved from e.g. CIViC), both with respect to resistance and sensitivity
+
 # Version 0.6.3 (December 3rd 2021)
 
 * Data update: NCI Thesaurus (21.11e)

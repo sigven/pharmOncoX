@@ -4,7 +4,7 @@
 #' data has been harvested from the Open Targets Platform, the NCI Thesaurus, and ChEMBL. Note that each entry corresponds
 #' to a "drug synonym-target-indication association"
 #'
-#' @format \bold{oncopharmadb} - A data frame with 427,034 rows and 49 columns:
+#' @format \bold{oncopharmadb} - A data frame with 482,804 rows and 49 columns:
 #' \itemize{
 #'   \item \emph{drug_name} - Primary drug name (upper case, NCI Thesaurus)
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -64,7 +64,7 @@
 
 #' Dataset of drug synonyms - linking known drug aliases to a primary identifier
 #'
-#' @format \bold{oncopharma_synonyms} - A data frame with 151,796 rows and 3 columns:
+#' @format \bold{oncopharma_synonyms} - A data frame with 154,575 rows and 3 columns:
 #' \itemize{
 #'   \item \emph{alias} - drug alias
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)

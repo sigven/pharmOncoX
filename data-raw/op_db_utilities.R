@@ -1,5 +1,76 @@
 
-#source('/Users/sigven/research/DB/var_annotation_tracks/data-raw/gene_annotations.R')
+
+# get_gene_info_ncbi <- function(basedir = NULL,
+#                                update = T){
+#
+#   invisible(assertthat::assert_that(
+#     update == T | update == F,
+#     msg = "'update' is not of type logical (TRUE/FALSE)"))
+#   invisible(assertthat::assert_that(
+#     dir.exists(basedir),
+#     msg = paste0("Directory '",
+#                  basedir,"' does not exist")))
+#
+#   rlogging::message("Retrieving gene_info from NCBI/Entrez")
+#   gene_info_fname <- paste0(basedir,'/data-raw/gene_info/Homo_sapiens.gene_info.gz')
+#   if(update == F){
+#     invisible(assertthat::assert_that(
+#       file.exists(gene_info_fname),
+#       msg = paste0("File ",gene_info_fname,
+#                    " does not exist")))
+#   }
+#
+#   if(!file.exists(gene_info_fname) | update == T){
+#     remote_url <- "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz"
+#     if(RCurl::url.exists(remote_url)){
+#       download.file(
+#         remote_url, destfile = gene_info_fname, quiet=T)
+#     }else{
+#       rlogging::message(
+#         paste0("Cannot update gene_info - download not available: ",
+#                remote_url))
+#     }
+#   }
+#   gene_info <- read.table(
+#     gzfile(gene_info_fname),
+#     sep = "\t", stringsAsFactors = F,na.strings = "-",
+#     skip = 1, comment.char = "#", quote = "", fill = T) %>%
+#     dplyr::filter(V1 == 9606) %>%
+#     dplyr::select(c(V2, V3, V5, V9, V6, V10, V11)) %>%
+#     dplyr::rename(
+#       entrezgene = V2, synonyms = V5, symbol = V3, name = V9,
+#       gene_biotype = V10, symbol_entrez = V11) %>%
+#     dplyr::mutate(ensembl_gene_id = stringr::str_replace(
+#       stringr::str_match(V6,"Ensembl:ENSG[0-9]{1,}"), "Ensembl:", "")) %>%
+#     dplyr::mutate(hgnc_id = stringr::str_replace(
+#       stringr::str_match(V6,"HGNC:HGNC:[0-9]{1,}"), "HGNC:HGNC:", "")) %>%
+#     dplyr::select(-V6) %>%
+#     dplyr::mutate(symbol_entrez = dplyr::if_else(
+#       is.na(symbol_entrez) | symbol_entrez == "-",
+#       symbol, as.character(symbol_entrez))) %>%
+#     dplyr::mutate(gene_biotype = dplyr::if_else(
+#       gene_biotype ==  "protin-coding",
+#       "protein_coding", as.character(gene_biotype))) %>%
+#     dplyr::filter(nchar(symbol_entrez) > 0)
+#
+#   ### for genes annotated with the same ensembl gene ids, ignore this annotation (set to NA)
+#   ensgene_id_count <- as.data.frame(
+#     dplyr::filter(gene_info, !is.na(ensembl_gene_id)) %>%
+#       dplyr::group_by(ensembl_gene_id) %>%
+#       dplyr::summarise(n = dplyr::n(), .groups = "drop")
+#   )
+#
+#   gene_info <- gene_info %>%
+#     dplyr::left_join(ensgene_id_count,by=c("ensembl_gene_id")) %>%
+#     dplyr::mutate(ensembl_gene_id = dplyr::if_else(
+#       !is.na(n) & n > 1,
+#       as.character(NA),
+#       as.character(ensembl_gene_id))) %>%
+#     dplyr::select(-n)
+#
+#   return(gene_info)
+#
+# }
 
 ## Read URL
 #'
@@ -531,24 +602,24 @@ get_similar_compounds <- function(approach = 'pubchem_pug', smiles = NULL, manim
       }
     }
   }
-  if(approach == 'chemminer'){
-    ## ChemmineR as an alternative option
-    for(i in 1:length(smiles_set)){
-      try({
-        results <- ChemmineR::searchString(smiles_set[i])
-        num_results <- length(results)
-        if(num_results > MaxRec){
-          num_results <- MaxRec
-        }
-        for(m in 1:num_results){
-          cids <- append(cids, as.integer(unlist(datablock(results[m]))[paste0("CMP",m,".PUBCHEM_COMPOUND_CID")]))
-        }
-      })
-    }
-    if(length(cids) > 0){
-      filtered_cids <- match_cids_by_molecularweight(cids, mw)
-    }
-  }
+  # if(approach == 'chemminer'){
+  #   ## ChemmineR as an alternative option
+  #   for(i in 1:length(smiles_set)){
+  #     try({
+  #       results <- ChemmineR::searchString(smiles_set[i])
+  #       num_results <- length(results)
+  #       if(num_results > MaxRec){
+  #         num_results <- MaxRec
+  #       }
+  #       for(m in 1:num_results){
+  #         cids <- append(cids, as.integer(unlist(datablock(results[m]))[paste0("CMP",m,".PUBCHEM_COMPOUND_CID")]))
+  #       }
+  #     })
+  #   }
+  #   if(length(cids) > 0){
+  #     filtered_cids <- match_cids_by_molecularweight(cids, mw)
+  #   }
+  # }
   return(filtered_cids)
 }
 
@@ -690,8 +761,8 @@ get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2021.09",
-           uniprot_release = "2021_03"){
+           ot_version = "2021.11",
+           uniprot_release = "2021_04"){
 
   phenotype_cancer_efo <- oncoPhenoMap::auxiliary_maps$umls$concept %>%
     dplyr::filter(main_term == T) %>%
@@ -709,9 +780,8 @@ get_opentargets_cancer_drugs <-
   fname <- paste0(path_data_raw,
                   paste0("/opentargets/opentargets_drugs_",
                          ot_version,".rds"))
-  targeted_compounds <- as.data.frame(
+  ot_compounds <- as.data.frame(
     readRDS(file = fname) %>%
-      dplyr::filter(!is.na(target_symbol)) %>%
       dplyr::select(target_genename,
                     target_symbol,
                     target_type,
@@ -750,14 +820,54 @@ get_opentargets_cancer_drugs <-
           TRUE, FALSE)
     )
 
+  targeted_compounds <- ot_compounds %>%
+    dplyr::filter(!is.na(target_symbol))
 
-  up_ensembl_map <- get_uniprot_ensembl_map(
+  untargeted_cancer_compounds <- as.data.frame(ot_compounds %>%
+    dplyr::filter(is.na(target_symbol)) %>%
+    dplyr::group_by_at(dplyr::vars(-c(drug_clinical_id))) %>%
+    dplyr::summarise(
+      drug_clinical_id = paste(
+        unique(drug_clinical_id),
+        collapse = ","),
+      drug_clinical_source = paste(
+        unique(sort(drug_clinical_source)),
+        collapse = ","),
+      .groups = "drop") %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(cancer_drug == T)
+  )
+
+  ## adjust max ct phase
+  drugs_with_max_phase_adj <- as.data.frame(
+    untargeted_cancer_compounds %>%
+      dplyr::filter(!is.na(drug_max_ct_phase) &
+                      !is.na(drug_max_phase_indication)) %>%
+      dplyr::group_by(drug_name, molecule_chembl_id) %>%
+      dplyr::summarise(drug_max_ct_phase = max(drug_max_phase_indication),
+                       .groups = "drop")
+  )
+
+  untargeted_cancer_compounds <- as.data.frame(
+    untargeted_cancer_compounds %>%
+      dplyr::select(-drug_max_ct_phase) %>%
+      dplyr::left_join(drugs_with_max_phase_adj,
+                       by = c("drug_name","molecule_chembl_id"))
+  ) %>%
+    dplyr::mutate(target_uniprot_id = NA)
+
+
+  up_ensembl_map <- as.data.frame(get_uniprot_ensembl_map(
     path_data_raw = path_data_raw,
     uniprot_release = uniprot_release) %>%
     dplyr::rename(target_symbol = symbol,
                   target_uniprot_id = uniprot_id) %>%
-    dplyr::select(-entrezgene)
-
+    dplyr::select(-c(entrezgene, target_chembl_id)) %>%
+    dplyr::group_by(target_symbol, target_ensembl_gene_id) %>%
+    dplyr::summarise(target_uniprot_id = paste(
+      target_uniprot_id, collapse = "|"),
+      .groups = "drop"
+    ))
 
   targeted_cancer_compounds <- as.data.frame(
     targeted_compounds %>%
@@ -779,22 +889,22 @@ get_opentargets_cancer_drugs <-
                       !is.na(target_ensembl_gene_id))
   )
 
-  n_entries <- as.data.frame(
-    targeted_cancer_compounds %>%
-      dplyr::group_by(target_ensembl_gene_id,
-                      disease_efo_id,
-                      molecule_chembl_id) %>%
-      dplyr::summarise(n = dplyr::n(), .groups = "drop")
-  )
-
-  targeted_cancer_compounds <- targeted_cancer_compounds %>%
-    dplyr::left_join(n_entries,
-                     by = c("target_ensembl_gene_id",
-                            "disease_efo_id",
-                            "molecule_chembl_id")) %>%
-    dplyr::filter(n == 1 | (n > 1 & !is.na(target_chembl_id))) %>%
-    dplyr::select(-n) %>%
-    dplyr::distinct()
+  # n_entries <- as.data.frame(
+  #   targeted_cancer_compounds %>%
+  #     dplyr::group_by(target_ensembl_gene_id,
+  #                     disease_efo_id,
+  #                     molecule_chembl_id) %>%
+  #     dplyr::summarise(n = dplyr::n(), .groups = "drop")
+  # )
+  #
+  # targeted_cancer_compounds <- targeted_cancer_compounds %>%
+  #   dplyr::left_join(n_entries,
+  #                    by = c("target_ensembl_gene_id",
+  #                           "disease_efo_id",
+  #                           "molecule_chembl_id")) %>%
+  #   #dplyr::filter(n == 1) %>%
+  #   dplyr::select(-n) %>%
+  #   dplyr::distinct()
 
   ## adjust max ct phase
   drugs_with_max_phase_adj <- as.data.frame(
@@ -811,7 +921,8 @@ get_opentargets_cancer_drugs <-
   )
 
 
-  return(targeted_cancer_compounds)
+  return(list('targeted' = targeted_cancer_compounds,
+              'untargeted' = untargeted_cancer_compounds))
 
 }
 
@@ -1526,7 +1637,7 @@ get_dailymed_drug_indications <- function(update = F,
     unique(toupper(oncoPharmaDB::oncopharmadb$nci_concept_display_name))
 
   all_drug_indications <- data.frame()
-  for(i in 6:21){
+  for(i in 16:21){
     year = paste0("20", i)
     if(i < 10){
       year = paste0("200",i)
