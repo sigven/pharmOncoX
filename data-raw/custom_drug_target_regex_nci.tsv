@@ -113,6 +113,7 @@ Zotatifin	EIF4A3
 Sotorasib|Pan-KRAS Inhibitor|KRAS( )?G12C Inhibitor	KRAS
 KAT6	KAT6A
 KAT6	KAT6B
+Endothelin B Receptor Blocker	EDNRB
 Menin-MLL	KMT2A
 LMP7	PSMB8
 Anti-ADAM9	ADAM9
@@ -333,7 +334,7 @@ PARP 1, 2 and 3 inhibitor	PARP1
 PARP 1, 2 and 3 inhibitor	PARP2
 PARP 1, 2 and 3 inhibitor	PARP3
 Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab	CD274
-Geptanolimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1	
+Geptanolimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
 Anti-LAG-3/PD-L1	CD274
 Anti-PD-1	PDCD1
 Anti-PD-L1	CD274
