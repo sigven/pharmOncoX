@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL) — compound_synonyms • oncoPharmaDB</title>
+<title>Datasets of compound biomarkers - omics properties that are linked to drug response — compound_biomarkers • oncoPharmaDB</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL) — compound_synonyms" />
-<meta property="og:description" content="Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)" />
+<meta property="og:title" content="Datasets of compound biomarkers - omics properties that are linked to drug response — compound_biomarkers" />
+<meta property="og:description" content="Datasets of compound biomarkers - omics properties that are linked to drug response" />
 
 
 
@@ -123,31 +123,67 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)</h1>
+    <h1>Datasets of compound biomarkers - omics properties that are linked to drug response</h1>
     <small class="dont-index">Source: <a href='https://github.com/sigven/oncoPharmaDB/blob/master/R/data.R'><code>R/data.R</code></a></small>
-    <div class="hidden name"><code>compound_synonyms.Rd</code></div>
+    <div class="hidden name"><code>compound_biomarkers.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)</p>
+    <p>Datasets of compound biomarkers - omics properties that are linked to drug response</p>
     </div>
 
-    <pre class="usage"><span class='va'>compound_synonyms</span></pre>
+    <pre class="usage"><span class='va'>compound_biomarkers</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p><b>compound_synonyms</b> - A data frame with 155,671 rows and 3 columns:</p><ul>
-<li><p><em>alias</em> - drug alias</p></li>
+    <p><b>curated</b> - A data frame with 234,708 rows and 26 columns:</p><ul>
+<li><p><em>evidence_id</em> - evidence identifier</p></li>
+<li><p><em>evidence_url</em> - evidence URL</p></li>
+<li><p><em>variant_id</em> - variant identifier</p></li>
+<li><p><em>variant_type</em> - type of variant</p></li>
+<li><p><em>variant</em> - variant (alias)</p></li>
+<li><p><em>alteration_type</em> - type of genetic alteration</p></li>
+<li><p><em>symbol</em> - drug target (gene symbol)</p></li>
+<li><p><em>therapeutic_context</em> - therapeutic context (drug sensitivity/resistance)</p></li>
+<li><p><em>disease_ontology_id</em> - disease ontology (DO) identifier (mapped - oncoPhenoMap)</p></li>
+<li><p><em>cancer_type</em> - tumor type/disease (provided by source)</p></li>
+<li><p><em>molecule_chembl_id</em> - ChEMBL compound identifier</p></li>
+<li><p><em>citation_id</em> - citation identifier (PMID etc)</p></li>
+<li><p><em>evidence_description</em> - evidence description</p></li>
+<li><p><em>evidence_type</em> - evidence type</p></li>
+<li><p><em>evidence_level</em> - evidence level</p></li>
+<li><p><em>evidence_direction</em> - evidence direction</p></li>
+<li><p><em>clinical_significance</em> - clinical significance</p></li>
+<li><p><em>variant_origin</em> - variant origin (somatic/germline)</p></li>
+<li><p><em>biomarker_source_db</em> - type of biomarker source database</p></li>
+<li><p><em>biomarker_entity</em> - logical indicating biomarker entity</p></li>
+<li><p><em>efo_id</em> - EFO identifier (mapped - oncoPhenoMap)</p></li>
+<li><p><em>efo_name</em> - EFO name (mapped - oncoPhenoMap)</p></li>
+<li><p><em>do_name</em> - disease ontology (DO) name (mapped - oncoPhenoMap)</p></li>
+<li><p><em>cui</em> - disease UMLS identifier (mapped - oncoPhenoMap)</p></li>
+<li><p><em>cui_name</em> - disease UMLS name (mapped - oncoPhenoMap)</p></li>
+<li><p><em>primary_site</em> - primary tumor site (mapped - oncoPhenoMap)</p></li>
+</ul>
+
+<p><b>invitro_screen</b> - A data frame with 10,182 rows and 8 columns:</p><ul>
+<li><p><em>compound_id</em> - compound identifier (PRISM)</p></li>
+<li><p><em>model</em> - type of omics drug prediction model (DepMap/PRISM)</p></li>
+<li><p><em>feature_type</em> - type of omics feature</p></li>
+<li><p><em>feature_value</em> - value of omics feature</p></li>
+<li><p><em>feature_importance</em> - omics feature importance</p></li>
+<li><p><em>prediction_accuracy</em> - model prediction accuracy</p></li>
 <li><p><em>nci_concept_display_name</em> - Primary drug name (NCI Thesaurus)</p></li>
 <li><p><em>molecule_chembl_id</em> - ChEMBL compound identifier</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p><a href='https://targetvalidation.org/'>https://targetvalidation.org/</a></p>
-<p><a href='https://www.ebi.ac.uk/chembl/'>https://www.ebi.ac.uk/chembl/</a></p>
-<p><a href='https://ncithesaurus.nci.nih.gov/ncitbrowser/'>https://ncithesaurus.nci.nih.gov/ncitbrowser/</a></p>
+    <p><a href='https://civicdb.org/'>https://civicdb.org/</a></p>
+<p><a href='https://www.cancergenomeinterpreter.org/biomarkers'>https://www.cancergenomeinterpreter.org/biomarkers</a></p>
+<p><a href='https://pmkb.weill.cornell.edu/'>https://pmkb.weill.cornell.edu/</a></p>
+<p><a href='https://mitelmandatabase.isb-cgc.org/'>https://mitelmandatabase.isb-cgc.org/</a></p>
+<p><a href='https://depmap.org/portal/'>https://depmap.org/portal/</a></p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

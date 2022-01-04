@@ -1,4 +1,4 @@
-# Version 0.6.5 (January 4th 2021)
+# Version 0.6.5 (January 4th 2022)
 
 * Data update: NCI Thesaurus (21.12d)
 * Renamed exported dataset __oncopharma_synonyms__ -> __compound_synonyms__

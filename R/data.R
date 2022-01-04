@@ -78,7 +78,7 @@
 
 #' Datasets of compound biomarkers - omics properties that are linked to drug response
 #'
-#' @format \bold{curated} - A data frame with 234,708 rows and 26 columns:
+#' @format \bold{curated} - A data frame with 234,712 rows and 26 columns:
 #' \itemize{
 #'   \item \emph{evidence_id} - evidence identifier
 #'   \item \emph{evidence_url} - evidence URL
@@ -108,6 +108,7 @@
 #'   \item \emph{primary_site} - primary tumor site (mapped - oncoPhenoMap)
 #' }
 #'
+#'
 #' @format \bold{invitro_screen} - A data frame with 10,182 rows and 8 columns:
 #' \itemize{
 #'   \item \emph{compound_id} - compound identifier (PRISM)
@@ -119,6 +120,7 @@
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
 #'   \item \emph{molecule_chembl_id} - ChEMBL compound identifier
 #' }
+#'
 #'
 #' @source \url{https://civicdb.org/}
 #' @source \url{https://www.cancergenomeinterpreter.org/biomarkers}
@@ -134,7 +136,7 @@
 #'  - actionable: data frame with actionable genes in cancer (biomarkers ,
 #'                 for therapies, prognosis etc. (harvested from various sources)
 #'
-#' @format \bold{druggable} - A data frame with 1007 rows and 6 columns:
+#' @format \bold{druggable} - A data frame with 1,007 rows and 6 columns:
 #' \itemize{
 #'   \item \emph{symbol} - Gene symbol
 #'   \item \emph{ensembl_gene_id} - Ensembl gene identifier
@@ -143,6 +145,7 @@
 #'   \item \emph{nci_concept_display_name} - Primary compound name (separated by '|')
 #'   \item \emph{molecule_chembl_id} - ChEMBL compound identifier (separated by '|')
 #' }
+#'
 #'
 #' @format \bold{actionable} - A data frame with 608 rows and 7 columns:
 #' \itemize{
@@ -154,5 +157,6 @@
 #'   \item \emph{clinical_significance} - Clinical significance of biomarker (prognosis, drug sensitivity etc)
 #'   \item \emph{source_db} - Underlying source database for actionability evidence
 #' }
+#'
 #'
 "targets"
