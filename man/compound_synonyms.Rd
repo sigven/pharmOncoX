@@ -3,7 +3,7 @@
 \docType{data}
 \name{compound_synonyms}
 \alias{compound_synonyms}
-\title{Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL)}
+\title{Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)}
 \format{
 \bold{compound_synonyms} - A data frame with 155,671 rows and 3 columns:
 \itemize{
@@ -23,6 +23,6 @@
 compound_synonyms
 }
 \description{
-Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL)
+Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)
 }
 \keyword{datasets}

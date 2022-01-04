@@ -1,8 +1,8 @@
-# Version 0.6.4 (December 29th 2021)
+# Version 0.6.5 (January 4th 2021)
 
 * Data update: NCI Thesaurus (21.12d)
-* Renamed _oncoPharmaDB::oncopharma_synonyms_ -> _oncoPharmaDB::compound_synonyms_
-* Added preliminary datasets on compound biomarkers, both curated (CIViC/CGI/PMKB, _oncoPharmaDB::compound_biomarkers[['curated']]_), and data from invitro drug screens (DepMap/PRISM, _oncoPharmaDB::compound_biomarkers[['invitro_screen']]_)
+* Renamed exported dataset __oncopharma_synonyms__ -> __compound_synonyms__
+* Added datasets on compound biomarkers, both curated (CIViC/CGI/PMKB, _oncoPharmaDB::compound_biomarkers[['curated']]_), and data from invitro drug screens (DepMap/PRISM, _oncoPharmaDB::compound_biomarkers[['invitro_screen']]_)
 
 # Version 0.6.3.900 (December 13th 2021)
 

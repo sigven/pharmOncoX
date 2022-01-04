@@ -1,9 +1,8 @@
-#source('/Users/sigven/research/DB/var_annotation_tracks/data-raw/gene_annotations.R')
 source('data-raw/biomarker_utilities.R')
 source('data-raw/drug_utilities.R')
 library(magrittr)
 
-datestamp <- '20211229'
+datestamp <- '20220104'
 
 civic_variant_summary <- paste0("data-raw/biomarkers/civic/variant_summary_",
                                 datestamp,
@@ -21,6 +20,10 @@ if(!file.exists(civic_clinical_evidence)){
                 destfile = civic_clinical_evidence)
 }
 
+gene_info <- get_gene_info_ncbi(
+  path_data_raw = file.path(here::here(), "data-raw"),
+  update = F)
+
 raw_biomarkers <- list()
 raw_biomarkers[['civic']] <-
   load_civic_biomarkers(
@@ -34,7 +37,13 @@ custom_fusiondb <- load_custom_fusion_db() %>%
 biomarkers_all <- do.call(rbind, raw_biomarkers)
 rownames(biomarkers_all) <- NULL
 biomarkers_all <- biomarkers_all %>%
-  dplyr::bind_rows(custom_fusiondb)
+  dplyr::bind_rows(custom_fusiondb) %>%
+  dplyr::mutate(therapeutic_context =
+                  stringi::stri_enc_toascii(therapeutic_context)) %>%
+  dplyr::mutate(cancer_type =
+                  stringi::stri_enc_toascii(cancer_type)) %>%
+  dplyr::mutate(evidence_description =
+                  stringi::stri_enc_toascii(evidence_description))
 
 compound_biomarkers <- list()
 compound_biomarkers[['curated']] <- biomarkers_all
@@ -46,74 +55,36 @@ compound_biomarkers[['version']][['clinvar']] <- '20210531'
 compound_biomarkers[['version']][['mitelman']] <- '20211015'
 compound_biomarkers[['version']][['prism_depmap']] <- '19Q4_21Q4'
 
-compound_targets <- list()
-compound_targets[['drug_targets']] <- oncoPharmaDB::oncopharmadb %>%
+targets <- list()
+targets[['druggable']] <- oncoPharmaDB::oncopharmadb %>%
   dplyr::select(target_symbol, target_ensembl_gene_id, target_genename,
                 nci_concept_display_name, molecule_chembl_id) %>%
   dplyr::rename(symbol = target_symbol,
                 ensembl_gene_id = target_ensembl_gene_id,
                 genename = target_genename) %>%
-  dplyr::group_by(symbol, ensembl_gene_id, genename) %>%
+  dplyr::left_join(dplyr::select(gene_info, symbol, entrezgene), by = "symbol") %>%
+  dplyr::group_by(symbol, ensembl_gene_id, genename, entrezgene) %>%
   dplyr::summarise(nci_concept_display_name = paste(
     sort(unique(nci_concept_display_name)), collapse="|"),
     molecule_chembl_id = paste(sort(unique(molecule_chembl_id)), collapse="|"),
     .groups = "drop") %>%
   dplyr::distinct()
 
-compound_targets[['cancer_genes']] <- NULL
-
-compound_targets[['gene_aliases']] <- get_unambiguous_gene_aliases(
-  basedir = here::here())
-
-gene_info <- get_gene_info_ncbi(
-  path_data_raw = file.path(here::here(),"data-raw"),
-  update = F)
-
-cancer_census_genes <- get_cancer_gene_census(
-  basedir = here::here(),
-  origin = "germline"
-)
-
-panel_app_genes <- get_genomics_england_panels(
-  basedir = here::here(),
-  gene_info = gene_info,
-  build = 'grch38'
-)
-
-intogen_driver_genes <- get_intogen_driver_genes(
-  basedir = here::here(),
-  gene_info = gene_info
-)
-
-tcga_germline_genes <- get_tcga_germline_genes(
-  basedir = here::here(),
-  gene_info = gene_info
-)
-
-actionable <- as.data.frame(biomarkers_all %>%
+targets[['actionable']] <- as.data.frame(biomarkers_all %>%
   dplyr::filter(biomarker_source_db == "civic" |
                   biomarker_source_db == "cgi" |
                   biomarker_source_db == "pmkb") %>%
   dplyr::mutate(source_db = toupper(biomarker_source_db)) %>%
   dplyr::group_by(symbol, source_db) %>%
   dplyr::summarise(phenotypes = paste(sort(unique(cancer_type)), collapse="|"),
+                   clinical_significance = paste(sort(unique(clinical_significance)), collapse="|"),
                    .groups = "drop") %>%
-  dplyr::select(symbol, phenotypes, source_db) %>%
-  dplyr::left_join(dplyr::select(gene_info, symbol, entrezgene), by = "symbol") %>%
+  dplyr::select(symbol, phenotypes, clinical_significance, source_db) %>%
+  dplyr::left_join(dplyr::select(gene_info, symbol, ensembl_gene_id, name, entrezgene), by = "symbol") %>%
+  dplyr::rename(genename = name) %>%
+  dplyr::select(symbol, ensembl_gene_id, genename, entrezgene, dplyr::everything()) %>%
   dplyr::distinct()
 )
-
-compound_targets[['cancer_genes']] <- cancer_census_genes %>%
-  dplyr::bind_rows(panel_app_genes) %>%
-  dplyr::bind_rows(intogen_driver_genes) %>%
-  dplyr::bind_rows(tcga_germline_genes) %>%
-  dplyr::bind_rows(actionable)
-
-rm(cancer_census_genes)
-rm(panel_app_genes)
-rm(intogen_driver_genes)
-rm(tcga_germline_genes)
-rm(actionable)
 
 ccle_drugs <- readr::read_delim(
   file="data-raw/biomarkers/ccle_depmap/primary-screen-replicate-treatment-info.csv",
@@ -221,8 +192,8 @@ rm(ccle_drugs)
 rm(ccle_predictive_features)
 rm(all_predictive_features)
 
-usethis::use_data(compound_biomarkers)
-usethis::use_data(compound_targets)
+usethis::use_data(compound_biomarkers, overwrite = T)
+usethis::use_data(targets, overwrite = T)
 
 #
 #
@@ -504,21 +475,21 @@ usethis::use_data(compound_targets)
 
 
 
-gene_aliases <- get_unambiguous_gene_aliases(
-  basedir = "/Users/sigven/research/DB/var_annotation_tracks")
+# gene_aliases <- get_unambiguous_gene_aliases(
+#   basedir = "/Users/sigven/research/DB/var_annotation_tracks")
+#
+# gene_info <- get_gene_info_ncbi(build = 'grch37')
+#
+# cancer_census_genes <- get_cancer_gene_census(
+#   basedir = here::here(),
+#   origin = "germline"
+# )
 
-gene_info <- get_gene_info_ncbi(build = 'grch37')
-
-cancer_census_genes <- get_cancer_gene_census(
-  basedir = here::here(),
-  origin = "germline"
-)
-
-panel_app_genes <- get_genomics_england_panels(
-  basedir = here::here(),
-  gene_info = gene_info,
-  build = 'grch38'
-)
+# panel_app_genes <- get_genomics_england_panels(
+#   basedir = here::here(),
+#   gene_info = gene_info,
+#   build = 'grch38'
+# )
 
 
 # aggregated_biomarkers[['gene']][['pmkb']] <- load_pmkb_biomarkers() %>%
@@ -610,5 +581,5 @@ panel_app_genes <- get_genomics_england_panels(
 
 
 
-saveRDS(cancer_biomarker, paste0(file="cancer_biomarkers_",datestamp,".rds"))
-system(paste0('ln -sf cancer_biomarkers_',datestamp,".rds cancer_biomarkers.rds"))
+#saveRDS(cancer_biomarker, paste0(file="cancer_biomarkers_",datestamp,".rds"))
+#system(paste0('ln -sf cancer_biomarkers_',datestamp,".rds cancer_biomarkers.rds"))

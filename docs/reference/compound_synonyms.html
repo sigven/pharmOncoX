@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • oncoPharmaDB</title>
+<title>Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL) — compound_synonyms • oncoPharmaDB</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL) — compound_synonyms" />
+<meta property="og:description" content="Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL)" />
 
 
 
@@ -58,7 +59,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -120,54 +121,35 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL)</h1>
+    <small class="dont-index">Source: <a href='https://github.com/sigven/oncoPharmaDB/blob/master/R/data.R'><code>R/data.R</code></a></small>
+    <div class="hidden name"><code>compound_synonyms.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL)</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='va'>compound_synonyms</span></pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="compound_synonyms.html">compound_synonyms</a></code> </p>
-        </td>
-        <td><p>Dataset of drug synonyms - linking known drug aliases to a primary identifier (ChEMBL)</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_onco_drugs.html">get_onco_drugs()</a></code> </p>
-        </td>
-        <td><p>Retrieve antineoplastic drugs and drug regimens</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="oncopharmadb.html">oncopharmadb</a></code> </p>
-        </td>
-        <td><p>Dataset of targeted and non-targeted cancer drugs</p></td>
-      </tr>
-    </tbody>
-    </table>
+
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+
+    <p><b>compound_synonyms</b> - A data frame with 155,671 rows and 3 columns:</p><ul>
+<li><p><em>alias</em> - drug alias</p></li>
+<li><p><em>nci_concept_display_name</em> - Primary drug name (NCI Thesaurus)</p></li>
+<li><p><em>molecule_chembl_id</em> - ChEMBL compound identifier</p></li>
+</ul>
+
+    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
+
+    <p><a href='https://targetvalidation.org/'>https://targetvalidation.org/</a></p>
+<p><a href='https://www.ebi.ac.uk/chembl/'>https://www.ebi.ac.uk/chembl/</a></p>
+<p><a href='https://ncithesaurus.nci.nih.gov/ncitbrowser/'>https://ncithesaurus.nci.nih.gov/ncitbrowser/</a></p>
+
   </div>
-
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
