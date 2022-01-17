@@ -78,7 +78,7 @@
 
 #' Datasets of compound biomarkers - omics properties that are linked to drug response
 #'
-#' @format \bold{curated} - A data frame with 234,712 rows and 26 columns:
+#' @format \bold{curated} - A data frame with 235,340 rows and 26 columns:
 #' \itemize{
 #'   \item \emph{evidence_id} - evidence identifier
 #'   \item \emph{evidence_url} - evidence URL

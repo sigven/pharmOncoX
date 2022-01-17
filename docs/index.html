@@ -13,7 +13,7 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Dataset with targeted and non-targeted anticancer drugs">
 <meta property="og:description" content="This data package collects aticancer drug information from multiple resources,
-    including Open Targets Platform/ChEMBL, NCI Thesaurus, DrugBank etc. The main dataset
+    including Open Targets Platform/ChEMBL, NCI Thesaurus etc. The main dataset
     contains a list of all anticancer drugs per indication/tumor type (where this is provided),
     which can further be queried with a range of parameters (minimum clinical phase, approval
     status, targets, drug category etc.)">
@@ -23,6 +23,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -35,18 +37,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">oncoPharmaDB</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.6</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -56,19 +52,19 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/sigven/oncoPharmaDB/">
+  <a href="https://github.com/sigven/oncoPharmaDB/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a href="https://twitter.com/sigven">
+  <a href="https://twitter.com/sigven" class="external-link">
     <span class="fab fa-twitter fa-lg"></span>
      
   </a>
 </li>
 <li>
-  <a href="http://sigven.github.io">
+  <a href="http://sigven.github.io" class="external-link">
     <span class="fas fa-university"></span>
      
   </a>
@@ -86,13 +82,13 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="oncopharmadb---targeted-and-non-targeted-anticancer-drugs-and-drug-regimens" class="section level3">
-<h3 class="hasAnchor">
-<a href="#oncopharmadb---targeted-and-non-targeted-anticancer-drugs-and-drug-regimens" class="anchor"></a>oncoPharmaDB - Targeted and non-targeted anticancer drugs and drug regimens</h3>
-<div id="overview" class="section level4">
-<h4 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h4>
-<p>This R package provides a dataset and method to query targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. The dataset is largely based on drug-target-indication associations provided by the <a href="https://targetvalidation.org">Open Targets Platform</a> (<a href="https://doi.org/10.1093/nar/gkaa1027">Ochoa et al., Nucleic Acids Res., 2021</a>), and where we have limited the associations to cancer-relevant indications only (as provided in <a href="https://github.com/sigven/oncoPhenoMap">sigven/oncoPhenoMap</a>). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from <a href="https://ncithesaurus.nci.nih.gov/ncitbrowser/">NCI Thesaurus</a>, where we append non-targeted cancer drugs (chemotherapies etc.) and different drug regimens.</p>
+<div class="section level3">
+<h3 id="oncopharmadb---targeted-and-non-targeted-anticancer-drugs-and-drug-regimens">oncoPharmaDB - Targeted and non-targeted anticancer drugs and drug regimens<a class="anchor" aria-label="anchor" href="#oncopharmadb---targeted-and-non-targeted-anticancer-drugs-and-drug-regimens"></a>
+</h3>
+<div class="section level4">
+<h4 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h4>
+<p>This R package provides a dataset and method to query targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. The dataset is largely based on drug-target-indication associations provided by the <a href="https://targetvalidation.org" class="external-link">Open Targets Platform</a> (<a href="https://doi.org/10.1093/nar/gkaa1027" class="external-link">Ochoa et al., Nucleic Acids Res., 2021</a>), and where we have limited the associations to cancer-relevant indications only (as provided in <a href="https://github.com/sigven/oncoPhenoMap" class="external-link">sigven/oncoPhenoMap</a>). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from <a href="https://ncithesaurus.nci.nih.gov/ncitbrowser/" class="external-link">NCI Thesaurus</a>, where we append non-targeted cancer drugs (chemotherapies etc.) and different drug regimens.</p>
 <p>Anti-cancer drugs are currently provided with the following tentative drug categories/types (not necessarily mutually exclusive), indicative of their mechanism-of-action:</p>
 <ul>
 <li>Alkylating agents</li>
@@ -120,19 +116,19 @@
 <li>NCI Thesaurus (21.12d)</li>
 </ul>
 </div>
-<div id="installation--usage" class="section level4">
-<h4 class="hasAnchor">
-<a href="#installation--usage" class="anchor"></a>Installation &amp; Usage</h4>
-<div id="install-from-github" class="section level5">
-<h5 class="hasAnchor">
-<a href="#install-from-github" class="anchor"></a>Install from GitHub</h5>
+<div class="section level4">
+<h4 id="installation--usage">Installation &amp; Usage<a class="anchor" aria-label="anchor" href="#installation--usage"></a>
+</h4>
+<div class="section level5">
+<h5 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
+</h5>
 <p><code>install.packages("devtools"); devtools::install_github("sigven/oncoPharmaDB")</code></p>
-<p><a href="http://github.com/badges/stability-badges"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="experimental"></a></p>
+<p><a href="http://github.com/badges/stability-badges" class="external-link"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="experimental"></a></p>
 </div>
-<div id="usage-examples" class="section level5">
-<h5 class="hasAnchor">
-<a href="#usage-examples" class="anchor"></a>Usage examples</h5>
-<ol>
+<div class="section level5">
+<h5 id="usage-examples">Usage examples<a class="anchor" aria-label="anchor" href="#usage-examples"></a>
+</h5>
+<ol style="list-style-type: decimal">
 <li>
 <p>Get BRAF-targeted drugs, list records per indication</p>
 <p><code>drugs &lt;- oncoPharmaDB::get_onco_drugs(drug_is_targeted = T,  drug_target = c('BRAF'))</code></p>
@@ -169,66 +165,72 @@
 </div>
 </div>
 </div>
-<div id="contact" class="section level3">
-<h3 class="hasAnchor">
-<a href="#contact" class="anchor"></a>Contact</h3>
+<div class="section level3">
+<h3 id="contact">Contact<a class="anchor" aria-label="anchor" href="#contact"></a>
+</h3>
 <p>sigven AT ifi.uio.no</p>
 </div>
-<div id="code-of-conduct" class="section level3">
-<h3 class="hasAnchor">
-<a href="#code-of-conduct" class="anchor"></a>Code of Conduct</h3>
-<p>Please note that this project is released with a <a href="https://github.com/sigven/oncoPharmaDB/blob/main/.github/CODE_OF_CONDUCT.md">Contributor Code of Conduct</a>. By participating in this project you agree to abide by its terms.</p>
+<div class="section level3">
+<h3 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
+</h3>
+<p>Please note that this project is released with a <a href="https://github.com/sigven/oncoPharmaDB/blob/main/.github/CODE_OF_CONDUCT.md" class="external-link">Contributor Code of Conduct</a>. By participating in this project you agree to abide by its terms.</p>
 </div>
 
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/sigven/oncoPharmaDB/">https://​github.com/​sigven/​oncoPharmaDB/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/sigven/oncoPharmaDB/issues">https://​github.com/​sigven/​oncoPharmaDB/​issues</a>
-</li>
+<li><a href="https://github.com/sigven/oncoPharmaDB/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/sigven/oncoPharmaDB/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>
-<a href="https://opensource.org/licenses/mit-license.php">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
+<a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
 </li>
 </ul>
 </div>
+
 <div class="community">
-<h2>Community</h2>
+<h2 data-toc-skip>Community</h2>
 <ul class="list-unstyled">
 <li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
 </ul>
 </div>
+
 <div class="citation">
-<h2>Citation</h2>
+<h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html">Citing oncoPharmaDB</a></li>
+<li><a href="authors.html#citation">Citing oncoPharmaDB</a></li>
 </ul>
 </div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Sigve Nakken <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-8468-2050" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Sigve Nakken <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-8468-2050" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 </ul>
 </div>
+
+
 
   </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Sigve Nakken.</p>
+  <p></p>
+<p>Developed by Sigve Nakken.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
@@ -236,6 +238,8 @@
 
   
 
+
+  
 
   </body>
 </html>

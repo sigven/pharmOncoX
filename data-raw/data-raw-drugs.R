@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20211229'
+pharmamine_datestamp <- '20220117'
 nci_db_release <- '21.12d'
 chembl_db_release <- 'ChEMBL_29'
 opentargets_version <- '2021.11'
@@ -602,7 +602,7 @@ oncopharmadb <- oncopharmadb %>%
       target_symbol == "ADORA2A"),
     TRUE,FALSE)
   ) %>%
-  dplyr::mutate(immune_checkpoint_inihbitor = dplyr::if_else(
+  dplyr::mutate(immune_checkpoint_inhibitor = dplyr::if_else(
     !is.na(nci_concept_display_name) &
       stringr::str_detect(nci_concept_display_name,"NLM-001|CEA-MUC-1"),
     as.logical(FALSE),

@@ -1,3 +1,8 @@
+# Version 0.6.6 (January 17th 2022)
+
+* Fixed duplicate column in `oncopharmadb` (immune checkpoint inhibitor) 
+* Updated biomarkers (CIViC)
+
 # Version 0.6.5 (January 4th 2022)
 
 * Data update: NCI Thesaurus (21.12d)

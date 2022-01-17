@@ -2,7 +2,7 @@ source('data-raw/biomarker_utilities.R')
 source('data-raw/drug_utilities.R')
 library(magrittr)
 
-datestamp <- '20220104'
+datestamp <- '20220117'
 
 civic_variant_summary <- paste0("data-raw/biomarkers/civic/variant_summary_",
                                 datestamp,
@@ -51,12 +51,16 @@ compound_biomarkers[['version']] <- list()
 compound_biomarkers[['version']][['civic']] <- datestamp
 compound_biomarkers[['version']][['cgi']] <- '20180117'
 compound_biomarkers[['version']][['pmkb']] <- '20200405'
-compound_biomarkers[['version']][['clinvar']] <- '20210531'
 compound_biomarkers[['version']][['mitelman']] <- '20211015'
 compound_biomarkers[['version']][['prism_depmap']] <- '19Q4_21Q4'
 
 targets <- list()
 targets[['druggable']] <- oncoPharmaDB::oncopharmadb %>%
+  # dplyr::mutate(target_source_db = dplyr::if_else(
+  #   !is.na(opentargets_version),
+  #   "NCI_thesaurus&OTPlatform",
+  #   "NCI_thesaurus"
+  # )) %>%
   dplyr::select(target_symbol, target_ensembl_gene_id, target_genename,
                 nci_concept_display_name, molecule_chembl_id) %>%
   dplyr::rename(symbol = target_symbol,
@@ -67,6 +71,7 @@ targets[['druggable']] <- oncoPharmaDB::oncopharmadb %>%
   dplyr::summarise(nci_concept_display_name = paste(
     sort(unique(nci_concept_display_name)), collapse="|"),
     molecule_chembl_id = paste(sort(unique(molecule_chembl_id)), collapse="|"),
+    # target_source_db = paste(sort(unique(target_source_db)), collapse="&"),
     .groups = "drop") %>%
   dplyr::distinct()
 
