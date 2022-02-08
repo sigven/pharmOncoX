@@ -1,54 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/404.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/404.html</loc>
   </url>
   <url>
-    <loc>/CODE_OF_CONDUCT.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/CODE_OF_CONDUCT.html</loc>
   </url>
   <url>
-    <loc>/LICENSE-text.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/articles/index.html</loc>
   </url>
   <url>
-    <loc>/articles/installation.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/articles/installation.html</loc>
   </url>
   <url>
-    <loc>/articles/running.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/articles/running.html</loc>
   </url>
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/authors.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/index.html</loc>
   </url>
   <url>
-    <loc>/news/index.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/news/index.html</loc>
   </url>
   <url>
-    <loc>/reference/compound_biomarkers.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/compound_biomarkers.html</loc>
   </url>
   <url>
-    <loc>/reference/compound_synonyms.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/compound_synonyms.html</loc>
   </url>
   <url>
-    <loc>/reference/get_onco_drugs.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/get_onco_drugs.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/oncopharmadb.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/oncopharmadb.html</loc>
   </url>
   <url>
-    <loc>/reference/pipe.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/pipe.html</loc>
   </url>
   <url>
-    <loc>/reference/targets.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/targets.html</loc>
   </url>
   <url>
-    <loc>/reference/tidyeval.html</loc>
+    <loc>https://sigven.github.io/oncoPharmaDB/reference/tidyeval.html</loc>
   </url>
 </urlset>
