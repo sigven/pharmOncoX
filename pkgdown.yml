@@ -1,0 +1,8 @@
+pandoc: 2.7.3
+pkgdown: 2.0.2
+pkgdown_sha: ~
+articles:
+  installation: installation.html
+  running: running.html
+last_built: 2022-02-08T23:21Z
+
