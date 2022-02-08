@@ -926,6 +926,30 @@ get_opentargets_cancer_drugs <-
 
 }
 
+get_fda_ndc_mapping <- function(
+  path_data_raw = NULL
+){
+
+  fda_ndc_fname <- file.path(
+    path_data_raw,"national_drug_code_fda","product.txt")
+
+  drug2epc <- readr::read_tsv(fda_ndc_fname, show_col_types = F) %>%
+    janitor::clean_names() %>%
+    ## ignore drug regimens/combos
+    dplyr::filter(!stringr::str_detect(substancename,"; ")) %>%
+    ## separate entries of pharm classes
+    tidyr::separate_rows(pharm_classes, sep=", ") %>%
+    dplyr::select(substancename, pharm_classes) %>%
+    dplyr::filter(!is.na(pharm_classes)) %>%
+    dplyr::filter(stringr::str_detect(pharm_classes," \\[EPC\\]")) %>%
+    dplyr::rename(drug = substancename,
+                  fda_epc_category = pharm_classes) %>%
+    dplyr::distinct()
+
+  return(drug2epc)
+}
+
+
 #### NCI THESAURUS CANCER DRUGS/TREATMENTS
 get_nci_drugs <- function(nci_db_release = nci_db_release,
                           overwrite = F,
@@ -1584,7 +1608,16 @@ get_gene_info_ncbi <- function(path_data_raw = NULL,
       !is.na(n) & n > 1,
       as.character(NA),
       as.character(ensembl_gene_id))) %>%
-    dplyr::select(-n)
+    dplyr::select(-n) %>%
+    ## TEC
+    dplyr::filter(entrezgene != 100124696) %>%
+    ## HBD
+    dplyr::filter(entrezgene != 100187828) %>%
+    ## MMD2
+    dplyr::filter(entrezgene != 100505381) %>%
+    ## MEMO1
+    dplyr::filter(entrezgene != 7795)
+
 
   return(gene_info)
 

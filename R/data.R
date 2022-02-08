@@ -4,7 +4,7 @@
 #' data has been harvested from the Open Targets Platform, the NCI Thesaurus, and ChEMBL. Note that each entry corresponds
 #' to a "drug synonym-target-indication association"
 #'
-#' @format \bold{oncopharmadb} - A data frame with 492,908 rows and 49 columns:
+#' @format \bold{oncopharmadb} - A data frame with 493,916 rows and 49 columns:
 #' \itemize{
 #'   \item \emph{drug_name} - Primary drug name (upper case, NCI Thesaurus)
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -54,6 +54,7 @@
 #'   \item \emph{proteasome_inhibitor} - logical indicating if drug is a proteasome inhibitor
 #'   \item \emph{hormone_therapy} - logical indicating if drug is a hormone therapy
 #'   \item \emph{hedgehog_antagonist} - logical indicating if drug is a hedgehog pathway antagonist
+#'   \item \emph{fda_epc_category} - FDA Established Pharmacologic Class (EPC) text phrase
 #' }
 #'
 #'
@@ -64,7 +65,7 @@
 
 #' Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)
 #'
-#' @format \bold{compound_synonyms} - A data frame with 155,671 rows and 3 columns:
+#' @format \bold{compound_synonyms} - A data frame with 155,931 rows and 3 columns:
 #' \itemize{
 #'   \item \emph{alias} - drug alias
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -78,7 +79,7 @@
 
 #' Datasets of compound biomarkers - omics properties that are linked to drug response
 #'
-#' @format \bold{curated} - A data frame with 235,340 rows and 26 columns:
+#' @format \bold{curated} - A data frame with 252,700 rows and 26 columns:
 #' \itemize{
 #'   \item \emph{evidence_id} - evidence identifier
 #'   \item \emph{evidence_url} - evidence URL
@@ -147,7 +148,7 @@
 #' }
 #'
 #'
-#' @format \bold{actionable} - A data frame with 608 rows and 7 columns:
+#' @format \bold{actionable} - A data frame with 609 rows and 7 columns:
 #' \itemize{
 #'   \item \emph{symbol} - Gene symbol
 #'   \item \emph{ensembl_gene_id} - Ensembl gene identifier

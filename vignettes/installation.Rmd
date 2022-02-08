@@ -1,0 +1,7 @@
+---
+title: "Installation"
+output: rmarkdown::html_document
+---
+
+* `install.packages("devtools")`
+* `devtools::install_github("sigven/oncoPharmaDB", ref = '0.6.6)`

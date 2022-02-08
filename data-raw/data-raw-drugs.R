@@ -1,6 +1,6 @@
 library(magrittr)
-pharmamine_datestamp <- '20220117'
-nci_db_release <- '21.12d'
+pharmamine_datestamp <- '20220208'
+nci_db_release <- '22.01e'
 chembl_db_release <- 'ChEMBL_29'
 opentargets_version <- '2021.11'
 uniprot_release <- '2021_04'
@@ -23,7 +23,7 @@ path_data_tmp_processed <-
 
 gene_info <-
   get_gene_info_ncbi(
-    path_data_raw = path_data_raw, update = F) %>%
+    path_data_raw = path_data_raw, update = T) %>%
   dplyr::select(-c(symbol, hgnc_id,
                    gene_biotype, synonyms)) %>%
   dplyr::rename(symbol = symbol_entrez,
@@ -84,7 +84,7 @@ download.file(url = antineo_agents_url, destfile = antineo_agents_local, quiet =
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -774,6 +774,16 @@ oncopharmadb <- oncopharmaDB_cancer_no_indication %>%
   dplyr::bind_rows(oncopharmaDB_cancer_NOS) %>%
   dplyr::arrange(nci_concept_display_name)
 
+fda_epc_codes <-
+  as.data.frame(
+    get_fda_ndc_mapping(path_data_raw = path_data_raw) %>%
+  dplyr::group_by(drug) %>%
+  dplyr::summarise(fda_epc_category = paste(fda_epc_category, collapse = "; "),
+                   .groups = "drop")
+  )
+
+oncopharmadb <- oncopharmadb %>%
+  dplyr::left_join(fda_epc_codes, by = c("drug_name" = "drug"))
 
 usethis::use_data(oncopharmadb, overwrite = T)
 
