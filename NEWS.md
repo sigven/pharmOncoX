@@ -1,4 +1,4 @@
-# Version 0.6.7 (February 8th 2022)
+# Version 0.6.9 (February 8th 2022)
 
 * Data update: NCI Thesaurus (22.01e)
 * Added [FDA pharmacologic class](https://www.fda.gov/industry/structured-product-labeling-resources/pharmacologic-class) (established pharmacological class - EPC) phrases to `oncopharmadb` data.frame
