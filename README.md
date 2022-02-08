@@ -5,8 +5,8 @@ This R package provides a dataset and method to query targeted and non-targeted 
 
 ### Getting started
 
-* [Installation instructions](https://sigven.github.io/oncoPharmaDB/installation.html)
-* [Usage examples](https://sigven.github.io/oncoPharmaDB/running.html)
+* [Installation instructions](https://sigven.github.io/oncoPharmaDB/articles/installation.html)
+* [Usage examples](https://sigven.github.io/oncoPharmaDB/articles/running.html)
 * [Function reference](https://sigven.github.io/oncoPharmaDB/reference)
 
 ### Contact
