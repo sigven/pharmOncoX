@@ -1,10 +1,10 @@
 library(magrittr)
-pharmamine_datestamp <- '20220208'
-nci_db_release <- '22.01e'
+pharmamine_datestamp <- '20220304'
+nci_db_release <- '22.02d'
 chembl_db_release <- 'ChEMBL_29'
-opentargets_version <- '2021.11'
+opentargets_version <- '2022.02'
 uniprot_release <- '2021_04'
-dgidb_db_release <- 'v2021_05'
+dgidb_db_release <- 'v2022_02'
 update_dailymed <- F
 
 #.libPaths("/Library/Frameworks/R.framework/Resources/library")

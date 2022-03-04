@@ -4,7 +4,7 @@
 #' data has been harvested from the Open Targets Platform, the NCI Thesaurus, and ChEMBL. Note that each entry corresponds
 #' to a "drug synonym-target-indication association"
 #'
-#' @format \bold{oncopharmadb} - A data frame with 493,916 rows and 49 columns:
+#' @format \bold{oncopharmadb} - A data frame with 576,954 rows and 49 columns:
 #' \itemize{
 #'   \item \emph{drug_name} - Primary drug name (upper case, NCI Thesaurus)
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -65,7 +65,7 @@
 
 #' Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)
 #'
-#' @format \bold{compound_synonyms} - A data frame with 155,931 rows and 3 columns:
+#' @format \bold{compound_synonyms} - A data frame with 156,419 rows and 3 columns:
 #' \itemize{
 #'   \item \emph{alias} - drug alias
 #'   \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -79,7 +79,7 @@
 
 #' Datasets of compound biomarkers - omics properties that are linked to drug response
 #'
-#' @format \bold{curated} - A data frame with 252,700 rows and 26 columns:
+#' @format \bold{curated} - A data frame with 252,899 rows and 26 columns:
 #' \itemize{
 #'   \item \emph{evidence_id} - evidence identifier
 #'   \item \emph{evidence_url} - evidence URL
@@ -110,7 +110,7 @@
 #' }
 #'
 #'
-#' @format \bold{invitro_screen} - A data frame with 10,182 rows and 8 columns:
+#' @format \bold{invitro_screen} - A data frame with 10,172 rows and 8 columns:
 #' \itemize{
 #'   \item \emph{compound_id} - compound identifier (PRISM)
 #'   \item \emph{model} - type of omics drug prediction model (DepMap/PRISM)
@@ -137,7 +137,7 @@
 #'  - actionable: data frame with actionable genes in cancer (biomarkers ,
 #'                 for therapies, prognosis etc. (harvested from various sources)
 #'
-#' @format \bold{druggable} - A data frame with 1,007 rows and 6 columns:
+#' @format \bold{druggable} - A data frame with 967 rows and 6 columns:
 #' \itemize{
 #'   \item \emph{symbol} - Gene symbol
 #'   \item \emph{ensembl_gene_id} - Ensembl gene identifier
@@ -148,7 +148,7 @@
 #' }
 #'
 #'
-#' @format \bold{actionable} - A data frame with 609 rows and 7 columns:
+#' @format \bold{actionable} - A data frame with 614 rows and 7 columns:
 #' \itemize{
 #'   \item \emph{symbol} - Gene symbol
 #'   \item \emph{ensembl_gene_id} - Ensembl gene identifier

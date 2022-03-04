@@ -5,7 +5,7 @@
 \alias{oncopharmadb}
 \title{Dataset of targeted and non-targeted cancer drugs}
 \format{
-\bold{oncopharmadb} - A data frame with 492,908 rows and 49 columns:
+\bold{oncopharmadb} - A data frame with 576,954 rows and 49 columns:
 \itemize{
 \item \emph{drug_name} - Primary drug name (upper case, NCI Thesaurus)
 \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
@@ -55,6 +55,7 @@
 \item \emph{proteasome_inhibitor} - logical indicating if drug is a proteasome inhibitor
 \item \emph{hormone_therapy} - logical indicating if drug is a hormone therapy
 \item \emph{hedgehog_antagonist} - logical indicating if drug is a hedgehog pathway antagonist
+\item \emph{fda_epc_category} - FDA Established Pharmacologic Class (EPC) text phrase
 }
 }
 \source{

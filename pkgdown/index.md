@@ -30,12 +30,12 @@ Anti-cancer drugs are currently provided with the following tentative drug categ
 * Topoisomerase inhibitors
 * Tubulin inhibitors
 
-Currently (as of February 8th 2022), `oncoPharmaDB` is built upon the following 
+Currently (as of March 4th 2022), `oncoPharmaDB` is built upon the following 
 releases of external databases:
 
- - Open Targets Platform (2021.11)
+ - Open Targets Platform (2022.02)
  - ChEMBL (v29)
- - NCI Thesaurus (22.01e)
+ - NCI Thesaurus (22.02d)
 
 ### Getting started
 
