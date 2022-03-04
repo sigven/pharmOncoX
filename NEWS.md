@@ -1,3 +1,7 @@
+# Version 0.7.0 (March 4th 2022)
+
+* Data updates: NCI Thesaurus (22.02d), Open Targets Platform (2022.02)
+
 # Version 0.6.9 (February 8th 2022)
 
 * Data update: NCI Thesaurus (22.01e)
