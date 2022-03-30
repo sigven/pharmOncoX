@@ -1,3 +1,8 @@
+# Version 0.7.1 (March 30th 2022)
+
+* Data updates: NCI Thesaurus (22.03d)
+* Updated biomarkers (CIViC)
+
 # Version 0.7.0 (March 4th 2022)
 
 * Data updates: NCI Thesaurus (22.02d), Open Targets Platform (2022.02)

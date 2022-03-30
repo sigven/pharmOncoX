@@ -370,6 +370,9 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
             toupper(variant_aliases),"FUSION | TYPE 1|RECIPROCAL ","")
       ) %>%
       dplyr::rowwise() %>%
+      dplyr::mutate(variant = stringr::str_replace(
+        variant, "::", "-"
+      )) %>%
       dplyr::mutate(gene2 = dplyr::if_else(
         stringr::str_detect(variant,"BCR-ABL") |
           variant_types == "missense_variant,transcript_fusion" |
@@ -644,6 +647,11 @@ load_cgi_biomarkers <- function(){
                     individual_mutation,
                     info, g_dna) %>%
       dplyr::mutate(variant_id = rep(1:nrow(.))) %>%
+      dplyr::mutate(gene = dplyr::case_when(
+        gene == "MLL" ~ "KMT2A",
+        gene == "MLL2" ~ "KMT2D",
+        TRUE ~ as.character(gene)
+      )) %>%
       dplyr::mutate(variant_origin = "Somatic") %>%
       dplyr::mutate(variant_origin = dplyr::if_else(
         !is.na(comments) & stringr::str_detect(tolower(comments),"germline"),
@@ -976,6 +984,9 @@ load_pmkb_biomarkers <- function(){
                     show_col_types = F, delim = ",")
   ) %>%
     janitor::clean_names() %>%
+    dplyr::mutate(gene = dplyr::if_else(
+      gene == "SEPT14", "SEPTIN14", as.character(gene)
+    )) %>%
     tidyr::separate_rows(variant_s, sep="\\|") %>%
     dplyr::mutate(variant_s = dplyr::if_else(
       is.na(variant_s),"Undefined",as.character(variant_s)
@@ -1410,7 +1421,8 @@ load_mitelman_db <- function(){
 
   pmid_data <- read.table(
     file = "data-raw/biomarkers/mitelmandb/REF.TXT.DATA",
-    sep = "\t", stringsAsFactors = F, header = T, fill = T) %>%
+    sep = "\t", stringsAsFactors = F, header = T, fill = T,
+    quote = "") %>%
     dplyr::select(RefNo, Pubmed) %>%
     dplyr::filter(nchar(Pubmed) > 0) %>%
     dplyr::mutate(RefNo = as.integer(RefNo)) %>%
@@ -1420,14 +1432,17 @@ load_mitelman_db <- function(){
   mbca_data <- read.table(
     file = "data-raw/biomarkers/mitelmandb/MBCA.TXT.DATA",
     sep = "\t", stringsAsFactors = F, header = T) %>%
-    dplyr::filter(stringr::str_detect(GeneShort,"/")) %>%
+    dplyr::filter(stringr::str_detect(GeneShort,"::")) %>%
     dplyr::mutate(
-      variant = stringr::str_replace_all(GeneShort,"/","-")) %>%
+      variant = stringr::str_replace_all(GeneShort,"::","-")) %>%
     dplyr::rename(karyotype = KaryShort) %>%
     dplyr::select(MolClin, RefNo, InvNo, Morph, Topo,
                   variant, karyotype) %>%
+    tidyr::separate_rows(variant, sep=",") %>%
     dplyr::left_join(pmid_data, by = "RefNo") %>%
     dplyr::left_join(morph, by = "Morph") %>%
+    dplyr::filter(stringr::str_detect(variant,"-")) %>%
+    dplyr::filter(!stringr::str_detect(variant,"(-|\\+)$")) %>%
     dplyr::mutate(evidence_id = seq(1:nrow(.))) %>%
     dplyr::mutate(evidence_id = paste0("MITDB_",evidence_id)) %>%
     dplyr::filter(stringr::str_count(variant,",") ==

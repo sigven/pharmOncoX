@@ -536,8 +536,10 @@ get_onco_drugs <- function(drug_is_targeted = F,
       drug_records <- as.data.frame(drug_records %>%
         dplyr::group_by(dplyr::across(-c(.data$disease_efo_label,
                                          .data$primary_site,
+                                         .data$drug_clinical_id,
                                          .data$drug_max_phase_indication))) %>%
           dplyr::summarise(
+            drug_clinical_id = paste(unique(sort(.data$drug_clinical_id)), collapse="|"),
             disease_indication = paste(
               unique(sort(.data$disease_efo_label)), collapse="|"),
             disease_indicaton_max_phase = paste(unique(sort(.data$drug_max_phase_indication)), collapse="|"),
@@ -564,8 +566,10 @@ get_onco_drugs <- function(drug_is_targeted = F,
         drug_records %>%
           dplyr::group_by(dplyr::across(-c(.data$disease_efo_label,
                                            .data$primary_site,
+                                           .data$drug_clinical_id,
                                            .data$drug_max_phase_indication))) %>%
           dplyr::summarise(
+            drug_clinical_id = paste(unique(sort(.data$drug_clinical_id)), collapse="|"),
             disease_indication = paste(unique(sort(.data$disease_efo_label)), collapse="|"),
             disease_indicaton_max_phase = paste(unique(sort(.data$drug_max_phase_indication)), collapse="|"),
             disease_main_group = paste(unique(sort(.data$primary_site)), collapse="|"),
@@ -716,16 +720,16 @@ get_onco_drugs <- function(drug_is_targeted = F,
     }
   }
 
-  if(nrow(drug_records) > 0){
-
-    drug_records <- as.data.frame(
-      drug_records %>%
-        dplyr::group_by(dplyr::across(-c(.data$drug_clinical_id))) %>%
-        dplyr::summarise(drug_clinical_id = paste(
-          unique(sort(.data$drug_clinical_id)),
-          collapse=","), .groups = "drop")
-    )
-  }
+  # if(nrow(drug_records) > 0){
+  #
+  #   drug_records <- as.data.frame(
+  #     drug_records %>%
+  #       dplyr::group_by(dplyr::across(-c(.data$drug_clinical_id))) %>%
+  #       dplyr::summarise(drug_clinical_id = paste(
+  #         unique(sort(.data$drug_clinical_id)),
+  #         collapse=","), .groups = "drop")
+  #   )
+  # }
 
 
   if(output_style == "narrow"){
