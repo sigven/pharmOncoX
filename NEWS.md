@@ -1,3 +1,7 @@
+# Version 0.7.2 (March 30th 2022)
+
+* Fixed bug in installation documentation
+
 # Version 0.7.1 (March 30th 2022)
 
 * Data updates: NCI Thesaurus (22.03d)
