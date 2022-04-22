@@ -889,7 +889,13 @@ compound_synonyms <-
   dplyr::mutate(
     nci_concept_display_name =
       stringi::stri_enc_toascii(nci_concept_display_name)
-  )
+  ) %>%
+  dplyr::filter(!(alias == "canertinib dihydrochloride" & !is.na(molecule_chembl_id))) %>%
+  dplyr::filter(!(alias == "cisplatin" & !is.na(molecule_chembl_id))) %>%
+  dplyr::filter(!(alias == "seribantumab" & !is.na(molecule_chembl_id))) %>%
+  dplyr::filter(!(alias == "trastuzumab emtansine" & !is.na(molecule_chembl_id))) %>%
+  dplyr::filter(!(alias == "ibandronate sodium" & !is.na(molecule_chembl_id))) %>%
+  dplyr::distinct()
 
 
 usethis::use_data(compound_synonyms, overwrite = T)

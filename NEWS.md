@@ -1,3 +1,9 @@
+# Version 0.7.6 (April 22nd 2022)
+
+* Fixed some ambiguous synonym entries (paclitaxel, cisplatin, seribantumab, trastuzumab emtansine)
+* Updated indication matching with data from https://github.com/sigven/oncoPhenoMap (v0.3.2)
+* Updated biomarker collection (MitelmanDB - April 2022 release) + CIViC (April 22nd 2022)
+
 # Version 0.7.2 (March 30th 2022)
 
 * Fixed bug in installation documentation
