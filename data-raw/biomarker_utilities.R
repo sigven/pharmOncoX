@@ -310,7 +310,7 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
           dplyr::if_else(
             stringr::str_detect(toupper(variant_types),"TRANSCRIPT_FUSION|REGION_FUSION") |
               stringr::str_detect(toupper(variant),"TRANSLOCATION|FUSION|REARRANGEMENT") |
-              variant_types == "" & stringr::str_detect(variant,"-"),
+              variant_types == "" & stringr::str_detect(variant,"::"),
             "TRANSLOCATION_FUSION",as.character(alteration_type))) %>%
       dplyr::mutate(
         alteration_type =
@@ -410,14 +410,14 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
       )) %>%
       dplyr::mutate(variant = dplyr::if_else(
         alteration_type == "TRANSLOCATION_FUSION_MUT" |
-          stringr::str_detect(variant,"BCR-ABL(1)? [A-Z]"),
-        stringr::str_replace(variant,"BCR-ABL(1)? ",""),
+          stringr::str_detect(variant,"BCR::ABL(1)? [A-Z]"),
+        stringr::str_replace(variant,"BCR::ABL(1)? ",""),
         as.character(variant)
       )) %>%
       dplyr::mutate(variant_aliases = dplyr::if_else(
         alteration_type == "TRANSLOCATION_FUSION_MUT" |
-          stringr::str_detect(variant_aliases,"BCR-ABL(1)? [A-Z]"),
-        stringr::str_replace(variant_aliases,"BCR-ABL(1)? ",""),
+          stringr::str_detect(variant_aliases,"BCR::ABL(1)? [A-Z]"),
+        stringr::str_replace(variant_aliases,"BCR::ABL(1)? ",""),
         as.character(variant_aliases)
 
       )) %>%
@@ -1433,23 +1433,28 @@ load_mitelman_db <- function(){
     file = "data-raw/biomarkers/mitelmandb/MBCA.TXT.DATA",
     sep = "\t", stringsAsFactors = F, header = T) %>%
     dplyr::filter(stringr::str_detect(GeneShort,"::")) %>%
-    dplyr::mutate(
-      variant = stringr::str_replace_all(GeneShort,"::","-")) %>%
+    dplyr::rename(variant = GeneShort) %>%
+    # dplyr::mutate(
+    #   variant = stringr::str_replace_all(GeneShort,"::","-")) %>%
     dplyr::rename(karyotype = KaryShort) %>%
     dplyr::select(MolClin, RefNo, InvNo, Morph, Topo,
                   variant, karyotype) %>%
     tidyr::separate_rows(variant, sep=",") %>%
     dplyr::left_join(pmid_data, by = "RefNo") %>%
     dplyr::left_join(morph, by = "Morph") %>%
-    dplyr::filter(stringr::str_detect(variant,"-")) %>%
-    dplyr::filter(!stringr::str_detect(variant,"(-|\\+)$")) %>%
+    dplyr::filter(stringr::str_detect(variant,"::")) %>%
+    dplyr::mutate(variant = stringr::str_replace(
+      variant, "\\+", "")) %>%
+    #dplyr::filter(stringr::str_detect(variant,"-")) %>%
+    #dplyr::filter(!stringr::str_detect(variant,"(-|\\+)$")) %>%
+
     dplyr::mutate(evidence_id = seq(1:nrow(.))) %>%
     dplyr::mutate(evidence_id = paste0("MITDB_",evidence_id)) %>%
     dplyr::filter(stringr::str_count(variant,",") ==
                     stringr::str_count(karyotype,",")) %>%
     tidyr::separate_rows(c(variant,karyotype),
                          sep = ",") %>%
-    dplyr::filter(!stringr::str_detect(variant,"\\+")) %>%
+    #dplyr::filter(!stringr::str_detect(variant,"\\+")) %>%
     dplyr::select(variant, karyotype, cancer_type,
                   citation_id, evidence_id) %>%
     dplyr::distinct() %>%
@@ -1464,22 +1469,27 @@ load_mitelman_db <- function(){
   mbca_data$alias <- paste(
     mbca_data$variant,
     paste(
-      stringr::str_split_fixed(mbca_data$variant,"-",2)[,2],
-      stringr::str_split_fixed(mbca_data$variant,"-",2)[,1],
+      stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
+      stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
       sep="-"
     ),
     paste(
-      stringr::str_split_fixed(mbca_data$variant,"-",2)[,1],
-      stringr::str_split_fixed(mbca_data$variant,"-",2)[,2],
+      stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
+      stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
       sep="/"
+    ),
+    paste(
+      stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
+      stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
+      sep="-"
     ),
     mbca_data$karyotype,
     sep="@@@"
   )
 
   bcr_abl_custom <-
-    data.frame('variant_id' = "BCR-ABL1 - t(9;22)(q34;q11)",
-               'variant' = 'BCR-ABL',
+    data.frame('variant_id' = "BCR::ABL1 - t(9;22)(q34;q11)",
+               'variant' = 'BCR::ABL',
                'evidence_url' = "https://mitelmandatabase.isb-cgc.org/",
                'evidence_id' = paste0('MITDB_',evidence_id),
                'evidence_description' = NA,
@@ -1499,7 +1509,7 @@ load_mitelman_db <- function(){
       dplyr::rename(variant = alias) %>%
       dplyr::filter(
         !stringr::str_detect(
-          variant,"RARA-PML|ABL1-BCR|ERG-TMPRSS2")) %>%
+          variant,"RARA::PML|ABL1::BCR|ERG::TMPRSS2")) %>%
       dplyr::mutate(biomarker_entity = T) %>%
       dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION",
                     variant_origin = "somatic",

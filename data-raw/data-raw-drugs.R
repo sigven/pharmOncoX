@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20220329'
+pharmamine_datestamp <- '20220422'
 nci_db_release <- '22.03d'
 chembl_db_release <- 'ChEMBL_29'
 opentargets_version <- '2022.02'
@@ -258,12 +258,7 @@ all_cancer_drugs <- ot_cancer_drugs %>%
   dplyr::arrange(drug_name) %>%
   dplyr::distinct()
 
-
-
-
 ####-- Cancer drugs: NCI custom match----####
-
-
 drug_target_patterns <-
   read.table(file = file.path(
     path_data_raw,

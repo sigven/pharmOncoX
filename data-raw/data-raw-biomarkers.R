@@ -2,7 +2,7 @@ source('data-raw/biomarker_utilities.R')
 source('data-raw/drug_utilities.R')
 library(magrittr)
 
-datestamp <- '20220330'
+datestamp <- '20220422'
 
 civic_variant_summary <- paste0("data-raw/biomarkers/civic/variant_summary_",
                                 datestamp,
@@ -51,7 +51,7 @@ compound_biomarkers[['version']] <- list()
 compound_biomarkers[['version']][['civic']] <- datestamp
 compound_biomarkers[['version']][['cgi']] <- '20180117'
 compound_biomarkers[['version']][['pmkb']] <- '20200405'
-compound_biomarkers[['version']][['mitelman']] <- '20220118'
+compound_biomarkers[['version']][['mitelman']] <- '20220418'
 compound_biomarkers[['version']][['prism_depmap']] <- '19Q4_21Q4'
 
 targets <- list()

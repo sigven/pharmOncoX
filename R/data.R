@@ -79,7 +79,7 @@
 
 #' Datasets of compound biomarkers - omics properties that are linked to drug response
 #'
-#' @format \bold{curated} - A data frame with 252,889 rows and 26 columns:
+#' @format \bold{curated} - A data frame with 306,730 rows and 26 columns:
 #' \itemize{
 #'   \item \emph{evidence_id} - evidence identifier
 #'   \item \emph{evidence_url} - evidence URL
@@ -137,7 +137,7 @@
 #'  - actionable: data frame with actionable genes in cancer (biomarkers ,
 #'                 for therapies, prognosis etc. (harvested from various sources)
 #'
-#' @format \bold{druggable} - A data frame with 967 rows and 6 columns:
+#' @format \bold{druggable} - A data frame with 965 rows and 6 columns:
 #' \itemize{
 #'   \item \emph{symbol} - Gene symbol
 #'   \item \emph{ensembl_gene_id} - Ensembl gene identifier
