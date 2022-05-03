@@ -5,7 +5,7 @@
 \alias{compound_synonyms}
 \title{Dataset of compound synonyms - linking known drug aliases to a primary identifier (ChEMBL)}
 \format{
-\bold{compound_synonyms} - A data frame with 156,784 rows and 3 columns:
+\bold{compound_synonyms} - A data frame with 157,016 rows and 3 columns:
 \itemize{
 \item \emph{alias} - drug alias
 \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)

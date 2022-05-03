@@ -774,18 +774,19 @@ oncopharmadb <- oncopharmaDB_cancer_no_indication %>%
     nci_concept_display_name,
     "^(Canertinib Dihydrochloride|Cisplatin|Ibandronate Sodium|Seribantumab|Squalamine Lactate|Trastuzumab Emtansine)$") &
       is.na(molecule_chembl_id))) %>%
-  dplyr::filter(!(molecule_chembl_id == "CHEMBL4301078" |
-                    molecule_chembl_id == "CHEMBL4650733" |
-                    molecule_chembl_id == "CHEMBL3989727" |
-                    molecule_chembl_id == "CHEMBL4650827" |
-                    molecule_chembl_id == "CHEMBL1200693" |
-                    molecule_chembl_id == "CHEMBL1201138" |
-                    molecule_chembl_id == "CHEMBL1092067" |
-                    molecule_chembl_id == "CHEMBL4597200" |
-                    molecule_chembl_id == "CHEMBL2108931" |
-                    molecule_chembl_id == "CHEMBL1201275" |
-                    molecule_chembl_id == "CHEMBL1236539" |
-                    molecule_chembl_id == "CHEMBL3039544"))
+  dplyr::filter(is.na(molecule_chembl_id) |
+                  (molecule_chembl_id != "CHEMBL4301078" &
+                     molecule_chembl_id != "CHEMBL4650733" &
+                     molecule_chembl_id != "CHEMBL3989727" &
+                     molecule_chembl_id != "CHEMBL4650827" &
+                     molecule_chembl_id != "CHEMBL1200693" &
+                     molecule_chembl_id != "CHEMBL1201138" &
+                     molecule_chembl_id != "CHEMBL1092067" &
+                     molecule_chembl_id != "CHEMBL4597200" &
+                     molecule_chembl_id != "CHEMBL2108931" &
+                     molecule_chembl_id != "CHEMBL1201275" &
+                     molecule_chembl_id != "CHEMBL1236539" &
+                     molecule_chembl_id != "CHEMBL3039544"))
 
 fda_epc_codes <-
   as.data.frame(
