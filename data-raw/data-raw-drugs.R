@@ -1,8 +1,8 @@
 library(magrittr)
-pharmamine_datestamp <- '20220422'
-nci_db_release <- '22.03d'
-chembl_db_release <- 'ChEMBL_29'
-opentargets_version <- '2022.02'
+pharmamine_datestamp <- '20220429'
+nci_db_release <- '22.04d'
+chembl_db_release <- 'ChEMBL_30'
+opentargets_version <- '2022.04'
 uniprot_release <- '2021_04'
 dgidb_db_release <- 'v2022_02'
 update_dailymed <- F
@@ -293,20 +293,22 @@ for(i in 1:nrow(drug_target_patterns)){
   target_uniprot_id <- drug_target_patterns[i, "target_uniprot_id"]
 
   hits <- all_inhibitors_no_target %>%
-    dplyr::filter(stringr::str_detect(nci_concept_display_name,
-                                      pattern = pattern) |
-                    (stringr::str_detect(nci_concept_display_name,"^(Inhibitor of|Anti-)|ib$|Inhibitor|targeting|ine$|ate$|ide$|mab$|antibody|ant$|mab/") &
-                    stringr::str_detect(nci_concept_definition, pattern))
+    dplyr::filter(stringr::str_detect(
+      nci_concept_display_name,
+      pattern = pattern) |
+        (stringr::str_detect(
+          nci_concept_display_name,
+          "^(Inhibitor of|Anti-)|ib$|Inhibitor|targeting|ine$|ate$|ide$|mab$|antibody|ant$|mab/") &
+           stringr::str_detect(nci_concept_definition, pattern))
     )
-
-
 
   if(nrow(hits) > 0){
 
     for(n in 1:nrow(hits)){
       hit <- hits[n,]
 
-      if(stringr::str_detect(hit$nci_concept_display_name,"mab$|monoclonal antibody")){
+      if(stringr::str_detect(hit$nci_concept_display_name,
+                             "mab$|monoclonal antibody")){
         hit$drug_type <- "Antibody"
       }else{
         hit$drug_type <- "Small molecule"
@@ -767,7 +769,23 @@ oncopharmaDB_cancer_specific <- oncopharmadb %>%
 oncopharmadb <- oncopharmaDB_cancer_no_indication %>%
   dplyr::bind_rows(oncopharmaDB_cancer_specific) %>%
   dplyr::bind_rows(oncopharmaDB_cancer_NOS) %>%
-  dplyr::arrange(nci_concept_display_name)
+  dplyr::arrange(nci_concept_display_name) %>%
+  dplyr::filter(!(stringr::str_detect(
+    nci_concept_display_name,
+    "^(Canertinib Dihydrochloride|Cisplatin|Ibandronate Sodium|Seribantumab|Squalamine Lactate|Trastuzumab Emtansine)$") &
+      is.na(molecule_chembl_id))) %>%
+  dplyr::filter(!(molecule_chembl_id == "CHEMBL4301078" |
+                    molecule_chembl_id == "CHEMBL4650733" |
+                    molecule_chembl_id == "CHEMBL3989727" |
+                    molecule_chembl_id == "CHEMBL4650827" |
+                    molecule_chembl_id == "CHEMBL1200693" |
+                    molecule_chembl_id == "CHEMBL1201138" |
+                    molecule_chembl_id == "CHEMBL1092067" |
+                    molecule_chembl_id == "CHEMBL4597200" |
+                    molecule_chembl_id == "CHEMBL2108931" |
+                    molecule_chembl_id == "CHEMBL1201275" |
+                    molecule_chembl_id == "CHEMBL1236539" |
+                    molecule_chembl_id == "CHEMBL3039544"))
 
 fda_epc_codes <-
   as.data.frame(
@@ -890,11 +908,11 @@ compound_synonyms <-
     nci_concept_display_name =
       stringi::stri_enc_toascii(nci_concept_display_name)
   ) %>%
-  dplyr::filter(!(alias == "canertinib dihydrochloride" & !is.na(molecule_chembl_id))) %>%
-  dplyr::filter(!(alias == "cisplatin" & !is.na(molecule_chembl_id))) %>%
-  dplyr::filter(!(alias == "seribantumab" & !is.na(molecule_chembl_id))) %>%
-  dplyr::filter(!(alias == "trastuzumab emtansine" & !is.na(molecule_chembl_id))) %>%
-  dplyr::filter(!(alias == "ibandronate sodium" & !is.na(molecule_chembl_id))) %>%
+  #dplyr::filter(!(alias == "canertinib dihydrochloride" & is.na(molecule_chembl_id))) %>%
+  #dplyr::filter(!(alias == "cisplatin" & is.na(molecule_chembl_id))) %>%
+  #dplyr::filter(!(alias == "seribantumab" & is.na(molecule_chembl_id))) %>%
+  #dplyr::filter(!(alias == "trastuzumab emtansine" & is.na(molecule_chembl_id))) %>%
+  #dplyr::filter(!(alias == "ibandronate sodium" & is.na(molecule_chembl_id))) %>%
   dplyr::distinct()
 
 

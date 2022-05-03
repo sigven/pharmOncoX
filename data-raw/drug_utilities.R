@@ -572,7 +572,7 @@ process_nci_labels <- function(path_data_raw, overwrite = F) {
 
 ### CHEMBL-PUBCHEM COMPOUND CROSS-REFERENCE
 
-get_chembl_pubchem_compound_xref <- function(datestamp = '20190705',
+get_chembl_pubchem_compound_xref <- function(datestamp = '20220429',
                                              chembl_release = NULL,
                                              path_data_raw = NULL,
                                              update = F){

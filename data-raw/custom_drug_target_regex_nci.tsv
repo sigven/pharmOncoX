@@ -1,4 +1,34 @@
 pattern	symbol
+AZD3965	MCT1
+Anti-PRAME	PRAME
+Olokizumab|Clazakizumab	IL6
+Deoxycytidine Kinase Inhibitor	DCK
+Ordesekimab	IL15
+Anti-KLK2	KLK2
+Anti-VISTA	VSIR
+BMS-641988	AR
+Atibuclimab	CD14
+Astegolimab	IL1RL1
+HLX208	BRAF
+CAIX Inhibitor	CA9
+CFI-400945	PLK4
+DHODH Inhibitor	DHODH
+EP2/EP4 Antagonist	PTGER4
+EP2/EP4 Antagonist	PTGER2
+EP4 Antagonist	PTGER4
+IAP Antagonist|APG-1387|HGS1029	BIRC2
+IAP Antagonist|APG-1387|HGS1029	BIRC3
+IAP Antagonist|APG-1387|HGS1029	XIAP
+Imsidolimab	IL1RL2
+Imalumab	MIF
+Anti-DLL4	DLL4
+ILT-3 Antagonist	LILRB4
+KDM4 Inhibitor TACH101	KDM4A
+KDM4 Inhibitor TACH101	KDM4B
+KDM4 Inhibitor TACH101	KDM4C
+KDM4 Inhibitor TACH101	KDM4D
+KDM4 Inhibitor TACH101	KDM4E
+Anti-interleukin-1 Beta|Gevokizumab	IL1B
 Anti-(c|C)laudin( )?18.2	CLDN18
 Claudin18.2 Bispecific	CLDN18
 Nek2 Inhibitor	NEK2
@@ -22,6 +52,9 @@ Anti-NRP1	NRP1
 Anty-NY-ESO-1	CTAG1B
 Anti-PSMA	FOLH1
 Anti-CD19	CD19
+Foralumab	CD3E
+Giloralimab	CD40
+Gimsilumab	CSF2
 Anti-CD37	CD37
 Anti-Met( |/)|Anti-[A-Z]{1,}/c-Met	MET
 Anti-ROR1|ROR1	ROR1
@@ -79,19 +112,20 @@ Anti-CD122	IL2RB
 Anti-NKG2A	KLRC1
 Anti-netrin-1	NTN1
 Anti-CD20(-|/| )	MS4A1
-Anti-MUC1(-|/| )|Anti-MUC-1|Anti-mucin-1	MUC1
+Clivatuzumab|Anti-MUC1(-|/| )|Anti-MUC-1|Anti-mucin-1	MUC1
 Anti-MUC16(-|/| )	MUC16
 Anti-MUC17(-|/| )	MUC17
 Anti-BTN3A	BTN3A1
 Anti-CD96	CD96
 Anti-HLA-G	HLA-G
 bapotulimab	ILDR2
-A2A Receptor Antagonist|A2AR Antagonist|ADORA2A	ADORA2A
+A2A Receptor Antagonist|A2AR Antagonist|INCB106385|ADORA2A	ADORA2A
 Anti-BCL6	BCL6
 BCL2 Inhibitor	BCL2
-Adenosine A2B Receptor	ADORA2B
+Adenosine A2B Receptor|INCB106385	ADORA2B
 antibody targeting B7-H4|Anti-B7-H4	VTCN1
 CD73	NT5E
+CCR2 Antagonist	CCR2
 CCR4	CCR4
 CENP-E	CENPE
 CYP17	CYP17A1
@@ -319,6 +353,7 @@ IDO1|IDO-1	IDO1
 (TDO|TDO2)	TDO2
 (JAK1 )	JAK1
 LRP5	LRP5
+Anti-CD22(-|/| )	CD22
 (LRP5/6)	LRP5
 (LRP5/6)	LRP6
 (LSD1|Lysine-specific Demethylase 1)	KDM1A
@@ -334,12 +369,16 @@ PARP 1, 2 and 3 inhibitor	PARP1
 PARP 1, 2 and 3 inhibitor	PARP2
 PARP 1, 2 and 3 inhibitor	PARP3
 Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab	CD274
-Geptanolimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
+Geptanolimab|Nofazinlimab|Rulonilimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD1 Inhibitor|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
 Anti-LAG-3/PD-L1	CD274
+PD-L1/PD-L2/VISTA Antagonist CA-170	CD274
+PD-L1/PD-L2/VISTA Antagonist CA-170	PDCD1LG2
+PD-L1/PD-L2/VISTA Antagonist CA-170	VSIR
 Anti-PD-1	PDCD1
 Anti-PD-L1	CD274
 PD-L1 Inhibitor	CD274
 Chk2 Inhibitor	CHEK2
+REGN7257	IL2RG
 Class 1/4 Histone Deacetylase Inhibitor	HDAC1
 Class 1/4 Histone Deacetylase Inhibitor	HDAC2
 Class 1/4 Histone Deacetylase Inhibitor	HDAC3
