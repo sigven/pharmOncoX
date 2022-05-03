@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   installation: installation.html
   running: running.html
-last_built: 2022-05-03T08:39Z
+last_built: 2022-05-03T09:51Z
 urls:
   reference: https://sigven.github.io/oncoPharmaDB/reference
   article: https://sigven.github.io/oncoPharmaDB/articles
