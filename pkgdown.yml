@@ -1,10 +1,10 @@
 pandoc: 2.7.3
-pkgdown: 2.0.2
+pkgdown: 2.0.3
 pkgdown_sha: ~
 articles:
   installation: installation.html
   running: running.html
-last_built: 2022-04-22T13:27Z
+last_built: 2022-05-03T08:39Z
 urls:
   reference: https://sigven.github.io/oncoPharmaDB/reference
   article: https://sigven.github.io/oncoPharmaDB/articles
