@@ -1,3 +1,8 @@
+# Version 0.7.9 (May 4th 2022)
+
+* Updated drug data from Open Targets Platform (2022.04)
+* Updated biomarker collection (CIViC - May 4th 2022)
+
 # Version 0.7.6 (April 22nd 2022)
 
 * Fixed some ambiguous synonym entries (paclitaxel, cisplatin, seribantumab, trastuzumab emtansine)

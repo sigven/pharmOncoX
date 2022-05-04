@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20220429'
+pharmamine_datestamp <- '20220504'
 nci_db_release <- '22.04d'
 chembl_db_release <- 'ChEMBL_30'
 opentargets_version <- '2022.04'
@@ -770,6 +770,17 @@ oncopharmadb <- oncopharmaDB_cancer_no_indication %>%
   dplyr::bind_rows(oncopharmaDB_cancer_specific) %>%
   dplyr::bind_rows(oncopharmaDB_cancer_NOS) %>%
   dplyr::arrange(nci_concept_display_name) %>%
+  dplyr::filter(is.na(molecule_chembl_id) | molecule_chembl_id != "CHEMBL4297875") %>%
+  dplyr::mutate(molecule_chembl_id = dplyr::if_else(
+    nci_concept_display_name == "Doxycycline" & is.na(molecule_chembl_id),
+    "CHEMBL1433",
+    as.character(molecule_chembl_id)
+  )) %>%
+  dplyr::mutate(ncit = dplyr::if_else(
+    nci_concept_display_name == "Doxycycline" & is.na(molecule_chembl_id),
+    "CHEMBL1433",
+    as.character(molecule_chembl_id)
+  )) %>%
   dplyr::filter(!(stringr::str_detect(
     nci_concept_display_name,
     "^(Canertinib Dihydrochloride|Cisplatin|Ibandronate Sodium|Seribantumab|Squalamine Lactate|Trastuzumab Emtansine)$") &
