@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20220504'
+pharmamine_datestamp <- '20220528'
 nci_db_release <- '22.04d'
 chembl_db_release <- 'ChEMBL_30'
 opentargets_version <- '2022.04'
@@ -84,7 +84,7 @@ download.file(url = antineo_agents_url, destfile = antineo_agents_local, quiet =
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 

@@ -5,7 +5,7 @@
 \alias{compound_biomarkers}
 \title{Datasets of compound biomarkers - omics properties that are linked to drug response}
 \format{
-\bold{curated} - A data frame with 306,902 rows and 26 columns:
+\bold{curated} - A data frame with 295,230 rows and 26 columns:
 \itemize{
 \item \emph{evidence_id} - evidence identifier
 \item \emph{evidence_url} - evidence URL
