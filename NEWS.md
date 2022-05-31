@@ -1,11 +1,7 @@
-# Version 0.7.10 (May 28th 2022)
+# Version 0.8.0 (May 31st 2022)
 
 * Updated indication matching with data from https://github.com/sigven/oncoPhenoMap
 
-# Version 0.7.9 (May 4th 2022)
-
-* Updated drug data from Open Targets Platform (2022.04)
-* Updated biomarker collection (CIViC - May 4th 2022)
 
 # Version 0.7.6 (April 22nd 2022)
 

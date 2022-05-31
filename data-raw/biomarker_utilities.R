@@ -608,6 +608,7 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
 
   biomarkers_all <- map_biomarker_phenotypes(biomarkers_all) %>%
     dplyr::select(-do_cancer_slim) %>%
+    dplyr::distinct()
 
 
   return(biomarkers_all)
@@ -921,6 +922,7 @@ load_cgi_biomarkers <- function(){
 
   biomarkers_all <- map_biomarker_phenotypes(biomarkers_all) %>%
     dplyr::select(-do_cancer_slim) %>%
+    dplyr::distinct()
 
   return(biomarkers_all)
 }

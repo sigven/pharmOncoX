@@ -2008,15 +2008,15 @@
     },
     "oncoPhenoMap": {
       "Package": "oncoPhenoMap",
-      "Version": "0.3.5",
+      "Version": "0.3.6",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "oncoPhenoMap",
       "RemoteUsername": "sigven",
       "RemoteRef": "HEAD",
-      "RemoteSha": "48146d53e5639a791e95fc94fc9dfcbaa4c2df71",
-      "Hash": "3902fcd61250ddcbf3b47ab7def6710c",
+      "RemoteSha": "4bcae7d11e8d8087c86f493cc22798be23d62e6b",
+      "Hash": "930a1502a050951b8f6f3f07515a930f",
       "Requirements": []
     },
     "openssl": {

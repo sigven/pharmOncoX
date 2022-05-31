@@ -5,7 +5,7 @@
 \alias{targets}
 \title{Dataset of therapeutic and actionable targets in cancer}
 \format{
-\bold{druggable} - A data frame with 1,014 rows and 6 columns:
+\bold{druggable} - A data frame with 1,008 rows and 6 columns:
 \itemize{
 \item \emph{symbol} - Gene symbol
 \item \emph{ensembl_gene_id} - Ensembl gene identifier

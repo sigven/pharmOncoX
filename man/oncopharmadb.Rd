@@ -5,7 +5,7 @@
 \alias{oncopharmadb}
 \title{Dataset of targeted and non-targeted cancer drugs}
 \format{
-\bold{oncopharmadb} - A data frame with 543,728 rows and 49 columns:
+\bold{oncopharmadb} - A data frame with 521,036 rows and 49 columns:
 \itemize{
 \item \emph{drug_name} - Primary drug name (upper case, NCI Thesaurus)
 \item \emph{nci_concept_display_name} - Primary drug name (NCI Thesaurus)
