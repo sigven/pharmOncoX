@@ -2,7 +2,7 @@ Package: oncoPharmaDB
 Type: Package
 Title: Dataset with targeted and non-targeted anticancer drugs
 Version: 0.8.0
-Date: 2022-05-31
+Date: 2022-06-02
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",

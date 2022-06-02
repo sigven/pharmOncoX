@@ -4,8 +4,12 @@ RO5429083	CD44
 H3B-8800	SF3B1
 EP4 Receptor Inhibitor AN0025	PTGER4
 AZD3965	MCT1
+Setanaxib	NOX1
+Setanaxib	NOX4
 Anti-PRAME	PRAME
-Olokizumab|Clazakizumab	IL6
+SETD2 Inhibitor	SETD2
+Levilimab	IL6R
+Olokizumab|Clazakizumab|Sirukumab	IL6
 Deoxycytidine Kinase Inhibitor	DCK
 Ordesekimab	IL15
 Anti-KLK2	KLK2
@@ -35,6 +39,8 @@ KDM4 Inhibitor TACH101	KDM4E
 Anti-interleukin-1 Beta|Gevokizumab	IL1B
 Anti-(c|C)laudin( )?18.2	CLDN18
 Claudin18.2 Bispecific	CLDN18
+Anti-CLDN6	CLDN6
+p38 MAPK Inhibitor	MAPK14
 Nek2 Inhibitor	NEK2
 Hec1/Nek2	NDC80
 Fadraciclib	CDK2
@@ -43,10 +49,12 @@ Fadraciclib	CDK9
 Narsoplimab	MASP2
 Neihulizumab	SELPLG
 Nidanilimab	IL1RAP
-Anti-DR5	TNFRSF10B
+Tifcemalimab	BTLA
+TEAD Inhibitor	TEAD1	
+Anti-DR5|Tilogotamab	TNFRSF10B
 Anti-TNFR2	TNFRSF1B
 Anti-GARP	LRRC32
-Anti-gremlin-1	GREM1
+Anti-gremlin-1|Ginisortamab	GREM1
 Anti-HGF	HGF
 Anti-integrin Beta-1	ITGB1
 Anti-integrin Beta-6	ITGB6
@@ -158,8 +166,15 @@ Anti-ADAM9	ADAM9
 Anti-B7(-)?H3	CD276
 ADAM10	ADAM10
 ADAM17	ADAM17
+PKC-beta Inhibitor	PRKCB
+PCNA Inhibitor	PCNA
+Pol Theta Inhibitor	POLQ
+PKMYT1 Inhibitor	PKMYT1
+Salt-inducible Kinase Inhibitor GRN-300	SIK2
+Salt-inducible Kinase Inhibitor GRN-300	SIK3
+Ponsegromab	GDF15
 Anti-IL-18	IL18
-Anti-IL17A	IL17A
+Secukinumab|Anti-IL17A	IL17A
 Anti-ILT2	LILRB1
 Anti-ILT4	LILRB2
 Anti-LAMP1	LAMP1
@@ -196,6 +211,8 @@ TIGIT	TIGIT
 Tropomyosin Receptor Kinase	NTRK1
 Tropomyosin Receptor Kinase	NTRK2
 USP14	USP14
+USP1 inhibitor	USP1
+Upifitamab	SLC34A2
 UCHL5	UCHL5
 PI3K Inhibitor	PIK3CA
 PI3K Inhibitor	PIK3CB
@@ -322,12 +339,15 @@ Anti-CD33(-|/| )	CD33
 Anti-CD38(-|/| )	CD38
 FLT3|Flt3|Flt-3	FLT3
 AXL|Axl	AXL
+Tomaralimab	TLR2
+Tinurilimab	CEACAM6
 CSF1R|CSF-1R	CSF1R
 KIT|c-Kit	KIT
 Anti-VEGFR2|VEGFR2|VEGFR-2	KDR
-(VEFGR |VEGFR/)	KDR
-(VEFGR |VEGFR/)	FLT1
-(VEFGR |VEGFR/)	FLT4
+SU5402	FGFR1
+(VEFGR |VEGFR/|SU5402)	KDR
+(VEFGR |VEGFR/|SU5402)	FLT1
+(VEFGR |VEGFR/|SU5402|VEGFR3 Inhibitor)	FLT4
 Wee1	WEE1
 Anti-CD137	TNFRSF9
 Anti-APRIL	TNFSF13
@@ -372,7 +392,7 @@ polymerase \\(PARP\\)	PARP2
 PARP 1, 2 and 3 inhibitor	PARP1
 PARP 1, 2 and 3 inhibitor	PARP2
 PARP 1, 2 and 3 inhibitor	PARP3
-Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab	CD274
+Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab|Tagitanlimab|Socazolimab	CD274
 Geptanolimab|Nofazinlimab|Rulonilimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD1 Inhibitor|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
 Anti-LAG-3/PD-L1	CD274
 PD-L1/PD-L2/VISTA Antagonist CA-170	CD274
@@ -383,6 +403,8 @@ Anti-PD-L1	CD274
 PD-L1 Inhibitor	CD274
 Chk2 Inhibitor	CHEK2
 REGN7257	IL2RG
+Onvatilimab	VSIR
+Myc Inhibitor	MYC
 Class 1/4 Histone Deacetylase Inhibitor	HDAC1
 Class 1/4 Histone Deacetylase Inhibitor	HDAC2
 Class 1/4 Histone Deacetylase Inhibitor	HDAC3

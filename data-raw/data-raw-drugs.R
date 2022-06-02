@@ -1,6 +1,7 @@
 library(magrittr)
-pharmamine_datestamp <- '20220531'
-nci_db_release <- '22.04d'
+pharmamine_datestamp <- '20220602'
+chembl_pubchem_datestamp <- '20220531'
+nci_db_release <- '22.05e'
 chembl_db_release <- 'ChEMBL_30'
 opentargets_version <- '2022.04'
 uniprot_release <- '2021_04'
@@ -84,7 +85,7 @@ download.file(url = antineo_agents_url, destfile = antineo_agents_local, quiet =
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -116,7 +117,7 @@ nci_antineo_nochembl <- nci_antineo_all |>
 
 chembl_pubchem_xref <-
   get_chembl_pubchem_compound_xref(
-    datestamp = pharmamine_datestamp,
+    datestamp = chembl_pubchem_datestamp,
     chembl_release = chembl_db_release,
     path_data_raw = path_data_raw)
 
@@ -280,7 +281,10 @@ all_inhibitors_no_target <- all_cancer_drugs |>
          stringr::str_detect(nci_concept_definition,"inhibitor"))) |>
   dplyr::filter(!stringr::str_detect(
     nci_concept_display_name,
-    " CAR T|SARS-CoV-2| Regimen$"))
+    " CAR T|SARS-CoV-2| Regimen$")) |>
+  dplyr::filter(!stringr::str_detect(
+    nci_concept_definition,
+    "SARS-CoV-2"))
 
 custom_nci_targeted_drugs <- data.frame()
 for(i in 1:nrow(drug_target_patterns)){
