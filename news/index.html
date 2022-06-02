@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoPharmaDB</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,6 +57,9 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.1" id="version-081-june-2nd-2022">Version 0.8.1 (June 2nd 2022)<a class="anchor" aria-label="anchor" href="#version-081-june-2nd-2022"></a></h2>
+<ul><li>Data updates: NCI Thesaurus (22.05e)</li></ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.0" id="version-080-may-31st-2022">Version 0.8.0 (May 31st 2022)<a class="anchor" aria-label="anchor" href="#version-080-may-31st-2022"></a></h2>
 <ul><li>Updated indication matching with data from <a href="https://github.com/sigven/oncoPhenoMap" class="external-link uri">https://github.com/sigven/oncoPhenoMap</a>
 </li></ul></div>
@@ -94,94 +97,6 @@
 </li>
 <li>Added datasets on compound biomarkers, both curated (CIViC/CGI/PMKB, <em>oncoPharmaDB::compound_biomarkers[[‘curated’]]</em>), and data from invitro drug screens (DepMap/PRISM, <em>oncoPharmaDB::compound_biomarkers[[‘invitro_screen’]]</em>)</li>
 </ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.3.900" id="version-063900-december-13th-2021">Version 0.6.3.900 (December 13th 2021)<a class="anchor" aria-label="anchor" href="#version-063900-december-13th-2021"></a></h2>
-<ul><li>Added missing entries from Open Targets Platform (bug with non-targeted drugs)</li>
-<li>Preparing addition of biomarkers for forthcoming release, providing users a list of known molecular biomarkers pr. anti-cancer drug (mutations, copy number amplificiations etc., as retrieved from e.g. CIViC), both with respect to resistance and sensitivity</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.3" id="version-063-december-3rd-2021">Version 0.6.3 (December 3rd 2021)<a class="anchor" aria-label="anchor" href="#version-063-december-3rd-2021"></a></h2>
-<ul><li>Data update: NCI Thesaurus (21.11e)</li></ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.2" id="version-062-november-25th-2021">Version 0.6.2 (November 25th 2021)<a class="anchor" aria-label="anchor" href="#version-062-november-25th-2021"></a></h2>
-<ul><li>Data update: Open Targets Platform (2021.11)</li>
-<li>General code/documentation improvements - following <code>devtools::check()</code>
-</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.1" id="version-061-october-28th-2021">Version 0.6.1 (October 28th 2021)<a class="anchor" aria-label="anchor" href="#version-061-october-28th-2021"></a></h2>
-<ul><li>Data update: NCI Thesaurus (21.10d)</li>
-<li>Removed some redundant/non-informative columns of main data frame (<strong>oncopharmadb</strong>)<ul><li><code>target_chembl_id</code></li>
-<li><code>drug_synonyms</code></li>
-<li><code>drug_description</code></li>
-<li><code>drug_moa</code></li>
-<li><code>drug_tradenames</code></li>
-<li><code>cancer_drug</code></li>
-</ul></li>
-<li>Documented exported data objects (<strong>oncopharmadb</strong> and <strong>oncopharma_synonyms</strong>)</li>
-<li>Annotated gonadotropin releasing hormone analogues with <em>hormone_therapy</em> label</li>
-<li>Added <em>platinum_compound</em> as a dedicated drug category (and as a column in <strong>oncopharmadb</strong>)<ul><li>New argument <code>is_platinum_compound</code> to <code><a href="../reference/get_onco_drugs.html">get_onco_drugs()</a></code>
-</li></ul></li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.0" id="version-060-september-30th-2021">Version 0.6.0 (September 30th 2021)<a class="anchor" aria-label="anchor" href="#version-060-september-30th-2021"></a></h2>
-<ul><li>Data update: Open Targets Platform (2021.09)</li></ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.4" id="version-054-september-29th-2021">Version 0.5.4 (September 29th 2021)<a class="anchor" aria-label="anchor" href="#version-054-september-29th-2021"></a></h2>
-<div class="section level3">
-<h3 id="fixed-0-5-4">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-5-4"></a></h3>
-<ul><li>Bug in assignment of drug categories (some drugs were assigned ambiguous categories)</li></ul></div>
-<div class="section level3">
-<h3 id="added-0-5-4">Added<a class="anchor" aria-label="anchor" href="#added-0-5-4"></a></h3>
-<ul><li>Data update: NCI Thesaurus version 21.09d</li></ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.3" id="version-053-september-24th-2021">Version 0.5.3 (September 24th 2021)<a class="anchor" aria-label="anchor" href="#version-053-september-24th-2021"></a></h2>
-<div class="section level3">
-<h3 id="added-0-5-3">Added<a class="anchor" aria-label="anchor" href="#added-0-5-3"></a></h3>
-<ul><li>Added multiple warnings in output when conditions result in zero drug record hits</li>
-<li>Added argument ‘disease_indication_main’, to retrieve drugs indicated for given tumor type(s)</li>
-<li>When <em>output_resolution</em> is <strong>drug</strong> or <strong>drug2target</strong>, each record is appended with the following info:<ul><li>disease_indication (list of tumor subtypes within each <em>primary_site</em> that are indicated for the drug)</li>
-<li>disease_indication_max_phase (maximum phase for the indications.. random order (currently not optimal))</li>
-<li>disease_main_group (list of primary tumors/tissues indicated for drug, i.e. <em>primary_site</em>)</li>
-</ul></li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.2.1" id="version-0521-september-23rd-2021">Version 0.5.2.1 (September 23rd 2021)<a class="anchor" aria-label="anchor" href="#version-0521-september-23rd-2021"></a></h2>
-<div class="section level3">
-<h3 id="added-0-5-2-1">Added<a class="anchor" aria-label="anchor" href="#added-0-5-2-1"></a></h3>
-<ul><li>Debugging immune checkpoint inhibitor targets from NCI drugs (CTLA4, PD-1, PD-L1)</li></ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.1" id="version-051-september-23rd-2021">Version 0.5.1 (September 23rd 2021)<a class="anchor" aria-label="anchor" href="#version-051-september-23rd-2021"></a></h2>
-<div class="section level3">
-<h3 id="added-0-5-1">Added<a class="anchor" aria-label="anchor" href="#added-0-5-1"></a></h3>
-<ul><li>Improved mapping of drug targets for drugs (monoclonal antibodies, kinase inhibitors etc.) listed solely in NCI thesaurus</li></ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.0" id="version-050-september-22nd-2021">Version 0.5.0 (September 22nd 2021)<a class="anchor" aria-label="anchor" href="#version-050-september-22nd-2021"></a></h2>
-<div class="section level3">
-<h3 id="added-0-5-0">Added<a class="anchor" aria-label="anchor" href="#added-0-5-0"></a></h3>
-<ul><li>Mapped several new targets for drugs listed in NCI thesaurus</li></ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.9" id="version-049-september-22nd-2021">Version 0.4.9 (September 22nd 2021)<a class="anchor" aria-label="anchor" href="#version-049-september-22nd-2021"></a></h2>
-<div class="section level3">
-<h3 id="fixed-0-4-9">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-4-9"></a></h3>
-<ul><li>Fixed bug related to kinase drug category</li>
-<li>Added uniprot identifiers to custom targets (experimental drugs, NCI)</li>
-<li>Added imports (tidyverse, assertthat)</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.8" id="version-048-september-21st-2021">Version 0.4.8 (September 21st 2021)<a class="anchor" aria-label="anchor" href="#version-048-september-21st-2021"></a></h2>
-<div class="section level3">
-<h3 id="fixed-0-4-8">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-4-8"></a></h3>
-<ul><li>Fixed bug related to missing drug indications (cancer types)</li>
-<li>Updated oncoPhenoMap</li>
-</ul></div>
-</div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 
