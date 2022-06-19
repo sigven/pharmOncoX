@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">oncoPharmaDB</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,68 +100,125 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>drug_is_targeted</dt>
 <dd><p>logical indicating if resulting drug records should contain molecularly targeted drugs only</p></dd>
+
+
 <dt>drug_is_approved</dt>
 <dd><p>logical indicating if resulting drug records should contain approved drugs only</p></dd>
+
+
 <dt>drug_target</dt>
 <dd><p>character vector with drug targets (gene symbols) for drug records included in results</p></dd>
+
+
 <dt>drug_action_type</dt>
 <dd><p>character vector with drug action types to include in drug record list -
 possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
 "STABILISER","CROSS-LINKING AGENT",DISRUPTING AGENT","OTHER"</p></dd>
+
+
 <dt>drug_indication_main</dt>
 <dd><p>character vector with main tumor types for which drug(s) are indicated
 possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","Breast","Cervix","CNS/Brain",
 "Colon/Rectum","Esophagus/Stomach","Eye","Head and Neck","Kidney","Liver","Lung","Lymphoid","Myeloid","Ovary/Fallopian Tube",
 "Pancreas","Penis","Peripheral Nervous System","Peritoneum","Pleura","Prostate","Skin","Soft Tissue","Testis","Thymus",
 "Thyroid","Uterus","Vulva/Vagina"</p></dd>
+
+
 <dt>source_opentargets_only</dt>
 <dd><p>logical indicating if resulting drug records should contain drug records from Open Targets Platform only</p></dd>
+
+
 <dt>drug_has_blackbox_warning</dt>
 <dd><p>logical indicating if resulting drug records should contain drugs with black box warnings only</p></dd>
+
+
 <dt>drug_approved_later_than</dt>
 <dd><p>only include records for drugs approved later than this date (year)</p></dd>
+
+
 <dt>drug_minimum_phase_any_indication</dt>
 <dd><p>only include drug records that are in a clinical phase (any indication) greater or equal than this phase</p></dd>
+
+
 <dt>list_per_drug_synonym</dt>
 <dd><p>list resulting drug records per drug synonym</p></dd>
+
+
 <dt>output_resolution</dt>
 <dd><p>output record resolution ('drug','drug2target','drug2target2indication')</p></dd>
+
+
 <dt>output_style</dt>
 <dd><p>comprehensiveness of drug records ('extensive' - all annotations, 'narrow' - main annotations)</p></dd>
+
+
 <dt>is_alkylating_agent</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_angiogenesis_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_anthracycline</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_antimetabolite</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_ar_antagonist</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_bet_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_hedgehog_antagonist</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_hdac_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_hormone_therapy</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_immune_checkpoint_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_kinase_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_monoclonal_antibody</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_parp_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_platinum_compound</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_proteasome_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_topoisomerase_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
+
 <dt>is_tubulin_inhibitor</dt>
 <dd><p>logical indicating if only this drug class is wanted</p></dd>
+
 </dl></div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -173,7 +230,7 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>
