@@ -1,3 +1,9 @@
+# Version 0.8.2 (June 19th 2022)
+
+* Added more drugs from NCI thesaurus
+* Drug indication updates: (EFO/DO - https://github.com/sigven/oncoPhenoMap)
+* Updated biomarkers (CIViC)
+
 # Version 0.8.1 (June 2nd 2022)
 
 * Data updates: NCI Thesaurus (22.05e)

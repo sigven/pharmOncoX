@@ -937,8 +937,6 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
       dplyr::filter(molecule_chembl_id != "CHEMBL482811") |> #u-50488 methane sulfonate
       dplyr::distinct()
 
-
-
     drug2chembl_all <-
       dplyr::select(drug2chembl, molecule_chembl_id, drug_claim_name) |>
       dplyr::rename(drug_name = drug_claim_name) |>
@@ -1006,11 +1004,21 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
       dplyr::left_join(drug2chembl_all, by=c("nci_concept_synonym" = "drug_name")) |>
       dplyr::mutate(nci_db_version = nci_db_release) |>
       dplyr::filter(!is.na(nci_concept_display_name)) |>
-      dplyr::filter(antineoplastic_agent == T |
-                      stringr::str_detect(nci_concept_synonym,"chemother|immunother|radiation|regimen") |
-                      stringr::str_detect(tolower(nci_concept_display_name),"chemother|immunother|radiation|regimen") |
-                      stringr::str_detect(tolower(nci_concept_display_name),"(ib|mab)$") |
-                      stringr::str_detect(tolower(nci_concept_definition),"immuno|b-cell|t-cell|melanoma|myelomoa|neuroblastoma|leukemia|lymphoma|thymoma|sarcoma|paraganglioma|regimen|proliferation|cancer|tumor|carcino|radiation|block|radio|chemotherapy|immune|antigen|antineo")) |>
+      dplyr::filter(!stringr::str_detect(
+          tolower(nci_concept_definition), "coronavirus")) |>
+      dplyr::filter(!stringr::str_detect(
+        nci_concept_synonym_all, "SARS-CoV-2|COVID-19|CoV-19|Coronary|Corona|Covid-19|covid-19")) |>
+      #))
+      dplyr::mutate(antineoplastic_agent = dplyr::if_else(
+        is.na(antineoplastic_agent),
+        as.logical(TRUE),
+        as.logical(antineoplastic_agent)
+      )) |>
+      # dplyr::filter(antineoplastic_agent == T |
+      #                 stringr::str_detect(nci_concept_synonym,"chemother|immunother|radiation|regimen") |
+      #                 stringr::str_detect(tolower(nci_concept_display_name),"chemother|immunother|radiation|regimen") |
+      #                 stringr::str_detect(tolower(nci_concept_display_name),"(ib|mab)$") |
+      #                 stringr::str_detect(tolower(nci_concept_definition),"immuno|b-cell|t-cell|melanoma|myelomoa|neuroblastoma|leukemia|lymphoma|thymoma|sarcoma|paraganglioma|regimen|proliferation|cancer|tumor|carcino|radiation|block|radio|chemotherapy|immune|antigen|antineo")) |>
       dplyr::filter(!stringr::str_detect(nci_concept_display_name," (Gel|Oil|Cream|Seed|Block|Field|Supplement|Factor)$")) |>
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"(Vaccination|Lotion|Therapeutic Heat|Procedure|Rehabilitation|Prevention|Rinse)$")) |>
       dplyr::filter(!stringr::str_detect(nci_concept_display_name,"(Epitope|Exract|Influenza|Ginseng|Ointment|Management|Injection|Tool)$")) |>

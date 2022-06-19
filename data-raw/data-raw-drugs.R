@@ -1,5 +1,5 @@
 library(magrittr)
-pharmamine_datestamp <- '20220602'
+pharmamine_datestamp <- '20220618'
 chembl_pubchem_datestamp <- '20220531'
 nci_db_release <- '22.05e'
 chembl_db_release <- 'ChEMBL_30'

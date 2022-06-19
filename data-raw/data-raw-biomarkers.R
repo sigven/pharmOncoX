@@ -2,7 +2,7 @@ source('data-raw/biomarker_utilities.R')
 source('data-raw/drug_utilities.R')
 library(magrittr)
 
-datestamp <- '20220602'
+datestamp <- '20220619'
 
 civic_variant_summary <- paste0("data-raw/biomarkers/civic/variant_summary_",
                                 datestamp,

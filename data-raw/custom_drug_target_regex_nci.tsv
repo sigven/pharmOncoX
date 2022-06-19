@@ -1,4 +1,7 @@
 pattern	symbol
+Anti-ALK-1	ALK
+Anti-BAFFR	TNFRSF13C
+Anti-PRL-3	PTP4A3
 (Anti-CD25 )	IL2RA
 RO5429083	CD44
 H3B-8800	SF3B1
@@ -186,7 +189,12 @@ Empesertib	TTK
 Amdizalisib	PIK3CD
 Razuprotafib	PTPRB
 Zunsemetinib	MAP2K2
-Anti-CCR8	CCR8
+CPB/p300 Bromodomain Inhibitor	CREB1
+CPB/p300 Bromodomain Inhibitor	EP300
+Diacylglycerol Kinase Zeta Inhibitor	DGKZ
+EBP Inhibitor	EBP
+ENPP1 Inhibitor	ENPP1
+CCR8 Inhibitor|Anti-CCR8	CCR8
 Anti-CCR7	CCR7
 interleukin-13|IL-13	IL13
 Protein Arginine Methyltransferase 5	PRMT5
@@ -389,27 +397,34 @@ Anti-CD22(-|/| )	CD22
 (PARP |PARP/)	PARP2
 polymerase \\(PARP\\)	PARP1
 polymerase \\(PARP\\)	PARP2
-PARP 1, 2 and 3 inhibitor	PARP1
-PARP 1, 2 and 3 inhibitor	PARP2
-PARP 1, 2 and 3 inhibitor	PARP3
+Poly (ADP-Ribose) Polymerase Inhibitor|PARP 1, 2 and 3 inhibitor	PARP1
+Poly (ADP-Ribose) Polymerase Inhibitor|PARP 1, 2 and 3 inhibitor	PARP2
+Poly (ADP-Ribose) Polymerase Inhibitor|PARP 1, 2 and 3 inhibitor	PARP3
 Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab|Tagitanlimab|Socazolimab	CD274
-Geptanolimab|Nofazinlimab|Rulonilimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|PD1 Inhibitor|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
+Geptanolimab|Nofazinlimab|Rulonilimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|Anti-PD1|PD1 Inhibitor|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
 Anti-LAG-3/PD-L1	CD274
 PD-L1/PD-L2/VISTA Antagonist CA-170	CD274
 PD-L1/PD-L2/VISTA Antagonist CA-170	PDCD1LG2
 PD-L1/PD-L2/VISTA Antagonist CA-170	VSIR
 Anti-PD-1	PDCD1
-Anti-PD-L1	CD274
+Anti-PD-L1|PD-1 Ligand Inhibitor	CD274
 PD-L1 Inhibitor	CD274
 Chk2 Inhibitor	CHEK2
 REGN7257	IL2RG
 Onvatilimab	VSIR
 Myc Inhibitor	MYC
-Class 1/4 Histone Deacetylase Inhibitor	HDAC1
-Class 1/4 Histone Deacetylase Inhibitor	HDAC2
-Class 1/4 Histone Deacetylase Inhibitor	HDAC3
-Class 1/4 Histone Deacetylase Inhibitor	HDAC8
-Class 1/4 Histone Deacetylase Inhibitor	HDAC11
+Anti-S15 Monoclonal Antibody	SIGLEC15
+Anti-SLAMF7	SLAMF7
+Aumolertinib	EGFR
+C/EBP Beta Antagonist	CEBPB
+CBL-B Inhibitor NX-1607	CBLB
+Aromatase Inhibitor	CYP19A1
+Bexmarilimab	STAB1
+Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC1
+Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC2
+Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC3
+Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC8
+Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC11
 HDAC Class I/IIb Inhibitor	HDAC1
 HDAC Class I/IIb Inhibitor	HDAC2
 HDAC Class I/IIb Inhibitor	HDAC3
@@ -437,8 +452,15 @@ Anti-SIRPa	SIRPA
 (PRMT5)	PRMT5
 SHP2	PTPN11
 STAT3	STAT3
+STAT Inhibitor OPB-111077	STAT1
+STAT Inhibitor OPB-111077	STAT2
+STAT Inhibitor OPB-111077	STAT3
+STAT Inhibitor OPB-111077	STAT4
+STAT Inhibitor OPB-111077	STAT5A
+STAT Inhibitor OPB-111077	STAT5B
+STAT Inhibitor OPB-111077	STAT6
 (TGF-beta Receptor 1|TGFbeta)	TGFB1
-(Topoisomerase(-| )(1|I) )	TOP1
+(Topoisomerase(-| )(1|I) )|Pegylated TOP1 Inhibitor	TOP1
 (Topoisomerase I/II)	TOP1
 (Topoisomerase I/II)	TOP2A
 (Topoisomerase I/II)	TOP2B
@@ -464,6 +486,8 @@ Tubulin (Polymerization )?Inhibitor	TUBB6
 CXCR2	CXCR2
 CXCR4	CXCR4
 PERK Inhibitor	EIF2AK3
+ERK Inhibitor	MAPK1
+Kras G12C Inhibitor	KRAS
 (ERK1/2|ERK 1/2)	MAPK3
 (ERK1/2|ERK 1/2)	MAPK1
 (MEK 1/2|MEK (I|i)nhibitor|inhibitor of mitogen-activated protein kinase)	MAP2K1
