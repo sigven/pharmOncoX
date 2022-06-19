@@ -35,7 +35,7 @@ releases of external databases:
 
  - Open Targets Platform (2022.04)
  - ChEMBL (v30)
- - NCI Thesaurus (22.04d)
+ - NCI Thesaurus (22.05e)
 
 ### Getting started
 
