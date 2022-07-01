@@ -1,9 +1,9 @@
 library(magrittr)
-pharmamine_datestamp <- '20220618'
+pharmamine_datestamp <- '20220701'
 chembl_pubchem_datestamp <- '20220531'
-nci_db_release <- '22.05e'
+nci_db_release <- '22.06d'
 chembl_db_release <- 'ChEMBL_30'
-opentargets_version <- '2022.04'
+opentargets_version <- '2022.06'
 uniprot_release <- '2021_04'
 dgidb_db_release <- 'v2022_02'
 update_dailymed <- F

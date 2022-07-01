@@ -1,5 +1,9 @@
 pattern	symbol
 Anti-ALK-1	ALK
+Darovasertib	PRKCA
+Darovasertib	PRKCB
+Darovasertib	PRKCD
+Darovasertib	PRKCG
 Anti-BAFFR	TNFRSF13C
 Anti-PRL-3	PTP4A3
 (Anti-CD25 )	IL2RA

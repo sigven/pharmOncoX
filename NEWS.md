@@ -1,3 +1,9 @@
+# Version 0.8.3 (July 1st 2022)
+
+* Updated NCI Thesaurus (22.06d)
+* Updated Open Targets Platform (2022.06)
+* Updated biomarkers (CIViC)
+
 # Version 0.8.2 (June 19th 2022)
 
 * Added more drugs from NCI thesaurus
