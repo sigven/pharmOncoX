@@ -5,7 +5,7 @@
 \alias{compound_biomarkers}
 \title{Datasets of compound biomarkers - omics properties that are linked to drug response}
 \format{
-\bold{curated} - A data frame with 295,336 rows and 26 columns:
+\bold{curated} - A data frame with 288,922 rows and 26 columns:
 \itemize{
 \item \emph{evidence_id} - evidence identifier
 \item \emph{evidence_url} - evidence URL
@@ -35,7 +35,7 @@
 \item \emph{primary_site} - primary tumor site (mapped - oncoPhenoMap)
 }
 
-\bold{invitro_screen} - A data frame with 25,793 rows and 8 columns:
+\bold{invitro_screen} - A data frame with 25,763 rows and 8 columns:
 \itemize{
 \item \emph{compound_id} - compound identifier (PRISM)
 \item \emph{model} - type of omics drug prediction model (DepMap/PRISM)

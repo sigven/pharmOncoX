@@ -5,7 +5,7 @@
 \alias{targets}
 \title{Dataset of therapeutic and actionable targets in cancer}
 \format{
-\bold{druggable} - A data frame with 1,100 rows and 6 columns:
+\bold{druggable} - A data frame with 1,094 rows and 6 columns:
 \itemize{
 \item \emph{symbol} - Gene symbol
 \item \emph{ensembl_gene_id} - Ensembl gene identifier
@@ -15,7 +15,7 @@
 \item \emph{molecule_chembl_id} - ChEMBL compound identifier (separated by '|')
 }
 
-\bold{actionable} - A data frame with 624 rows and 7 columns:
+\bold{actionable} - A data frame with 623 rows and 7 columns:
 \itemize{
 \item \emph{symbol} - Gene symbol
 \item \emph{ensembl_gene_id} - Ensembl gene identifier
