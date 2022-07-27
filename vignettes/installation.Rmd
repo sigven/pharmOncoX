@@ -4,4 +4,4 @@ output: rmarkdown::html_document
 ---
 
 * `install.packages("devtools")`
-* `devtools::install_github("sigven/oncoPharmaDB", ref = '0.8.3')`
+* `devtools::install_github("sigven/oncoPharmaDB", ref = '0.8.4')`
