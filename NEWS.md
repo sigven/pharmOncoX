@@ -1,6 +1,7 @@
 # Version 0.8.4 (July 27th 2022)
 
 * Updated NCI Thesaurus (22.07d)
+* Updated biomarkers (CIViC/Mitelman database)
 
 # Version 0.8.3 (July 1st 2022)
 
