@@ -1,5 +1,5 @@
-url: https://sigven.github.io/oncoPharmaDB/
-title: oncoPharmaDB
+url: https://sigven.github.io/pharmaOncoX/
+title: pharmaOncoX
 toc:
   depth: 3
 template:
@@ -28,6 +28,6 @@ home:
     components:
       citation:
           title: Citation
-          text: "[Citing oncoPharmaDB](authors.html#citation)"
+          text: "[Citing pharmaOncoX](authors.html#citation)"
 news:
   one_page: true

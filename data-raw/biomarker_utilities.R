@@ -785,11 +785,8 @@ load_cgi_biomarkers <- function(){
       dplyr::select(-c(info, g_dna)) |>
       dplyr::distinct() |>
       dplyr::mutate(evidence_id = dplyr::row_number())|>
-      #{\(x) dplyr::mutate(evidence_id = seq(1:nrow(x)))}() |>
-      #dplyr::mutate(evidence_id = rep(1:nrow(.))) |>
       dplyr::mutate(evidence_id = paste0("CGI_",evidence_id)) |>
       dplyr::mutate(evidence_type = "Predictive") |>
-      #dplyr::select(-c(biomarker, biomarker_mapping)) |>
       dplyr::distinct()
   )
 

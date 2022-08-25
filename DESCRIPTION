@@ -1,8 +1,8 @@
-Package: oncoPharmaDB
+Package: pharmaOncoX
 Type: Package
-Title: Dataset with targeted and non-targeted anticancer drugs
+Title: Annotated targeted and non-targeted anticancer drugs
 Version: 0.8.4
-Date: 2022-07-01
+Date: 2022-08-12
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -11,18 +11,20 @@ Authors@R:
              comment = c(ORCID = "0000-0001-8468-2050")))
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 Description: This data package collects aticancer drug information from multiple resources,
-    including Open Targets Platform/ChEMBL, NCI Thesaurus etc. The main dataset
+    including Open Targets Platform/ChEMBL, NCI Thesaurus, and PubChem. The main dataset
     contains a list of all anticancer drugs per indication/tumor type (where this is provided),
-    which can further be queried with a range of parameters (minimum clinical phase, approval
+    which can be queried with a range of parameters (minimum clinical phase, approval
     status, targets, drug category etc.)
 License: MIT + file LICENSE
-URL: https://github.com/sigven/oncoPharmaDB
-BugReports: https://github.com/sigven/oncoPharmaDB/issues
+URL: https://github.com/sigven/pharmaOncoX
+BugReports: https://github.com/sigven/pharmaOncoX/issues
 Depends: 
-    R (>= 3.6.0)
+    R (>= 4.1.0)
 Imports: dplyr,
          stringr,
-         magrittr,
+         lgr,
+         tidyr,
+         googledrive,
          rlang,
          assertthat
 Encoding: UTF-8
