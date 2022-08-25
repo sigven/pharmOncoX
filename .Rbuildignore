@@ -1,0 +1,11 @@
+^renv$
+^renv\.lock$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^data-raw$
+^docs$
+^_pkgdown.yml$
+^\.bumpversion.cfg$
+^_pkgdown\.yml$
+^pkgdown$

@@ -247,104 +247,104 @@ chembl_compound_properties <- function(chembl_ws_base_url = 'https://www.ebi.ac.
 #' }
 #'
 
-chembl_compound_moa <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data', molecule_chembl_id = NA){
-
-  moa_all <- data.frame()
-
-  ## get salts
-  if(!is.na(molecule_chembl_id)){
-    molecule_chembl_id_salt <- NA
-    parent_chembl_id <- NA
-    salt_df <- chembl_compound_salts(molecule_chembl_id = molecule_chembl_id)
-    j <- 1
-    ## loop over salts to retrieve mechanism of action (phase, targets etc.)
-    while(j <= nrow(salt_df)){
-      molecule_chembl_id_salt <- salt_df[j,]$molecule_chembl_id
-      parent_chembl_id <- salt_df[j,]$parent_chembl_id
-      chembl_moa <- NULL
-      moa_url <- paste0(chembl_ws_base_url,'/mechanism?molecule_chembl_id=',molecule_chembl_id_salt)
-      if(!is.null(readUrl(moa_url))){
-        raw_xml_string <- rawToChar(httr::GET(moa_url)$content)
-        if(stringr::str_detect(raw_xml_string,"<mechanism>")){
-          doc <- XML::xmlParse(raw_xml_string)
-          mechanism_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/mechanisms/mechanism"), collectNames = T, stringsAsFactors = F)
-          if(nrow(mechanism_df) > 0){
-            mechanism_df <- dplyr::select(mechanism_df, disease_efficacy, max_phase, mechanism_comment, mechanism_of_action, molecule_chembl_id, target_chembl_id)
-            chembl_moa <- mechanism_df |>
-              dplyr::rename(chembl_disease_efficacy = disease_efficacy, chembl_max_phase = max_phase,
-                            chembl_mechanism_comment = mechanism_comment, chembl_moa = mechanism_of_action) |>
-              dplyr::select(molecule_chembl_id,target_chembl_id,chembl_disease_efficacy,chembl_max_phase,chembl_mechanism_comment,chembl_moa)
-            chembl_moa$molecule_chembl_id_salt <- molecule_chembl_id_salt
-            chembl_moa$molecule_chembl_id <- as.character(parent_chembl_id)
-            chembl_moa$chembl_disease_efficacy <- as.logical(dplyr::recode(chembl_moa$chembl_disease_efficacy, True = TRUE, False = FALSE))
-          }
-        }else{
-          chembl_moa <- data.frame(molecule_chembl_id_salt = molecule_chembl_id_salt,
-                                   molecule_chembl_id = as.character(parent_chembl_id),
-                                   target_chembl_id = as.character(NA),
-                                   chembl_disease_efficacy = as.logical(NA),
-                                   chembl_max_phase = as.character(NA),
-                                   chembl_mechanism_comment = as.character(NA),
-                                   chembl_moa = as.character(NA), stringsAsFactors = F)
-        }
-      }else{
-        chembl_moa <- data.frame(molecule_chembl_id_salt = molecule_chembl_id_salt,
-                                 molecule_chembl_id = as.character(parent_chembl_id),
-                                 target_chembl_id = as.character(NA),
-                                 chembl_disease_efficacy = as.logical(NA),
-                                 chembl_max_phase = as.character(NA),
-                                 chembl_mechanism_comment = as.character(NA),
-                                 chembl_moa = as.character(NA), stringsAsFactors = F)
-      }
-      if(!is.null(chembl_moa)){
-        moa_all <- rbind(moa_all, chembl_moa)
-      }
-      j <- j + 1
-    }
-    if(nrow(salt_df) == 0){
-      moa_all <- data.frame(molecule_chembl_id_salt = NA,
-                            molecule_chembl_id = as.character(molecule_chembl_id),
-                            target_chembl_id = as.character(NA),
-                            chembl_disease_efficacy = as.logical(NA),
-                            chembl_max_phase = as.character(NA),
-                            chembl_mechanism_comment = as.character(NA),
-                            chembl_moa = as.character(NA), stringsAsFactors = F)
-    }
-    else{
-      moa_all <- dplyr::filter(moa_all, !is.na(target_chembl_id))
-    }
-  }
-  return(moa_all)
-}
-
-## Retrieval of compound salts for ChEMBL molecular compounds
+#' chembl_compound_moa <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data', molecule_chembl_id = NA){
 #'
-#' Function that accepts a ChEMBL molecule identifer and uses the ChEMBL web service API to return
-#' relationships between molecule parents and salts (https://www.ebi.ac.uk/chembl/ws)
+#'   moa_all <- data.frame()
 #'
-#' @param molecule_chembl_id ChEMBL molecule identifier
-#' @return a data frame with the following columns of chemical compound properties:
-#' \itemize{
-#'   \item is_parent - logical indicator if a salt is considered a parent compound
-#'   \item molecule_chembl_id - query compound identifier
-#'   \item parent_chembl_id - parent compound identifier (salt)
+#'   ## get salts
+#'   if(!is.na(molecule_chembl_id)){
+#'     molecule_chembl_id_salt <- NA
+#'     parent_chembl_id <- NA
+#'     salt_df <- chembl_compound_salts(molecule_chembl_id = molecule_chembl_id)
+#'     j <- 1
+#'     ## loop over salts to retrieve mechanism of action (phase, targets etc.)
+#'     while(j <= nrow(salt_df)){
+#'       molecule_chembl_id_salt <- salt_df[j,]$molecule_chembl_id
+#'       parent_chembl_id <- salt_df[j,]$parent_chembl_id
+#'       chembl_moa <- NULL
+#'       moa_url <- paste0(chembl_ws_base_url,'/mechanism?molecule_chembl_id=',molecule_chembl_id_salt)
+#'       if(!is.null(readUrl(moa_url))){
+#'         raw_xml_string <- rawToChar(httr::GET(moa_url)$content)
+#'         if(stringr::str_detect(raw_xml_string,"<mechanism>")){
+#'           doc <- XML::xmlParse(raw_xml_string)
+#'           mechanism_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/mechanisms/mechanism"), collectNames = T, stringsAsFactors = F)
+#'           if(nrow(mechanism_df) > 0){
+#'             mechanism_df <- dplyr::select(mechanism_df, disease_efficacy, max_phase, mechanism_comment, mechanism_of_action, molecule_chembl_id, target_chembl_id)
+#'             chembl_moa <- mechanism_df |>
+#'               dplyr::rename(chembl_disease_efficacy = disease_efficacy, chembl_max_phase = max_phase,
+#'                             chembl_mechanism_comment = mechanism_comment, chembl_moa = mechanism_of_action) |>
+#'               dplyr::select(molecule_chembl_id,target_chembl_id,chembl_disease_efficacy,chembl_max_phase,chembl_mechanism_comment,chembl_moa)
+#'             chembl_moa$molecule_chembl_id_salt <- molecule_chembl_id_salt
+#'             chembl_moa$molecule_chembl_id <- as.character(parent_chembl_id)
+#'             chembl_moa$chembl_disease_efficacy <- as.logical(dplyr::recode(chembl_moa$chembl_disease_efficacy, True = TRUE, False = FALSE))
+#'           }
+#'         }else{
+#'           chembl_moa <- data.frame(molecule_chembl_id_salt = molecule_chembl_id_salt,
+#'                                    molecule_chembl_id = as.character(parent_chembl_id),
+#'                                    target_chembl_id = as.character(NA),
+#'                                    chembl_disease_efficacy = as.logical(NA),
+#'                                    chembl_max_phase = as.character(NA),
+#'                                    chembl_mechanism_comment = as.character(NA),
+#'                                    chembl_moa = as.character(NA), stringsAsFactors = F)
+#'         }
+#'       }else{
+#'         chembl_moa <- data.frame(molecule_chembl_id_salt = molecule_chembl_id_salt,
+#'                                  molecule_chembl_id = as.character(parent_chembl_id),
+#'                                  target_chembl_id = as.character(NA),
+#'                                  chembl_disease_efficacy = as.logical(NA),
+#'                                  chembl_max_phase = as.character(NA),
+#'                                  chembl_mechanism_comment = as.character(NA),
+#'                                  chembl_moa = as.character(NA), stringsAsFactors = F)
+#'       }
+#'       if(!is.null(chembl_moa)){
+#'         moa_all <- rbind(moa_all, chembl_moa)
+#'       }
+#'       j <- j + 1
+#'     }
+#'     if(nrow(salt_df) == 0){
+#'       moa_all <- data.frame(molecule_chembl_id_salt = NA,
+#'                             molecule_chembl_id = as.character(molecule_chembl_id),
+#'                             target_chembl_id = as.character(NA),
+#'                             chembl_disease_efficacy = as.logical(NA),
+#'                             chembl_max_phase = as.character(NA),
+#'                             chembl_mechanism_comment = as.character(NA),
+#'                             chembl_moa = as.character(NA), stringsAsFactors = F)
+#'     }
+#'     else{
+#'       moa_all <- dplyr::filter(moa_all, !is.na(target_chembl_id))
+#'     }
+#'   }
+#'   return(moa_all)
 #' }
 #'
-chembl_compound_salts <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data', molecule_chembl_id = NA){
-  salt_df <- data.frame()
-  if(!is.na(molecule_chembl_id)){
-    salt_url <- paste0(chembl_ws_base_url, '/molecule_form/', molecule_chembl_id)
-
-    if(!is.null(readUrl(salt_url))){
-      doc <- XML::xmlParse(rawToChar(httr::GET(salt_url)$content))
-      salt_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/molecule_forms/molecule_form"), collectNames = T, stringsAsFactors = F)
-    }else{
-      salt_df <- data.frame('is_parent' = NA, molecule_chembl_id = molecule_chembl_id, parent_chembl_id = NA, stringsAsFactors = F)
-    }
-  }
-  return(salt_df)
-}
-
+#' ## Retrieval of compound salts for ChEMBL molecular compounds
+#' #'
+#' #' Function that accepts a ChEMBL molecule identifer and uses the ChEMBL web service API to return
+#' #' relationships between molecule parents and salts (https://www.ebi.ac.uk/chembl/ws)
+#' #'
+#' #' @param molecule_chembl_id ChEMBL molecule identifier
+#' #' @return a data frame with the following columns of chemical compound properties:
+#' #' \itemize{
+#' #'   \item is_parent - logical indicator if a salt is considered a parent compound
+#' #'   \item molecule_chembl_id - query compound identifier
+#' #'   \item parent_chembl_id - parent compound identifier (salt)
+#' #' }
+#' #'
+#' chembl_compound_salts <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data', molecule_chembl_id = NA){
+#'   salt_df <- data.frame()
+#'   if(!is.na(molecule_chembl_id)){
+#'     salt_url <- paste0(chembl_ws_base_url, '/molecule_form/', molecule_chembl_id)
+#'
+#'     if(!is.null(readUrl(salt_url))){
+#'       doc <- XML::xmlParse(rawToChar(httr::GET(salt_url)$content))
+#'       salt_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/molecule_forms/molecule_form"), collectNames = T, stringsAsFactors = F)
+#'     }else{
+#'       salt_df <- data.frame('is_parent' = NA, molecule_chembl_id = molecule_chembl_id, parent_chembl_id = NA, stringsAsFactors = F)
+#'     }
+#'   }
+#'   return(salt_df)
+#' }
+#'
 
 ## Retrieval of drug target predictions for ChEMBL molecular compounds
 #'
@@ -372,186 +372,186 @@ chembl_compound_salts <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/ch
 #' }
 #'
 
-chembl_compound_target_predictions <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data',
-                                               min_probability = 0.9, molecule_chembl_id = NA){
+# chembl_compound_target_predictions <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data',
+#                                                min_probability = 0.9, molecule_chembl_id = NA){
+#
+#   target_predictions_all <- data.frame()
+#   ## get salts
+#   if(!is.na(molecule_chembl_id)){
+#     salt_df <- chembl_compound_salts(molecule_chembl_id = molecule_chembl_id)
+#     j <- 1
+#     while(j <= nrow(salt_df)){
+#       molecule_chembl_id_salt <- salt_df[j,]$molecule_chembl_id
+#       parent_chembl_id <- salt_df[j,]$parent_chembl_id
+#       chembl_target_predictions <- NULL
+#       target_pred_url <- paste0(chembl_ws_base_url, '/target_prediction?limit=500&probability__gt=',min_probability,'&target_tax_id__exact=9606&molecule_chembl_id=', molecule_chembl_id)
+#       if(!is.null(readUrl(target_pred_url))){
+#         doc <- XML::xmlParse(rawToChar(httr::GET(target_pred_url)$content))
+#         target_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/target_predictions/target_prediction"), collectNames = T, stringsAsFactors = F)
+#         if(nrow(target_df) > 0){
+#           chembl_target_predictions <- dplyr::select(target_df, target_chembl_id, target_accession, probability) |>
+#             dplyr::rename(target_uniprot_acc = target_accession) |>
+#             dplyr::distinct()
+#           chembl_target_predictions$molecule_chembl_id_salt <- molecule_chembl_id_salt
+#           chembl_target_predictions$molecule_chembl_id <- parent_chembl_id
+#           chembl_target_predictions <- chembl_target_predictions |>
+#             #dplyr::left_join(dplyr::select(pharmaMine::all_protein_targets, target_uniprot_acc, target_uniprot_id, symbol, entrezgene, gene_name)) |>
+#             dplyr::mutate(target_compound_binding_probability = round(as.numeric(probability), digits = 6)) |>
+#             dplyr::arrange(desc(target_compound_binding_probability)) |>
+#             dplyr::select(-probability)
+#
+#
+#         }else{
+#           chembl_target_predictions <- data.frame(target_chembl_id = NA,
+#                                                   target_uniprot_acc = NA,
+#                                                   target_compound_binding_probability = NA,
+#                                                   molecule_chembl_id_salt = molecule_chembl_id_salt,
+#                                                   molecule_chembl_id = parent_chembl_id,
+#                                                   target_uniprot_id = NA,
+#                                                   symbol = NA,
+#                                                   entrezgene = NA,
+#                                                   gene_name = NA,
+#                                                   stringsAsFactors = F)
+#         }
+#       }
+#       if(!is.null(chembl_target_predictions)){
+#         target_predictions_all <- rbind(target_predictions_all, chembl_target_predictions)
+#       }
+#       j <- j + 1
+#     }
+#   }
+#   if(nrow(salt_df) == 0){
+#     target_predictions_all <- data.frame(target_chembl_id = NA,
+#                                          target_uniprot_acc = NA,
+#                                          target_compound_binding_probability = NA,
+#                                          molecule_chembl_id_salt = molecule_chembl_id_salt,
+#                                          molecule_chembl_id = parent_chembl_id,
+#                                          target_uniprot_id = NA,
+#                                          symbol = NA,
+#                                          entrezgene = NA,
+#                                          gene_name = NA,
+#                                          stringsAsFactors = F)
+#   }
+#   target_predictions_all <- target_predictions_all |> dplyr::distinct()
+#
+#   return(target_predictions_all)
+# }
+#
 
-  target_predictions_all <- data.frame()
-  ## get salts
-  if(!is.na(molecule_chembl_id)){
-    salt_df <- chembl_compound_salts(molecule_chembl_id = molecule_chembl_id)
-    j <- 1
-    while(j <= nrow(salt_df)){
-      molecule_chembl_id_salt <- salt_df[j,]$molecule_chembl_id
-      parent_chembl_id <- salt_df[j,]$parent_chembl_id
-      chembl_target_predictions <- NULL
-      target_pred_url <- paste0(chembl_ws_base_url, '/target_prediction?limit=500&probability__gt=',min_probability,'&target_tax_id__exact=9606&molecule_chembl_id=', molecule_chembl_id)
-      if(!is.null(readUrl(target_pred_url))){
-        doc <- XML::xmlParse(rawToChar(httr::GET(target_pred_url)$content))
-        target_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/target_predictions/target_prediction"), collectNames = T, stringsAsFactors = F)
-        if(nrow(target_df) > 0){
-          chembl_target_predictions <- dplyr::select(target_df, target_chembl_id, target_accession, probability) |>
-            dplyr::rename(target_uniprot_acc = target_accession) |>
-            dplyr::distinct()
-          chembl_target_predictions$molecule_chembl_id_salt <- molecule_chembl_id_salt
-          chembl_target_predictions$molecule_chembl_id <- parent_chembl_id
-          chembl_target_predictions <- chembl_target_predictions |>
-            #dplyr::left_join(dplyr::select(pharmaMine::all_protein_targets, target_uniprot_acc, target_uniprot_id, symbol, entrezgene, gene_name)) |>
-            dplyr::mutate(target_compound_binding_probability = round(as.numeric(probability), digits = 6)) |>
-            dplyr::arrange(desc(target_compound_binding_probability)) |>
-            dplyr::select(-probability)
-
-
-        }else{
-          chembl_target_predictions <- data.frame(target_chembl_id = NA,
-                                                  target_uniprot_acc = NA,
-                                                  target_compound_binding_probability = NA,
-                                                  molecule_chembl_id_salt = molecule_chembl_id_salt,
-                                                  molecule_chembl_id = parent_chembl_id,
-                                                  target_uniprot_id = NA,
-                                                  symbol = NA,
-                                                  entrezgene = NA,
-                                                  gene_name = NA,
-                                                  stringsAsFactors = F)
-        }
-      }
-      if(!is.null(chembl_target_predictions)){
-        target_predictions_all <- rbind(target_predictions_all, chembl_target_predictions)
-      }
-      j <- j + 1
-    }
-  }
-  if(nrow(salt_df) == 0){
-    target_predictions_all <- data.frame(target_chembl_id = NA,
-                                         target_uniprot_acc = NA,
-                                         target_compound_binding_probability = NA,
-                                         molecule_chembl_id_salt = molecule_chembl_id_salt,
-                                         molecule_chembl_id = parent_chembl_id,
-                                         target_uniprot_id = NA,
-                                         symbol = NA,
-                                         entrezgene = NA,
-                                         gene_name = NA,
-                                         stringsAsFactors = F)
-  }
-  target_predictions_all <- target_predictions_all |> dplyr::distinct()
-
-  return(target_predictions_all)
-}
-
-
-chembl_compound_indications <- function(chembl_ws_base_url = "https://www.ebi.ac.uk/chembl/api/data/drug_indication?molecule_chembl_id=", molecule_chembl_id = NULL, min_maxphase = 3){
-
-  ## get drug indications (i.e. diseases, cancer types)
-  indications <- NULL
-  indication_url <- paste0(chembl_ws_base_url,molecule_chembl_id,"&limit=100")
-  doc <- XML::xmlParse(rawToChar(httr::GET(indication_url)$content))
-  efo_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/efo_id")
-  efo_term_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/efo_term")
-  phase_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/max_phase_for_ind")
-  efo_ids <- sapply(efo_nodes, function(el) XML::xmlValue(el, "efo_id"))
-  efo_terms <- sapply(efo_term_nodes, function(el) XML::xmlValue(el, "efo_term"))
-  max_phase_indications <- sapply(phase_nodes, function(el) XML::xmlValue(el, "max_phase_for_id"))
-  j <- 1
-  while(j <= length(max_phase_indications)){
-    if(max_phase_indications[j] == ""){
-      max_phase_indications[j] <- 0
-    }
-    j <- j + 1
-  }
-  if(length(efo_ids) == length(efo_terms) & length(efo_terms) == length(max_phase_indications)){
-    indications <- data.frame('efo_id' = efo_ids, 'efo_term' = efo_terms, 'max_phase' = max_phase_indications, stringsAsFactors = F)
-    indications$max_phase <- as.integer(indications$max_phase)
-    if(nrow(indications) == 0){
-      indications$efo_id <- as.character(indications$efo_id)
-      indications$efo_term <- as.character(indications$efo_term)
-    }
-
-    if(nrow(indications) > 0){
-      if(is.null(indications[nchar(indications$efo_id) == 0,])){
-        indications[nchar(indications$efo_id) == 0,] <- NA
-      }
-      indications <- dplyr::filter(indications, max_phase >= min_maxphase)
-      indications <- indications |> dplyr::distinct()
-      if(nrow(indications) > 0){
-        indications$molecule_chembl_id <- molecule_chembl_id
-      }
-    }
-  }
-  if(length(indications) ==  0){
-    indications <- data.frame('efo_id' = character(), 'efo_term' = character(), 'max_phase' = integer(), 'molecule_chembl_id' = character(), stringsAsFactors = F)
-  }
-
-  return(indications)
-}
-
-## Retrieval of structurally similar compounds based on SMILES
+#' chembl_compound_indications <- function(chembl_ws_base_url = "https://www.ebi.ac.uk/chembl/api/data/drug_indication?molecule_chembl_id=", molecule_chembl_id = NULL, min_maxphase = 3){
 #'
-#' Function that accepts a SMILEs and queries PubChem for structurally similar compounds
+#'   ## get drug indications (i.e. diseases, cancer types)
+#'   indications <- NULL
+#'   indication_url <- paste0(chembl_ws_base_url,molecule_chembl_id,"&limit=100")
+#'   doc <- XML::xmlParse(rawToChar(httr::GET(indication_url)$content))
+#'   efo_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/efo_id")
+#'   efo_term_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/efo_term")
+#'   phase_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/max_phase_for_ind")
+#'   efo_ids <- sapply(efo_nodes, function(el) XML::xmlValue(el, "efo_id"))
+#'   efo_terms <- sapply(efo_term_nodes, function(el) XML::xmlValue(el, "efo_term"))
+#'   max_phase_indications <- sapply(phase_nodes, function(el) XML::xmlValue(el, "max_phase_for_id"))
+#'   j <- 1
+#'   while(j <= length(max_phase_indications)){
+#'     if(max_phase_indications[j] == ""){
+#'       max_phase_indications[j] <- 0
+#'     }
+#'     j <- j + 1
+#'   }
+#'   if(length(efo_ids) == length(efo_terms) & length(efo_terms) == length(max_phase_indications)){
+#'     indications <- data.frame('efo_id' = efo_ids, 'efo_term' = efo_terms, 'max_phase' = max_phase_indications, stringsAsFactors = F)
+#'     indications$max_phase <- as.integer(indications$max_phase)
+#'     if(nrow(indications) == 0){
+#'       indications$efo_id <- as.character(indications$efo_id)
+#'       indications$efo_term <- as.character(indications$efo_term)
+#'     }
 #'
-#' @param approach 'pubchem_pug' or 'chemminer'
-#' @param smiles query SMILES
-#' @param manimoto_threshold minimum similarity
-#' @param MaxRec maximum number of records
-#' @param MaxSec maximum number of
-#' @return a character vector of PubChem compound identifiers (CIDs)
+#'     if(nrow(indications) > 0){
+#'       if(is.null(indications[nchar(indications$efo_id) == 0,])){
+#'         indications[nchar(indications$efo_id) == 0,] <- NA
+#'       }
+#'       indications <- dplyr::filter(indications, max_phase >= min_maxphase)
+#'       indications <- indications |> dplyr::distinct()
+#'       if(nrow(indications) > 0){
+#'         indications$molecule_chembl_id <- molecule_chembl_id
+#'       }
+#'     }
+#'   }
+#'   if(length(indications) ==  0){
+#'     indications <- data.frame('efo_id' = character(), 'efo_term' = character(), 'max_phase' = integer(), 'molecule_chembl_id' = character(), stringsAsFactors = F)
+#'   }
 #'
-
-get_similar_compounds <- function(approach = 'pubchem_pug', smiles = NULL, manimoto_threshold = 100, MaxRec = 100, MaxSec = 10, mw = NULL){
-  cids <- integer()
-  smiles_set <- unlist(stringr::str_split(smiles,";"))
-  filtered_cids <- integer()
-
-  if(approach == 'pubchem_pug'){
-    for(i in 1:length(smiles_set)){
-      cids <- integer()
-      query_url <- paste0(PUBCHEM_PUG_URL,'compound/similarity/smiles/',smiles_set[i],'/JSON?Threshold=',manimoto_threshold,'&MaxRecords=',MaxRec,'&MaxSec=',MaxSec)
-      tcOut <- tryCatch(
-        {
-          #con1 <- query_url
-          async_query <- jsonlite::fromJSON(query_url)
-          Sys.sleep(10)
-          async_query_results <- jsonlite::fromJSON(paste0(PUBCHEM_PUG_URL,'compound/listkey/',async_query$Waiting$ListKey,'/cids/JSON'))
-          cids <- async_query_results$IdentifierList$CID
-          length(cids)
-        },
-        error = function(cond){
-          message(paste("URL does not seem to exist:", query_url))
-          return(NA)
-        },
-        warning = function(cond){
-          message(paste("URL caused a warning:", query_url))
-          return(NA)
-        }
-      )
-      if(!is.na(tcOut) && length(cids) > 0){
-        cids_subset <- match_cids_by_molecularweight(cids, mw)
-        if(length(cids_subset) > 0){
-          filtered_cids <- append(filtered_cids, cids_subset)
-        }
-      }
-    }
-  }
-  # if(approach == 'chemminer'){
-  #   ## ChemmineR as an alternative option
-  #   for(i in 1:length(smiles_set)){
-  #     try({
-  #       results <- ChemmineR::searchString(smiles_set[i])
-  #       num_results <- length(results)
-  #       if(num_results > MaxRec){
-  #         num_results <- MaxRec
-  #       }
-  #       for(m in 1:num_results){
-  #         cids <- append(cids, as.integer(unlist(datablock(results[m]))[paste0("CMP",m,".PUBCHEM_COMPOUND_CID")]))
-  #       }
-  #     })
-  #   }
-  #   if(length(cids) > 0){
-  #     filtered_cids <- match_cids_by_molecularweight(cids, mw)
-  #   }
-  # }
-  return(filtered_cids)
-}
-
-
+#'   return(indications)
+#' }
+#'
+#' ## Retrieval of structurally similar compounds based on SMILES
+#' #'
+#' #' Function that accepts a SMILEs and queries PubChem for structurally similar compounds
+#' #'
+#' #' @param approach 'pubchem_pug' or 'chemminer'
+#' #' @param smiles query SMILES
+#' #' @param manimoto_threshold minimum similarity
+#' #' @param MaxRec maximum number of records
+#' #' @param MaxSec maximum number of
+#' #' @return a character vector of PubChem compound identifiers (CIDs)
+#' #'
+#'
+#' get_similar_compounds <- function(approach = 'pubchem_pug', smiles = NULL, manimoto_threshold = 100, MaxRec = 100, MaxSec = 10, mw = NULL){
+#'   cids <- integer()
+#'   smiles_set <- unlist(stringr::str_split(smiles,";"))
+#'   filtered_cids <- integer()
+#'
+#'   if(approach == 'pubchem_pug'){
+#'     for(i in 1:length(smiles_set)){
+#'       cids <- integer()
+#'       query_url <- paste0(PUBCHEM_PUG_URL,'compound/similarity/smiles/',smiles_set[i],'/JSON?Threshold=',manimoto_threshold,'&MaxRecords=',MaxRec,'&MaxSec=',MaxSec)
+#'       tcOut <- tryCatch(
+#'         {
+#'           #con1 <- query_url
+#'           async_query <- jsonlite::fromJSON(query_url)
+#'           Sys.sleep(10)
+#'           async_query_results <- jsonlite::fromJSON(paste0(PUBCHEM_PUG_URL,'compound/listkey/',async_query$Waiting$ListKey,'/cids/JSON'))
+#'           cids <- async_query_results$IdentifierList$CID
+#'           length(cids)
+#'         },
+#'         error = function(cond){
+#'           message(paste("URL does not seem to exist:", query_url))
+#'           return(NA)
+#'         },
+#'         warning = function(cond){
+#'           message(paste("URL caused a warning:", query_url))
+#'           return(NA)
+#'         }
+#'       )
+#'       if(!is.na(tcOut) && length(cids) > 0){
+#'         cids_subset <- match_cids_by_molecularweight(cids, mw)
+#'         if(length(cids_subset) > 0){
+#'           filtered_cids <- append(filtered_cids, cids_subset)
+#'         }
+#'       }
+#'     }
+#'   }
+#'   # if(approach == 'chemminer'){
+#'   #   ## ChemmineR as an alternative option
+#'   #   for(i in 1:length(smiles_set)){
+#'   #     try({
+#'   #       results <- ChemmineR::searchString(smiles_set[i])
+#'   #       num_results <- length(results)
+#'   #       if(num_results > MaxRec){
+#'   #         num_results <- MaxRec
+#'   #       }
+#'   #       for(m in 1:num_results){
+#'   #         cids <- append(cids, as.integer(unlist(datablock(results[m]))[paste0("CMP",m,".PUBCHEM_COMPOUND_CID")]))
+#'   #       }
+#'   #     })
+#'   #   }
+#'   #   if(length(cids) > 0){
+#'   #     filtered_cids <- match_cids_by_molecularweight(cids, mw)
+#'   #   }
+#'   # }
+#'   return(filtered_cids)
+#' }
+#'
+#'
 
 ### NCI DRUG DISPLAY LABELS
 
@@ -564,7 +564,7 @@ process_nci_labels <- function(path_data_raw, overwrite = F) {
   }
   nci_labels <- read.table(file = nci_thesaurus_labels_filepath, sep="\t",comment.char="",
                            stringsAsFactors = F,quote="",header=F) |>
-    magrittr::set_colnames(c('nci_t','nci_concept_display_name','cui')) |>
+    magrittr::set_colnames(c('nci_t','nci_cd_name','cui')) |>
     dplyr::filter(!is.na(nci_t))
 
   return(nci_labels)
@@ -573,7 +573,7 @@ process_nci_labels <- function(path_data_raw, overwrite = F) {
 ### CHEMBL-PUBCHEM COMPOUND CROSS-REFERENCE
 
 get_chembl_pubchem_compound_xref <- function(datestamp = '20220429',
-                                             chembl_release = NULL,
+                                             chembl_release = "v31",
                                              path_data_raw = NULL,
                                              update = F){
   chembl_pubchem_xref_fname <- file.path(path_data_raw, "chembl",
@@ -591,106 +591,105 @@ get_chembl_pubchem_compound_xref <- function(datestamp = '20220429',
 }
 
 
-
-get_chembl_compound_by_name <- function(name = NULL){
-  df <- NULL
-  if(!is.null(name)){
-    query <-
-      paste0("https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search?format=json&q=",
-             tolower(stringr::str_replace_all(name," ","%20")))
-    result <- jsonlite::fromJSON(query)
-    if(length(result$chembl_id_lookups) > 0){
-      if(nrow(result$chembl_id_lookups) >= 1){
-        recs <- dplyr::filter(result$chembl_id_lookups,
-                              entity_type == "COMPOUND")
-        if(nrow(recs) == 1){
-          df <- data.frame('name' = name,
-                           'molecule_chembl_id' = recs$chembl_id,
-                           stringsAsFactors = F)
-          rlogging::message(paste('Found',nrow(recs), 'records for',
-                                  name,'-',sep=" "))
-          return(df)
-        }
-      }
-    }
-  }
-  return(df)
-}
+#
+# get_chembl_compound_by_name <- function(name = NULL){
+#   df <- NULL
+#   if(!is.null(name)){
+#     query <-
+#       paste0("https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search?format=json&q=",
+#              tolower(stringr::str_replace_all(name," ","%20")))
+#     result <- jsonlite::fromJSON(query)
+#     if(length(result$chembl_id_lookups) > 0){
+#       if(nrow(result$chembl_id_lookups) >= 1){
+#         recs <- dplyr::filter(result$chembl_id_lookups,
+#                               entity_type == "COMPOUND")
+#         if(nrow(recs) == 1){
+#           df <- data.frame('name' = name,
+#                            'molecule_chembl_id' = recs$chembl_id,
+#                            stringsAsFactors = F)
+#           lgr::lgr$info(paste('Found',nrow(recs), 'records for',
+#                                   name,'-',sep=" "))
+#           return(df)
+#         }
+#       }
+#     }
+#   }
+#   return(df)
+# }
 
 ### CHEMBL DRUG TARGETS
 
-get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
-                                    chembl_release = chembl_db_release,
-                                    path_data_raw = NULL){
-
-  uniprot_idmapping_url <-
-    'ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping.dat.gz'
-  uniprot_chembl_mapping_url <-
-    "ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/chembl_uniprot_mapping.txt"
-
-  chembl_uniprot_mapping_fname <- file.path(path_data_raw, "chembl", paste0("chembl_uniprot_mapping",datestamp,".txt"))
-  gene_info_fname <- file.path(path_data_raw, "Homo_sapiens.gene_info.gz")
-  uniprot_id_mapping <- file.path(path_data_raw, "uniprot", "HUMAN_9606_idmapping.dat.gz")
-
-  if(!file.exists(chembl_uniprot_mapping_fname)){
-    download.file(uniprot_chembl_mapping_url,
-                  destfile = chembl_uniprot_mapping_fname)
-  }
-  chembl_drug_targets <- read.table(file = chembl_uniprot_mapping_fname, sep="\t",
-                                    skip = 1, stringsAsFactors = F,quote = "")
-  colnames(chembl_drug_targets) <- c('uniprot_acc','target_chembl_id','target_chembl_name','target_chembl_type')
-  chembl_drug_targets <- dplyr::select(chembl_drug_targets, -target_chembl_name)
-
-  if(!file.exists(gene_info_fname)){
-    download.file("ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz",
-                  destfile = gene_info_fname, quiet=T)
-  }
-  gene_info_ncbi <- read.table(gzfile(gene_info_fname), sep="\t", stringsAsFactors = F,na.strings="-", skip=1, comment.char = "#", quote = "", fill=T)
-  gene_info_ncbi <- gene_info_ncbi |> dplyr::filter(V1 == 9606)
-  gene_info_ncbi <- dplyr::select(gene_info_ncbi, c(V2,V3,V9,V10))
-  colnames(gene_info_ncbi) <- c('entrezgene','symbol','gene_name','gene_biotype')
-  gene_info_ncbi$entrezgene <- as.character(gene_info_ncbi$entrezgene)
-  if(nrow(gene_info_ncbi[!is.na(gene_info_ncbi$gene_biotype) & gene_info_ncbi$gene_biotype == 'protein-coding',])>0){
-    gene_info_ncbi[!is.na(gene_info_ncbi$gene_biotype) & gene_info_ncbi$gene_biotype == 'protein-coding',]$gene_biotype <- 'protein_coding'
-  }
-
-  if(!file.exists(uniprot_id_mapping)){
-    download.file(uniprot_idmapping_url, destfile = uniprot_id_mapping)
-  }
-
-  idmapping <- read.table(gzfile(uniprot_id_mapping),sep="\t",
-                          header = F,quote = "", stringsAsFactors = F)
-  idmapping_up_kb <- dplyr::filter(idmapping, V2 == 'UniProtKB-ID' | V2 == 'GeneID')
-  colnames(idmapping_up_kb) <- c('uniprot_acc','type','name')
-
-  idmapping_up_id <- dplyr::filter(idmapping_up_kb, type == 'UniProtKB-ID')
-  idmapping_up_id <- dplyr::rename(idmapping_up_id, uniprot_id = name) |> dplyr::select(uniprot_acc, uniprot_id) |> dplyr::distinct()
-  idmapping_geneid <- dplyr::filter(idmapping_up_kb, type == 'GeneID')
-  idmapping_geneid <- dplyr::rename(idmapping_geneid, entrezgene = name) |> dplyr::select(uniprot_acc, entrezgene) |> dplyr::distinct()
-
-  uniprot_acc_mapping <- dplyr::inner_join(idmapping_up_id, idmapping_geneid)
-  uniprot_acc_mapping <- dplyr::left_join(uniprot_acc_mapping, gene_info_ncbi)
-  uniprot_acc_mapping <- uniprot_acc_mapping |> dplyr::filter(!is.na(symbol) | !is.na(uniprot_id))
-
-  rm(idmapping_up_id)
-  rm(idmapping_geneid)
-
-  chembl_drug_targets <- dplyr::left_join(chembl_drug_targets, uniprot_acc_mapping)
-  chembl_drug_targets <- dplyr::filter(chembl_drug_targets, !is.na(uniprot_id)) |>
-    dplyr::distinct() |>
-    dplyr::rename(target_uniprot_acc = uniprot_acc, target_uniprot_id = uniprot_id)
-
-  rm(uniprot_acc_mapping)
-  chembl_drug_targets$chembl_db_version <- chembl_release
-  return(chembl_drug_targets)
-}
-
+# get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
+#                                     chembl_release = chembl_db_release,
+#                                     path_data_raw = NULL){
+#
+#   uniprot_idmapping_url <-
+#     'ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping.dat.gz'
+#   uniprot_chembl_mapping_url <-
+#     "ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/chembl_uniprot_mapping.txt"
+#
+#   chembl_uniprot_mapping_fname <- file.path(path_data_raw, "chembl", paste0("chembl_uniprot_mapping",datestamp,".txt"))
+#   gene_info_fname <- file.path(path_data_raw, "Homo_sapiens.gene_info.gz")
+#   uniprot_id_mapping <- file.path(path_data_raw, "uniprot", "HUMAN_9606_idmapping.dat.gz")
+#
+#   if(!file.exists(chembl_uniprot_mapping_fname)){
+#     download.file(uniprot_chembl_mapping_url,
+#                   destfile = chembl_uniprot_mapping_fname)
+#   }
+#   chembl_drug_targets <- read.table(file = chembl_uniprot_mapping_fname, sep="\t",
+#                                     skip = 1, stringsAsFactors = F,quote = "")
+#   colnames(chembl_drug_targets) <- c('uniprot_acc','target_chembl_id','target_chembl_name','target_chembl_type')
+#   chembl_drug_targets <- dplyr::select(chembl_drug_targets, -target_chembl_name)
+#
+#   if(!file.exists(gene_info_fname)){
+#     download.file("ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz",
+#                   destfile = gene_info_fname, quiet=T)
+#   }
+#   gene_info_ncbi <- read.table(gzfile(gene_info_fname), sep="\t", stringsAsFactors = F,na.strings="-", skip=1, comment.char = "#", quote = "", fill=T)
+#   gene_info_ncbi <- gene_info_ncbi |> dplyr::filter(V1 == 9606)
+#   gene_info_ncbi <- dplyr::select(gene_info_ncbi, c(V2,V3,V9,V10))
+#   colnames(gene_info_ncbi) <- c('entrezgene','symbol','gene_name','gene_biotype')
+#   gene_info_ncbi$entrezgene <- as.character(gene_info_ncbi$entrezgene)
+#   if(nrow(gene_info_ncbi[!is.na(gene_info_ncbi$gene_biotype) & gene_info_ncbi$gene_biotype == 'protein-coding',])>0){
+#     gene_info_ncbi[!is.na(gene_info_ncbi$gene_biotype) & gene_info_ncbi$gene_biotype == 'protein-coding',]$gene_biotype <- 'protein_coding'
+#   }
+#
+#   if(!file.exists(uniprot_id_mapping)){
+#     download.file(uniprot_idmapping_url, destfile = uniprot_id_mapping)
+#   }
+#
+#   idmapping <- read.table(gzfile(uniprot_id_mapping),sep="\t",
+#                           header = F,quote = "", stringsAsFactors = F)
+#   idmapping_up_kb <- dplyr::filter(idmapping, V2 == 'UniProtKB-ID' | V2 == 'GeneID')
+#   colnames(idmapping_up_kb) <- c('uniprot_acc','type','name')
+#
+#   idmapping_up_id <- dplyr::filter(idmapping_up_kb, type == 'UniProtKB-ID')
+#   idmapping_up_id <- dplyr::rename(idmapping_up_id, uniprot_id = name) |> dplyr::select(uniprot_acc, uniprot_id) |> dplyr::distinct()
+#   idmapping_geneid <- dplyr::filter(idmapping_up_kb, type == 'GeneID')
+#   idmapping_geneid <- dplyr::rename(idmapping_geneid, entrezgene = name) |> dplyr::select(uniprot_acc, entrezgene) |> dplyr::distinct()
+#
+#   uniprot_acc_mapping <- dplyr::inner_join(idmapping_up_id, idmapping_geneid)
+#   uniprot_acc_mapping <- dplyr::left_join(uniprot_acc_mapping, gene_info_ncbi)
+#   uniprot_acc_mapping <- uniprot_acc_mapping |> dplyr::filter(!is.na(symbol) | !is.na(uniprot_id))
+#
+#   rm(idmapping_up_id)
+#   rm(idmapping_geneid)
+#
+#   chembl_drug_targets <- dplyr::left_join(chembl_drug_targets, uniprot_acc_mapping)
+#   chembl_drug_targets <- dplyr::filter(chembl_drug_targets, !is.na(uniprot_id)) |>
+#     dplyr::distinct() |>
+#     dplyr::rename(target_uniprot_acc = uniprot_acc, target_uniprot_id = uniprot_id)
+#
+#   rm(uniprot_acc_mapping)
+#   chembl_drug_targets$chembl_db_version <- chembl_release
+#   return(chembl_drug_targets)
+# }
+#
 
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2022.02",
-           uniprot_release = "2021_04"){
+           ot_version = "2022.06"){
 
   phenotype_cancer_efo <- oncoPhenoMap::auxiliary_maps$umls$concept |>
     dplyr::filter(main_term == T) |>
@@ -714,6 +713,7 @@ get_opentargets_cancer_drugs <-
                     target_symbol,
                     target_type,
                     target_ensembl_gene_id,
+                    target_entrezgene,
                     disease_efo_id,
                     disease_efo_label,
                     drug_name,
@@ -780,28 +780,12 @@ get_opentargets_cancer_drugs <-
     untargeted_cancer_compounds |>
       dplyr::select(-drug_max_ct_phase) |>
       dplyr::left_join(drugs_with_max_phase_adj,
-                       by = c("drug_name","molecule_chembl_id"))
-  ) |>
-    dplyr::mutate(target_uniprot_id = NA)
-
-
-  up_ensembl_map <- as.data.frame(get_uniprot_ensembl_map(
-    path_data_raw = path_data_raw,
-    uniprot_release = uniprot_release) |>
-    dplyr::rename(target_symbol = symbol,
-                  target_uniprot_id = uniprot_id) |>
-    dplyr::select(-c(entrezgene, target_chembl_id)) |>
-    dplyr::group_by(target_symbol, target_ensembl_gene_id) |>
-    dplyr::summarise(target_uniprot_id = paste(
-      target_uniprot_id, collapse = "|"),
-      .groups = "drop"
-    ))
+                       by = c("drug_name","molecule_chembl_id"))) |>
+    dplyr::mutate(drug_name_lc = tolower(drug_name))
 
   targeted_cancer_compounds <- as.data.frame(
     targeted_compounds |>
       dplyr::distinct() |>
-      dplyr::left_join(up_ensembl_map,
-                       by = c("target_ensembl_gene_id","target_symbol")) |>
       dplyr::group_by_at(dplyr::vars(-c(drug_clinical_id))) |>
       dplyr::summarise(
         drug_clinical_id = paste(
@@ -814,25 +798,9 @@ get_opentargets_cancer_drugs <-
       dplyr::ungroup() |>
       dplyr::filter(cancer_drug == T &
                       !is.na(target_symbol) &
-                      !is.na(target_ensembl_gene_id))
+                      !is.na(target_ensembl_gene_id)) |>
+      dplyr::mutate(drug_name_lc = tolower(drug_name))
   )
-
-  # n_entries <- as.data.frame(
-  #   targeted_cancer_compounds |>
-  #     dplyr::group_by(target_ensembl_gene_id,
-  #                     disease_efo_id,
-  #                     molecule_chembl_id) |>
-  #     dplyr::summarise(n = dplyr::n(), .groups = "drop")
-  # )
-  #
-  # targeted_cancer_compounds <- targeted_cancer_compounds |>
-  #   dplyr::left_join(n_entries,
-  #                    by = c("target_ensembl_gene_id",
-  #                           "disease_efo_id",
-  #                           "molecule_chembl_id")) |>
-  #   #dplyr::filter(n == 1) |>
-  #   dplyr::select(-n) |>
-  #   dplyr::distinct()
 
   ## adjust max ct phase
   drugs_with_max_phase_adj <- as.data.frame(
@@ -855,8 +823,7 @@ get_opentargets_cancer_drugs <-
 }
 
 get_fda_ndc_mapping <- function(
-  path_data_raw = NULL
-){
+  path_data_raw = NULL){
 
   fda_ndc_fname <- file.path(
     path_data_raw,"national_drug_code_fda","product.txt")
@@ -884,9 +851,11 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
                           path_data_raw = NULL,
                           path_data_processed = NULL){
   nci_antineo_thesaurus <- NULL
+  nci_drugs <- NULL
 
   if(!file.exists(file.path(path_data_processed,"nci_thesaurus","nci_treatment_thesaurus_antineo.rds")) | overwrite == T){
-    sorafenib_definition <- 'A synthetic compound targeting growth signaling and angiogenesis. Sorafenib blocks the enzyme RAF kinase, a critical component of the RAF/MEK/ERK signaling pathway that controls cell division and proliferation; in addition, sorafenib inhibits the VEGFR-2/PDGFR-beta signaling cascade, thereby blocking tumor angiogenesis.'
+    sorafenib_definition <-
+      'A synthetic compound targeting growth signaling and angiogenesis. Sorafenib blocks the enzyme RAF kinase, a critical component of the RAF/MEK/ERK signaling pathway that controls cell division and proliferation; in addition, sorafenib inhibits the VEGFR-2/PDGFR-beta signaling cascade, thereby blocking tumor angiogenesis.'
 
     nci_display_labels <- process_nci_labels(path_data_raw = path_data_raw,
                                              overwrite = overwrite)
@@ -969,14 +938,14 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
       dplyr::rename(nci_t = V1, nci_concept_name = V2,
                     nci_t_parent = V3, concept_synonym = V4,
                     nci_concept_definition = V5,
-                    nci_concept_display_name = V6, nci_concept_status = V7,
+                    nci_cd_name = V6, nci_concept_status = V7,
                     nci_concept_semantic_type = V8) |>
 
       dplyr::filter(
         stringr::str_detect(
           nci_concept_semantic_type,"Chemical|Substance|Therapeutic|Drug|Immunologic")) |>
       dplyr::left_join(nci_antineo_agents, by = c("nci_t")) |>
-      dplyr::select(-c(nci_concept_name, nci_concept_display_name)) |>
+      dplyr::select(-c(nci_concept_name, nci_cd_name)) |>
       # dplyr::filter(
       #   nci_concept_status != 'Obsolete_Concept' &
       #     nci_concept_status != "Retired_Concept") |>
@@ -1003,7 +972,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
 
       dplyr::left_join(drug2chembl_all, by=c("nci_concept_synonym" = "drug_name")) |>
       dplyr::mutate(nci_db_version = nci_db_release) |>
-      dplyr::filter(!is.na(nci_concept_display_name)) |>
+      dplyr::filter(!is.na(nci_cd_name)) |>
       dplyr::filter(!stringr::str_detect(
           tolower(nci_concept_definition), "coronavirus")) |>
       dplyr::filter(!stringr::str_detect(
@@ -1016,18 +985,18 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
       )) |>
       # dplyr::filter(antineoplastic_agent == T |
       #                 stringr::str_detect(nci_concept_synonym,"chemother|immunother|radiation|regimen") |
-      #                 stringr::str_detect(tolower(nci_concept_display_name),"chemother|immunother|radiation|regimen") |
-      #                 stringr::str_detect(tolower(nci_concept_display_name),"(ib|mab)$") |
+      #                 stringr::str_detect(tolower(nci_cd_name),"chemother|immunother|radiation|regimen") |
+      #                 stringr::str_detect(tolower(nci_cd_name),"(ib|mab)$") |
       #                 stringr::str_detect(tolower(nci_concept_definition),"immuno|b-cell|t-cell|melanoma|myelomoa|neuroblastoma|leukemia|lymphoma|thymoma|sarcoma|paraganglioma|regimen|proliferation|cancer|tumor|carcino|radiation|block|radio|chemotherapy|immune|antigen|antineo")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name," (Gel|Oil|Cream|Seed|Block|Field|Supplement|Factor)$")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"(Vaccination|Lotion|Therapeutic Heat|Procedure|Rehabilitation|Prevention|Rinse)$")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"(Epitope|Exract|Influenza|Ginseng|Ointment|Management|Injection|Tool)$")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Vitamin A Compound|Inactivated Poliovirus|Antineoplastic Immune Cell|Topical)")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Sheng-Yu|Ginseng|Dry Cleaning|Boost|Tobacco|Microwave)")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Blood|Interruption of|Gum Arabic|Vaginal Cylinder|Laser Ablation|Wheatgrass)")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Chemical Challenge|Prevention of|Magic Mouthwash|Wood Dust|Soot|Cocaine)")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name,"^(Antibody|Antigen|Antioxidant|Vaccination|Acetate|Antiserum|Asbestos|Aspirate|Autoantigen|Cytokine)$")) |>
-      dplyr::filter(!stringr::str_detect(nci_concept_display_name," Spray| Extract| Antidiabetic| Implant|(Green Tea|Living Healthy|Pollutant|Probe|Protective Agent|Supportive Care|Caffe)")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name," (Gel|Oil|Cream|Seed|Block|Field|Supplement|Factor)$")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"(Vaccination|Lotion|Therapeutic Heat|Procedure|Rehabilitation|Prevention|Rinse)$")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"(Epitope|Exract|Influenza|Ginseng|Ointment|Management|Injection|Tool)$")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"^(Vitamin A Compound|Inactivated Poliovirus|Antineoplastic Immune Cell|Topical)")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"^(Sheng-Yu|Ginseng|Dry Cleaning|Boost|Tobacco|Microwave)")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"^(Blood|Interruption of|Gum Arabic|Vaginal Cylinder|Laser Ablation|Wheatgrass)")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"^(Chemical Challenge|Prevention of|Magic Mouthwash|Wood Dust|Soot|Cocaine)")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name,"^(Antibody|Antigen|Antioxidant|Vaccination|Acetate|Antiserum|Asbestos|Aspirate|Autoantigen|Cytokine)$")) |>
+      dplyr::filter(!stringr::str_detect(nci_cd_name," Spray| Extract| Antidiabetic| Implant|(Green Tea|Living Healthy|Pollutant|Probe|Protective Agent|Supportive Care|Caffe)")) |>
       dplyr::filter(
         !stringr::str_detect(
           tolower(nci_concept_definition),
@@ -1036,7 +1005,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
 
     #nci_antineo_thesaurus
     nci2chembl <- as.data.frame(nci_antineo_thesaurus_raw |>
-      dplyr::select(molecule_chembl_id, nci_concept_display_name) |>
+      dplyr::select(molecule_chembl_id, nci_cd_name) |>
       dplyr::filter(!is.na(molecule_chembl_id)) |>
       dplyr::distinct()
     )
@@ -1044,18 +1013,18 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     j <- 1
     nci2chembl_dict <- list()
     while(j <= nrow(nci2chembl)){
-      nci2chembl_dict[[nci2chembl[j,"nci_concept_display_name"]]] <-
+      nci2chembl_dict[[nci2chembl[j,"nci_cd_name"]]] <-
         nci2chembl[j,"molecule_chembl_id"]
       j <- j + 1
     }
 
     i <- 1
     while(i <= nrow(nci_antineo_thesaurus_raw)){
-      nci_concept_display_name <-
-        nci_antineo_thesaurus_raw[i,"nci_concept_display_name"]
-      if(nci_concept_display_name %in% names(nci2chembl_dict)){
+      nci_cd_name <-
+        nci_antineo_thesaurus_raw[i,"nci_cd_name"]
+      if(nci_cd_name %in% names(nci2chembl_dict)){
         nci_antineo_thesaurus_raw[i,"molecule_chembl_id"] <-
-          nci2chembl_dict[[nci_concept_display_name]]
+          nci2chembl_dict[[nci_cd_name]]
       }
       i <- i + 1
     }
@@ -1063,34 +1032,34 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     nci_antineo_thesaurus <- nci_antineo_thesaurus_raw |>
       dplyr::filter(!(molecule_chembl_id == "CHEMBL1569487" & nci_t == "C405")) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Sorafenib Tosylate", "CHEMBL1200485", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Sorafenib Tosylate", "CHEMBL1200485", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Leucovorin", "CHEMBL1679", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Leucovorin", "CHEMBL1679", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Masoprocol", "CHEMBL313972", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Masoprocol", "CHEMBL313972", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "7-Hydroxystaurosporine", "CHEMBL1236539", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "7-Hydroxystaurosporine", "CHEMBL1236539", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Dromostanolone", "CHEMBL1201048", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Dromostanolone", "CHEMBL1201048", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Patritumab", "CHEMBL2109406", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Patritumab", "CHEMBL2109406", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Rivoceranib", "CHEMBL3186534", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Rivoceranib", "CHEMBL3186534", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Rivoceranib Mesylate", "CHEMBL3545414", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Rivoceranib Mesylate", "CHEMBL3545414", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Tricribine Phosphate", "CHEMBL462018", as.character(molecule_chembl_id))) |>
+        nci_cd_name == "Tricribine Phosphate", "CHEMBL462018", as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Umbrasilib" |
-          nci_concept_display_name == "Umbrasilib Tosylate", "CHEMBL3948730",
+        nci_cd_name == "Umbrasilib" |
+          nci_cd_name == "Umbrasilib Tosylate", "CHEMBL3948730",
         as.character(molecule_chembl_id))) |>
-      # dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Brigatinib") & molecule_chembl_id != "CHEMBL3545311")) |>
-      # dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Brentuximab") & molecule_chembl_id != "CHEMBL2109665")) |>
-      # dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Afatinib") & molecule_chembl_id != "CHEMBL2109665")) |>
-      # dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Dacomitinib") & molecule_chembl_id != "CHEMBL2109665")) |>
-      # dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Calcipotriene") & molecule_chembl_id != "CHEMBL2109665")) |>
-      # dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Balixafortide") & molecule_chembl_id != "CHEMBL2109665")) |>
-      dplyr::filter(!(stringr::str_detect(nci_concept_display_name,"^Antineoplast(on|ic) Agent|^Support| Gel | Ointment|Caffeine|^Acetate$")))
+      # dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Brigatinib") & molecule_chembl_id != "CHEMBL3545311")) |>
+      # dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Brentuximab") & molecule_chembl_id != "CHEMBL2109665")) |>
+      # dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Afatinib") & molecule_chembl_id != "CHEMBL2109665")) |>
+      # dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Dacomitinib") & molecule_chembl_id != "CHEMBL2109665")) |>
+      # dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Calcipotriene") & molecule_chembl_id != "CHEMBL2109665")) |>
+      # dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Balixafortide") & molecule_chembl_id != "CHEMBL2109665")) |>
+      dplyr::filter(!(stringr::str_detect(nci_cd_name,"^Antineoplast(on|ic) Agent|^Support| Gel | Ointment|Caffeine|^Acetate$")))
       #CHEMBL3545055
 
     ## add apatinib as an alias (is missing in NCI thesaurus)
@@ -1102,7 +1071,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
 
     nci_antineo_thesaurus <- nci_antineo_thesaurus |>
       dplyr::bind_rows(apatinib_alias_entry) |>
-      dplyr::arrange(nci_concept_display_name)
+      dplyr::arrange(nci_cd_name)
 
     nci_with_chembl <- nci_antineo_thesaurus |>
       dplyr::filter(!is.na(molecule_chembl_id)) |>
@@ -1117,9 +1086,9 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     nci_antineo_thesaurus <- nci_antineo_thesaurus |>
       dplyr::filter(!is.na(molecule_chembl_id)) |>
       dplyr::bind_rows(nci_2) |>
-      dplyr::rename(drug_name_nci = nci_concept_synonym) |>
-      dplyr::filter(!(nci_concept_display_name == "Sorafenib Tosylate" &
-                        drug_name_nci == "sorafenib")) |>
+      dplyr::rename(nci_drug_name = nci_concept_synonym) |>
+      dplyr::filter(!(nci_cd_name == "Sorafenib Tosylate" &
+                        nci_drug_name == "sorafenib")) |>
       dplyr::select(-c(nci_t_parent,cui)) |>
       dplyr::distinct() |>
       ## Removing duplicate/erroneous NCI/CHEMBL cross-ref identifiers
@@ -1159,15 +1128,15 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     i <- 1
     nci_compounds_no_chembl <- as.data.frame(
       nci_antineo_thesaurus |>
-      dplyr::select(nci_concept_display_name, molecule_chembl_id) |>
+      dplyr::select(nci_cd_name, molecule_chembl_id) |>
       dplyr::distinct() |>
-      dplyr::filter(!stringr::str_detect(tolower(nci_concept_display_name),
+      dplyr::filter(!stringr::str_detect(tolower(nci_cd_name),
                                          "( vaccine)|^[0-9]")) |>
       dplyr::filter(is.na(molecule_chembl_id)) |>
-      dplyr::select(nci_concept_display_name) |>
-      dplyr::mutate(num_spaces = stringr::str_count(nci_concept_display_name," ")) |>
-      dplyr::filter(num_spaces <= 1 & !stringr::str_detect(tolower(nci_concept_display_name),"regimen|&|/|;|,")) |>
-      dplyr::filter(stringr::str_detect(nci_concept_display_name,"(mab|cin|ide|ib|im|bine|tin|om|lin|stat|one|ate|ole|ane|ine|xel|rol)$")) |>
+      dplyr::select(nci_cd_name) |>
+      dplyr::mutate(num_spaces = stringr::str_count(nci_cd_name," ")) |>
+      dplyr::filter(num_spaces <= 1 & !stringr::str_detect(tolower(nci_cd_name),"regimen|&|/|;|,")) |>
+      dplyr::filter(stringr::str_detect(nci_cd_name,"(mab|cin|ide|ib|im|bine|tin|om|lin|stat|one|ate|ole|ane|ine|xel|rol)$")) |>
       dplyr::distinct()
     )
 
@@ -1181,11 +1150,10 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
                       pattern = "CID-Synonym-filtered_",
                       full.names = T))
 
-    rlogging::message("Mapping ChEMBL identifiers for NCI compounds")
-    #antineopharma_synonyms_pubchem <- data.frame()
+    lgr::lgr$info("Mapping ChEMBL identifiers for NCI compounds")
     i <- 1
     for(f in pubchem_synonym_files){
-      rlogging::message("Mapping iteration..", i)
+      lgr::lgr$info("Mapping iteration..", i)
       synonym_data <- as.data.frame(readr::read_tsv(
         f, col_names = c('pubchem_cid','alias'),
         col_types = "dc",
@@ -1205,10 +1173,10 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
         dplyr::mutate(alias = tolower(alias))
 
       hits <- nci_compounds_no_chembl |>
-        dplyr::mutate(nci_concept_display_name_lc =
-                        tolower(nci_concept_display_name)) |>
+        dplyr::mutate(nci_cd_name_lc =
+                        tolower(nci_cd_name)) |>
         dplyr::inner_join(
-          chembl2alias, by = c("nci_concept_display_name_lc" = "alias"))
+          chembl2alias, by = c("nci_cd_name_lc" = "alias"))
 
 
       rm(chembl2alias)
@@ -1217,10 +1185,10 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
         hits <- hits |>
           dplyr::inner_join(
             chembl2pubchem, by = "pubchem_cid") |>
-          dplyr::select(nci_concept_display_name,
+          dplyr::select(nci_cd_name,
                         molecule_chembl_id)
 
-        rlogging::message("Found ", nrow(hits), " ChEMBL identifiers")
+        lgr::lgr$info("Found ", nrow(hits), " ChEMBL identifiers")
 
         nci_compounds_chembl_match <- nci_compounds_chembl_match |>
           dplyr::bind_rows(hits)
@@ -1231,21 +1199,21 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     }
 
     nci_compounds_chembl_match_unique <- nci_compounds_chembl_match |>
-      dplyr::group_by(nci_concept_display_name) |>
+      dplyr::group_by(nci_cd_name) |>
       dplyr::summarise(
         n_identifiers = dplyr::n(),
         molecule_chembl_id = paste(unique(molecule_chembl_id), collapse="&"),
         .groups = "drop") |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Goserelin Acetate",
+        nci_cd_name == "Goserelin Acetate",
         "CHEMBL1200501",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Abacavir Sulfate",
+        nci_cd_name == "Abacavir Sulfate",
         "CHEMBL1200666",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Roniciclib",
+        nci_cd_name == "Roniciclib",
         "CHEMBL4442620",
         as.character(molecule_chembl_id))) |>
       dplyr::filter(!stringr::str_detect(molecule_chembl_id,"&")) |>
@@ -1254,124 +1222,155 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
 
     # i <- 1
     # while(i <= nrow(nci_compounds_no_chembl)){
-    #   name <- nci_compounds_no_chembl[i, "nci_concept_display_name"]
+    #   name <- nci_compounds_no_chembl[i, "nci_cd_name"]
     #   chembl_hit <- get_chembl_compound_by_name(name)
     #   if(!is.null(chembl_hit)){
     #     chembl_hit <- chembl_hit |>
-    #       dplyr::rename(nci_concept_display_name = name)
+    #       dplyr::rename(nci_cd_name = name)
     #     nci_compounds_chembl_match <- nci_compounds_chembl_match |>
     #       dplyr::bind_rows(chembl_hit)
     #
     #   }
     #   if(i %% 10 == 0){
-    #     rlogging::message("Done with querying ChEMBL for ", i, " compound names")
+    #     lgr::lgr$info("Done with querying ChEMBL for ", i, " compound names")
     #   }
     #   i <- i + 1
     # }
 
     nci_antineo_thesaurus_chembl <- nci_antineo_thesaurus |>
       dplyr::anti_join(nci_compounds_no_chembl,
-                       by = "nci_concept_display_name")
+                       by = "nci_cd_name")
 
     nci_antineo_thesaurus_no_chembl <- nci_antineo_thesaurus |>
       dplyr::inner_join(nci_compounds_no_chembl,
-                        by = "nci_concept_display_name") |>
+                        by = "nci_cd_name") |>
       dplyr::select(-c(num_spaces, molecule_chembl_id)) |>
       dplyr::left_join(nci_compounds_chembl_match_unique,
-                       by = "nci_concept_display_name")
+                       by = "nci_cd_name")
 
     nci_antineo_thesaurus <-
       nci_antineo_thesaurus_chembl |>
       dplyr::bind_rows(nci_antineo_thesaurus_no_chembl) |>
-      dplyr::arrange(nci_concept_display_name) |>
+      dplyr::arrange(nci_cd_name) |>
       dplyr::distinct() |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Vorolanib",
+        nci_cd_name == "Vorolanib",
         "CHEMBL3545427",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Gemtuzumab Ozogamicin",
+        nci_cd_name == "Gemtuzumab Ozogamicin",
         "CHEMBL1201506",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Ublituximab",
+        nci_cd_name == "Ublituximab",
         "CHEMBL2108354",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Etoposide",
+        nci_cd_name == "Etoposide",
         "CHEMBL44657",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Lorvotuzumab Mertansine",
+        nci_cd_name == "Lorvotuzumab Mertansine",
         "CHEMBL1743037",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Epratuzumab",
+        nci_cd_name == "Epratuzumab",
         "CHEMBL2108404",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Ocaratuzumab",
+        nci_cd_name == "Ocaratuzumab",
         "CHEMBL2109665",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Medroxyprogesterone Acetate",
+        nci_cd_name == "Medroxyprogesterone Acetate",
         "CHEMBL717",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Brigatinib",
+        nci_cd_name == "Brigatinib",
         "CHEMBL3545311",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Brentuximab",
+        nci_cd_name == "Brentuximab",
         "CHEMBL1742994",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Afatinib",
+        nci_cd_name == "Afatinib",
         "CHEMBL1173655",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Spebrutinib",
+        nci_cd_name == "Spebrutinib",
         "CHEMBL3301625",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Dacomitinib",
+        nci_cd_name == "Dacomitinib",
         "CHEMBL2110732",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Lucitanib",
+        nci_cd_name == "Lucitanib",
         "CHEMBL2220486",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Tofacitinib",
+        nci_cd_name == "Tofacitinib",
         "CHEMBL221959",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Mifamurtide",
+        nci_cd_name == "Mifamurtide",
         "CHEMBL2111100",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Umbralisib",
+        nci_cd_name == "Umbralisib",
         "CHEMBL3948730",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Onvansertib",
+        nci_cd_name == "Onvansertib",
         "CHEMBL1738758",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Sulindac",
+        nci_cd_name == "Sulindac",
         "CHEMBL15770",
         as.character(molecule_chembl_id))) |>
       dplyr::mutate(molecule_chembl_id = dplyr::if_else(
-        nci_concept_display_name == "Calcipotriene",
+        nci_cd_name == "Calcipotriene",
         "CHEMBL1200666",
         as.character(molecule_chembl_id))) |>
       dplyr::distinct()
 
-    saveRDS(nci_antineo_thesaurus, file = file.path(path_data_processed, "nci_thesaurus", "nci_treatment_thesaurus_antineo.rds"))
+
+    nci_drugs <- list()
+    ## NCI anticancer drugs (targeted) - including compound identifier (CHEMBL)
+    nci_drugs[['with_chembl_id']] <- nci_antineo_thesaurus |>
+      dplyr::select(nci_t,
+                    nci_concept_definition,
+                    nci_cd_name,
+                    molecule_chembl_id,
+                    nci_drug_name,
+                    nci_concept_synonym_all) |>
+      dplyr::filter(!is.na(molecule_chembl_id)) |>
+      dplyr::mutate(nci_drug_name_lc = tolower(nci_drug_name)) |>
+      dplyr::distinct()
+
+    ## NCI anticancer drugs (non-targeted) - lacking compound identifier (CHEMBL)
+    nci_drugs[['no_chembl_id']] <- nci_antineo_thesaurus |>
+      dplyr::filter(is.na(molecule_chembl_id)) |>
+      dplyr::select(nci_t,
+                    nci_concept_definition,
+                    nci_cd_name,
+                    nci_drug_name,
+                    nci_concept_synonym_all) |>
+      dplyr::mutate(nci_drug_name_lc = tolower(nci_drug_name)) |>
+      dplyr::distinct()
+
+    saveRDS(nci_drugs, file = file.path(
+      path_data_processed,  "nci_thesaurus",
+      "nci_treatment_thesaurus_antineo.rds"))
+
   }else{
-    nci_antineo_thesaurus <- readRDS(file = file.path(path_data_processed, "nci_thesaurus", "nci_treatment_thesaurus_antineo.rds"))
+    nci_drugs <- readRDS(
+      file = file.path(
+        path_data_processed, "nci_thesaurus",
+        "nci_treatment_thesaurus_antineo.rds"))
   }
-  return(nci_antineo_thesaurus)
+  return(nci_drugs)
 }
 
 
@@ -1422,142 +1421,142 @@ get_compound_properties <- function(molecule_chembl_id = NULL,
 
 }
 
-get_uniprot_ensembl_map <-
-  function(path_data_raw = NULL,
-           uniprot_release = "2021_03") {
-
-  ## get NCBI gene info (gene symbols, names, and entrez gene identifiers)
-  gene_info <- get_gene_info_ncbi(path_data_raw = path_data_raw,
-                                  update = F) |>
-    dplyr::rename(target_ensembl_gene_id = ensembl_gene_id)
-
-  ## read uniprot ID mapping
-  idmapping <- read.table(gzfile(paste0(path_data_raw, '/uniprot/',
-                                        uniprot_release, '/HUMAN_9606_idmapping.dat.gz')),
-                          sep = "\t", header = F, quote = "", stringsAsFactors = F) |>
-    dplyr::filter(V2 == 'ChEMBL' | V2 == 'UniProtKB-ID' |
-                    V2 == 'Ensembl' | V2 == 'GeneID' |
-                    V2 == 'Gene_Name') |>
-    magrittr::set_colnames(c('acc', 'type', 'name')) |>
-    dplyr::mutate(acc = stringr::str_replace(acc, "-[0-9]{1,}", ""))
-
-  mappings <- list()
-  for (m in c('ChEMBL', 'UniProtKB-ID', 'GeneID', 'Ensembl', 'Gene_Name')) {
-    mappings[[m]] <- dplyr::filter(idmapping, type == m) |>
-      dplyr::select(acc, name) |>
-      dplyr::distinct()
-
-    if(m == 'ChEMBL') {
-      mappings[[m]] <- mappings[[m]] |> dplyr::rename(target_chembl_id = name)
-    }
-    if(m == 'Ensembl') {
-      mappings[[m]] <- mappings[[m]] |> dplyr::rename(target_ensembl_gene_id = name)
-    }
-    if(m == 'GeneID') {
-      mappings[[m]] <- mappings[[m]] |> dplyr::rename(entrezgene = name)
-    }
-    if(m == 'UniProtKB-ID') {
-      mappings[[m]] <- mappings[[m]] |> dplyr::rename(uniprot_id = name)
-    }
-    if(m == 'Gene_Name') {
-      mappings[[m]] <- mappings[[m]] |> dplyr::rename(symbol = name)
-    }
-  }
-
-  mappings[['Ensembl']] <- mappings[['Ensembl']] |>
-    dplyr::left_join(mappings[['GeneID']], by = "acc") |>
-    dplyr::left_join(mappings[['UniProtKB-ID']], by = "acc") |>
-    dplyr::left_join(mappings[['ChEMBL']], by = "acc") |>
-    dplyr::left_join(mappings[['Gene_Name']], by = "acc") |>
-    dplyr::select(-acc) |>
-    dplyr::distinct() |>
-    dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
-    dplyr::inner_join(dplyr::select(gene_info, entrezgene, symbol, target_ensembl_gene_id),
-                      by = c("target_ensembl_gene_id", "entrezgene", "symbol"))
-  df <- mappings[['Ensembl']]
-  return(df)
-}
-
-
-get_gene_info_ncbi <- function(path_data_raw = NULL,
-                               update = T){
-
-  invisible(assertthat::assert_that(
-    update == T | update == F,
-    msg = "'update' is not of type logical (TRUE/FALSE)"))
-  invisible(assertthat::assert_that(
-    dir.exists(path_data_raw),
-    msg = paste0("Directory '",path_data_raw,"' does not exist")))
-
-  rlogging::message("Retrieving gene_info from NCBI/Entrez")
-  gene_info_fname <- file.path(path_data_raw,
-                               "gene_info",
-                               "Homo_sapiens.gene_info.gz")
-  if(update == F){
-    invisible(assertthat::assert_that(
-      file.exists(gene_info_fname),
-      msg = paste0("File ",gene_info_fname,
-                   " does not exist")))
-  }
-
-  if(!file.exists(gene_info_fname) | update == T){
-    remote_url <- "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz"
-    if(RCurl::url.exists(remote_url)){
-      download.file(remote_url, destfile = gene_info_fname, quiet=T)
-    }else{
-      rlogging::message(paste0("Cannot update gene_info - download not available: ",
-                               remote_url))
-    }
-  }
-  gene_info <- read.table(
-    gzfile(gene_info_fname),
-    sep = "\t", stringsAsFactors = F,na.strings = "-",
-    skip = 1, comment.char = "#", quote = "", fill = T) |>
-    dplyr::filter(V1 == 9606) |>
-    dplyr::select(c(V2, V3, V5, V9, V6, V10, V11)) |>
-    dplyr::rename(entrezgene = V2, synonyms = V5,
-                  symbol = V3, name = V9,
-                  gene_biotype = V10, symbol_entrez = V11) |>
-    dplyr::mutate(ensembl_gene_id = stringr::str_replace(
-      stringr::str_match(V6,"Ensembl:ENSG[0-9]{1,}"), "Ensembl:", "")) |>
-    dplyr::mutate(hgnc_id = stringr::str_replace(
-      stringr::str_match(V6,"HGNC:HGNC:[0-9]{1,}"), "HGNC:HGNC:", "")) |>
-    dplyr::select(-V6) |>
-    dplyr::mutate(symbol_entrez = dplyr::if_else(
-      is.na(symbol_entrez) | symbol_entrez == "-",
-      symbol, as.character(symbol_entrez))) |>
-    dplyr::mutate(gene_biotype = dplyr::if_else(
-      gene_biotype ==  "protin-coding",
-      "protein_coding", as.character(gene_biotype))) |>
-    dplyr::filter(nchar(symbol_entrez) > 0)
-
-  ### for genes annotated with the same ensembl gene ids, ignore this annotation (set to NA)
-  ensgene_id_count <- as.data.frame(
-    dplyr::filter(gene_info, !is.na(ensembl_gene_id)) |>
-      dplyr::group_by(ensembl_gene_id) |>
-      dplyr::summarise(n = dplyr::n(), .groups = "drop")
-  )
-
-  gene_info <- gene_info |>
-    dplyr::left_join(ensgene_id_count,by=c("ensembl_gene_id")) |>
-    dplyr::mutate(ensembl_gene_id = dplyr::if_else(
-      !is.na(n) & n > 1,
-      as.character(NA),
-      as.character(ensembl_gene_id))) |>
-    dplyr::select(-n) |>
-    ## TEC
-    dplyr::filter(entrezgene != 100124696) |>
-    ## HBD
-    dplyr::filter(entrezgene != 100187828) |>
-    ## MMD2
-    dplyr::filter(entrezgene != 100505381) |>
-    ## MEMO1
-    dplyr::filter(entrezgene != 7795)
-
-
-  return(gene_info)
-
-}
+# get_uniprot_ensembl_map <-
+#   function(path_data_raw = NULL,
+#            uniprot_release = "2021_03") {
+#
+#   ## get NCBI gene info (gene symbols, names, and entrez gene identifiers)
+#   gene_info <- get_gene_info_ncbi(path_data_raw = path_data_raw,
+#                                   update = F) |>
+#     dplyr::rename(target_ensembl_gene_id = ensembl_gene_id)
+#
+#   ## read uniprot ID mapping
+#   idmapping <- read.table(gzfile(paste0(path_data_raw, '/uniprot/',
+#                                         uniprot_release, '/HUMAN_9606_idmapping.dat.gz')),
+#                           sep = "\t", header = F, quote = "", stringsAsFactors = F) |>
+#     dplyr::filter(V2 == 'ChEMBL' | V2 == 'UniProtKB-ID' |
+#                     V2 == 'Ensembl' | V2 == 'GeneID' |
+#                     V2 == 'Gene_Name') |>
+#     magrittr::set_colnames(c('acc', 'type', 'name')) |>
+#     dplyr::mutate(acc = stringr::str_replace(acc, "-[0-9]{1,}", ""))
+#
+#   mappings <- list()
+#   for (m in c('ChEMBL', 'UniProtKB-ID', 'GeneID', 'Ensembl', 'Gene_Name')) {
+#     mappings[[m]] <- dplyr::filter(idmapping, type == m) |>
+#       dplyr::select(acc, name) |>
+#       dplyr::distinct()
+#
+#     if(m == 'ChEMBL') {
+#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(target_chembl_id = name)
+#     }
+#     if(m == 'Ensembl') {
+#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(target_ensembl_gene_id = name)
+#     }
+#     if(m == 'GeneID') {
+#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(entrezgene = name)
+#     }
+#     if(m == 'UniProtKB-ID') {
+#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(uniprot_id = name)
+#     }
+#     if(m == 'Gene_Name') {
+#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(symbol = name)
+#     }
+#   }
+#
+#   mappings[['Ensembl']] <- mappings[['Ensembl']] |>
+#     dplyr::left_join(mappings[['GeneID']], by = "acc") |>
+#     dplyr::left_join(mappings[['UniProtKB-ID']], by = "acc") |>
+#     dplyr::left_join(mappings[['ChEMBL']], by = "acc") |>
+#     dplyr::left_join(mappings[['Gene_Name']], by = "acc") |>
+#     dplyr::select(-acc) |>
+#     dplyr::distinct() |>
+#     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
+#     dplyr::inner_join(dplyr::select(gene_info, entrezgene, symbol, target_ensembl_gene_id),
+#                       by = c("target_ensembl_gene_id", "entrezgene", "symbol"))
+#   df <- mappings[['Ensembl']]
+#   return(df)
+# }
+#
+#
+# get_gene_info_ncbi <- function(path_data_raw = NULL,
+#                                update = T){
+#
+#   invisible(assertthat::assert_that(
+#     update == T | update == F,
+#     msg = "'update' is not of type logical (TRUE/FALSE)"))
+#   invisible(assertthat::assert_that(
+#     dir.exists(path_data_raw),
+#     msg = paste0("Directory '",path_data_raw,"' does not exist")))
+#
+#   lgr::lgr$info("Retrieving gene_info from NCBI/Entrez")
+#   gene_info_fname <- file.path(path_data_raw,
+#                                "gene_info",
+#                                "Homo_sapiens.gene_info.gz")
+#   if(update == F){
+#     invisible(assertthat::assert_that(
+#       file.exists(gene_info_fname),
+#       msg = paste0("File ",gene_info_fname,
+#                    " does not exist")))
+#   }
+#
+#   if(!file.exists(gene_info_fname) | update == T){
+#     remote_url <- "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz"
+#     if(RCurl::url.exists(remote_url)){
+#       download.file(remote_url, destfile = gene_info_fname, quiet=T)
+#     }else{
+#       lgr::lgr$info(paste0("Cannot update gene_info - download not available: ",
+#                                remote_url))
+#     }
+#   }
+#   gene_info <- read.table(
+#     gzfile(gene_info_fname),
+#     sep = "\t", stringsAsFactors = F,na.strings = "-",
+#     skip = 1, comment.char = "#", quote = "", fill = T) |>
+#     dplyr::filter(V1 == 9606) |>
+#     dplyr::select(c(V2, V3, V5, V9, V6, V10, V11)) |>
+#     dplyr::rename(entrezgene = V2, synonyms = V5,
+#                   symbol = V3, name = V9,
+#                   gene_biotype = V10, symbol_entrez = V11) |>
+#     dplyr::mutate(ensembl_gene_id = stringr::str_replace(
+#       stringr::str_match(V6,"Ensembl:ENSG[0-9]{1,}"), "Ensembl:", "")) |>
+#     dplyr::mutate(hgnc_id = stringr::str_replace(
+#       stringr::str_match(V6,"HGNC:HGNC:[0-9]{1,}"), "HGNC:HGNC:", "")) |>
+#     dplyr::select(-V6) |>
+#     dplyr::mutate(symbol_entrez = dplyr::if_else(
+#       is.na(symbol_entrez) | symbol_entrez == "-",
+#       symbol, as.character(symbol_entrez))) |>
+#     dplyr::mutate(gene_biotype = dplyr::if_else(
+#       gene_biotype ==  "protin-coding",
+#       "protein_coding", as.character(gene_biotype))) |>
+#     dplyr::filter(nchar(symbol_entrez) > 0)
+#
+#   ### for genes annotated with the same ensembl gene ids, ignore this annotation (set to NA)
+#   ensgene_id_count <- as.data.frame(
+#     dplyr::filter(gene_info, !is.na(ensembl_gene_id)) |>
+#       dplyr::group_by(ensembl_gene_id) |>
+#       dplyr::summarise(n = dplyr::n(), .groups = "drop")
+#   )
+#
+#   gene_info <- gene_info |>
+#     dplyr::left_join(ensgene_id_count,by=c("ensembl_gene_id")) |>
+#     dplyr::mutate(ensembl_gene_id = dplyr::if_else(
+#       !is.na(n) & n > 1,
+#       as.character(NA),
+#       as.character(ensembl_gene_id))) |>
+#     dplyr::select(-n) |>
+#     ## TEC
+#     dplyr::filter(entrezgene != 100124696) |>
+#     ## HBD
+#     dplyr::filter(entrezgene != 100187828) |>
+#     ## MMD2
+#     dplyr::filter(entrezgene != 100505381) |>
+#     ## MEMO1
+#     dplyr::filter(entrezgene != 7795)
+#
+#
+#   return(gene_info)
+#
+# }
 
 
 # dm_data_dir <-
@@ -1586,873 +1585,1812 @@ get_gene_info_ncbi <- function(path_data_raw = NULL,
 #     dplyr::bind_rows(all_drug_indications, drug_indications)
 # }
 
-get_dailymed_drug_indications <- function(update = F,
-                                          path_data_raw = NULL){
+# get_dailymed_drug_indications <- function(update = F,
+#                                           path_data_raw = NULL){
+#
+#   existing_dataset_fname <-
+#     paste0(path_data_raw,"/dailymed/dm_cancerdrug_indications.rds")
+#   if(update == F){
+#     if(file.exists(existing_dataset_fname)){
+#       dm_drugs_with_indications <- readRDS(file = existing_dataset_fname)
+#       return(dm_drugs_with_indications)
+#     }
+#   }
+#
+#   cancer_drug_names <-
+#     unique(toupper(oncoPharmaDB::oncopharmadb$nci_cd_name))
+#
+#   all_drug_indications <- data.frame()
+#   for(i in 16:21){
+#     year = paste0("20", i)
+#     if(i < 10){
+#       year = paste0("200",i)
+#     }
+#
+#     index <- 1
+#     for(f in list.files(
+#       path = paste0("data-raw/dailymed/prescription/", year),
+#       pattern = ".xml", full.names = T)){
+#
+#       index = index + 1
+#
+#       #cat(f,'\n')
+#       if(index %% 50 == 0){
+#         cat(year,' -- processed: ', index, ' indication records\n')
+#       }
+#       drug_indications <-
+#         get_drug_indications_dm(xml_fname = f,
+#                                 cancer_drug_names = cancer_drug_names)
+#       if(nrow(drug_indications) > 0){
+#         all_drug_indications <- all_drug_indications |>
+#           dplyr::bind_rows(drug_indications)
+#       }
+#     }
+#     cat(year,' --- processed: ', index, ' indication records\n')
+#   }
+#
+#
+#   comb_regimen_indications <- all_drug_indications |>
+#     dplyr::filter(cancer_indication == T) |>
+#     dplyr::mutate(comb_regimen_indication = dplyr::if_else(
+#       !is.na(indication_criteria) &
+#       stringr::str_detect(tolower(indication_criteria), "in combination with") &
+#         !stringr::str_detect(tolower(indication_criteria), "alone (or|and) in combination"),
+#       TRUE, FALSE, FALSE
+#     )) |>
+#     dplyr::select(drugname_generic, indication, indication_criteria,
+#                   comb_regimen_indication, xml_fname) |>
+#     dplyr::filter(comb_regimen_indication == T) |>
+#     dplyr::distinct()
+#
+#
+#   indications_otm_input1 <- all_drug_indications |>
+#     dplyr::filter(cancer_indication == T) |>
+#     dplyr::select(indication,
+#                   xml_fname) |>
+#     dplyr::rename(value = indication, nct_id = xml_fname) |>
+#     dplyr::mutate(property = "condition") |>
+#     dplyr::filter(!is.na(value))
+#
+#   indications_otm_input2 <- all_drug_indications |>
+#     dplyr::filter(cancer_indication == T) |>
+#     dplyr::select(indication_criteria,
+#                   xml_fname) |>
+#     dplyr::rename(value = indication_criteria,
+#                   nct_id = xml_fname) |>
+#     dplyr::mutate(property = "condition") |>
+#     dplyr::filter(!is.na(value))
+#
+#   indications_otm_input <- indications_otm_input1 |>
+#     dplyr::bind_rows(indications_otm_input2)
+#
+#   indications_mapped <- oncoTrialMiner::index_phenotype(
+#     ct_data_raw = indications_otm_input
+#   )
+#
+#   tmp <- indications_mapped$per_xref |>
+#     dplyr::select(nct_id, cui, primary_site, efo_id,
+#                   cui_name, ct_condition_raw) |>
+#     dplyr::rename(xml_fname = nct_id,
+#                   indication = ct_condition_raw) |>
+#     dplyr::distinct()
+#
+#   dm_drugs_with_mapped_indications1 <- all_drug_indications |>
+#     dplyr::select(xml_fname,
+#                   drugname_generic,
+#                   drugname_trade,
+#                   indication) |>
+#     dplyr::filter(!is.na(indication)) |>
+#     dplyr::inner_join(tmp, by = c("xml_fname", "indication")) |>
+#     dplyr::distinct()
+#
+#   dm_drugs_with_mapped_indications2 <- all_drug_indications |>
+#     dplyr::select(xml_fname,
+#                   drugname_generic,
+#                   drugname_trade,
+#                   indication_criteria) |>
+#     dplyr::rename(indication = indication_criteria) |>
+#     dplyr::filter(!is.na(indication)) |>
+#     dplyr::inner_join(tmp, by = c("xml_fname", "indication")) |>
+#     #dplyr::select(-c(xml_fname, indication)) |>
+#     dplyr::distinct()
+#
+#   dm_drugs_with_indications <- as.data.frame(
+#     dm_drugs_with_mapped_indications2 |>
+#       dplyr::bind_rows(dm_drugs_with_mapped_indications1) |>
+#
+#       dplyr::left_join(dplyr::select(comb_regimen_indications,
+#                                      drugname_generic,
+#                                      indication_criteria,
+#                                      comb_regimen_indication,
+#                                      xml_fname),
+#                        by = c("xml_fname" = "xml_fname",
+#                               "indication" = "indication_criteria",
+#                               "drugname_generic" = "drugname_generic")) |>
+#       dplyr::left_join(dplyr::select(comb_regimen_indications,
+#                                      drugname_generic,
+#                                      indication,
+#                                      comb_regimen_indication,
+#                                      xml_fname),
+#                        by = c("xml_fname" = "xml_fname",
+#                               "indication" = "indication",
+#                               "drugname_generic" = "drugname_generic")) |>
+#       dplyr::mutate(comb_regimen_indication = dplyr::if_else(
+#         !is.na(comb_regimen_indication.x) & comb_regimen_indication.x == TRUE,
+#         TRUE, as.logical(FALSE)
+#       )) |>
+#       dplyr::mutate(comb_regimen_indication = dplyr::if_else(
+#         !is.na(comb_regimen_indication.y) &
+#           comb_regimen_indication.y == TRUE,
+#         TRUE, as.logical(comb_regimen_indication)
+#       )) |>
+#       dplyr::select(-c(comb_regimen_indication.x,
+#                        comb_regimen_indication.y)) |>
+#       dplyr::distinct() |>
+#       dplyr::mutate(nci_drug_name = tolower(drugname_generic)) |>
+#       dplyr::select(-drugname_generic) |>
+#       dplyr::group_by(nci_drug_name, cui, efo_id,
+#                       cui_name, primary_site,
+#                       comb_regimen_indication) |>
+#       dplyr::summarise(drugname_trade =
+#                          paste(unique(drugname_trade), collapse="|"),
+#                        drug_clinical_id = paste(unique(
+#                          stringr::str_replace(
+#                            xml_fname,"\\.xml$",""
+#                          )), collapse=","),
+#                        .groups = "drop") |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "renal cell carcinoma"),
+#         "EFO:0000681", as.character(efo_id)
+#       )) |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "urothelial carcinoma"),
+#         "EFO:0008528", as.character(efo_id)
+#       )) |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "mantle cell lymphoma"),
+#         "EFO:1001469", as.character(efo_id)
+#       )) |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "non-small cell lung cancer"),
+#         "EFO:0003060", as.character(efo_id)
+#       )) |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "gastrointestinal stromal"),
+#         "Orphanet:44890", as.character(efo_id)
+#       )) |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "mediastinal large b-cell lymphoma"),
+#         "MONDO:0004021", as.character(efo_id)
+#       )) |>
+#       dplyr::mutate(efo_id = dplyr::if_else(
+#         (is.na(efo_id) | efo_id == "NA") &
+#           stringr::str_detect(tolower(cui_name), "pancreatic neuroendocrine tumor"),
+#         "EFO:1000045", as.character(efo_id)
+#       )) |>
+#       dplyr::filter(!is.na(cui) & efo_id != "NA")
+#   )
+#
+#   dm_drugs_with_indications <- as.data.frame(
+#     dm_drugs_with_indications |>
+#       tidyr::separate_rows(efo_id,sep="\\|") |>
+#       dplyr::left_join(dplyr::select(
+#         oncoPhenoMap::auxiliary_maps$efo$efo2name, efo_id, efo_name
+#       ), by = "efo_id") |>
+#       dplyr::rename(disease_efo_id = efo_id,
+#                     disease_efo_label = efo_name) |>
+#       #dplyr::mutate(nci_drug_name = tolower(drugname_generic)) |>
+#       dplyr::mutate(drug_max_phase_indication = NA,
+#                     drug_clinical_source = "DailyMedParseSN",
+#                     #drug_clinical_id = NA,
+#                     drug_max_ct_phase = NA,
+#                     drug_approved_indication = TRUE) |>
+#       dplyr::distinct()
+#   )
+#
+#   saveRDS(dm_drugs_with_indications, existing_dataset_fname)
+#
+#   return(dm_drugs_with_indications)
+# }
+#
+#
+#
+#
+# get_drug_indications_dm <- function(xml_fname = NULL,
+#                                     cancer_drug_names = NULL){
+#
+#   invisible(assertthat::assert_that(
+#     file.exists(xml_fname),
+#     msg = paste0("File name ", xml_fname," does not exist")))
+#   con <- file(description = xml_fname)
+#   tmp <- xml2::read_xml(con, options = c("HUGE","NOBLANKS"))
+#   xml2::xml_ns_strip(tmp)
+#
+#
+#   drugname_trade <-  stringr::str_trim(xml2::xml_text(xml2::xml_find_all(
+#     tmp, "//manufacturedProduct/name")[1]))
+#   if(length(drugname_trade) == 0){
+#     drugname_trade <- NA
+#   }
+#
+#   drug_active_moiety <- xml2::xml_text(xml2::xml_find_all(
+#     tmp, "//manufacturedProduct/ingredient/ingredientSubstance/activeMoiety/activeMoiety/name")[1])
+#   if(length(drug_active_moiety) == 0){
+#     drug_active_moiety <- NA
+#   }
+#
+#   initial_approval_date <- NA
+#   full_title <- ""
+#   title_elements <- xml2::as_list(xml2::xml_find_first(tmp,".//title"))
+#
+#   if(is.list(title_elements)){
+#     if(length(title_elements) > 0){
+#       for(i in 1:length(title_elements)){
+#         title_data <- stringr::str_squish(stringr::str_trim(unlist(title_elements[[i]])))
+#         if(is.list(title_data)){
+#           cat('BALLE\n')
+#         }
+#         if(is.null(title_data)){
+#           next
+#         }
+#         if(!is.character(title_data)){
+#           next
+#         }
+#         full_title <- paste0(full_title, title_data)
+#       }
+#     }
+#   }
+#
+#   #cat(full_title, '\n')
+#   if(full_title != ""){
+#     t <- stringr::str_match(full_title,"Initial U.S. Approval: [0-9]{4}")
+#     if(length(t) == 1){
+#       initial_approval_date <- stringr::str_trim(
+#         stringr::str_replace(
+#           t, "Initial U.S. Approval: ",""
+#         ))
+#     }
+#   }
+#
+#   drugname_generic <- xml2::xml_text(xml2::xml_find_all(
+#     tmp, "//manufacturedProduct/asEntityWithGeneric/genericMedicine/name")[1])
+#   if(length(drugname_generic) == 0){
+#     drugname_generic <- NA
+#   }
+#   sections <- xml2::xml_find_all(tmp,".//component/section")
+#
+#   indication_section <- 0
+#   section_counter <- 0
+#   all_indication_entries <- data.frame()
+#   all_main_indication_entries <- data.frame()
+#   effective_time <- NA
+#
+#   is_cancer_drug <- F
+#   if(!is.null(cancer_drug_names) &
+#      !is.na(drugname_trade)){
+#     if(toupper(drugname_trade) %in% cancer_drug_names){
+#       is_cancer_drug <- T
+#     }
+#   }
+#
+#   if(!is.null(cancer_drug_names) &
+#      !is.na(drugname_generic)){
+#     if(toupper(drugname_generic) %in% cancer_drug_names){
+#       is_cancer_drug <- T
+#     }
+#   }
+#
+#   if(!is.null(cancer_drug_names) &
+#      !is.na(drug_active_moiety)){
+#     if(toupper(drug_active_moiety) %in% cancer_drug_names){
+#       is_cancer_drug <- T
+#     }
+#   }
+#
+#   if(is_cancer_drug == F){
+#     return(all_indication_entries)
+#   }
+#
+#   #cat(drugname_generic, '\n')
+#
+#   for(s in sections){
+#     section_counter <- section_counter + 1
+#     section_titles <- xml2::xml_text(xml2::xml_find_first(s, ".//title"))
+#     for(sec_title in unique(section_titles)){
+#       sec_title <- stringr::str_squish(stringr::str_trim(sec_title))
+#       if(!is.na(sec_title) & nchar(sec_title) > 0){
+#
+#         if(stringr::str_detect(sec_title,"INDICATIONS") &
+#            stringr::str_detect(sec_title,"USAGE")){
+#           indication_section <- indication_section + 1
+#
+#           indication_info_main <- xml2::as_list(sections[section_counter][[1]])
+#           effective_time <- attributes(
+#             indication_info_main$effectiveTime)$value
+#
+#           if("excerpt" %in% names(indication_info_main)){
+#             if("highlight" %in% names(indication_info_main$excerpt)){
+#               if("text" %in% names(indication_info_main$excerpt$highlight)){
+#
+#                 all_indication_contents <-
+#                   unlist(indication_info_main$excerpt$highlight$text)
+#
+#                 names_indication_contents <- names(all_indication_contents)
+#                 names(all_indication_contents) <- NULL
+#
+#                 indication <- ""
+#                 indication_criteria <- NA
+#                 prev_cname <- ""
+#                 if(length(all_indication_contents) > 0 &
+#                    length(names_indication_contents) > 0 &
+#                   length(all_indication_contents) == length(names_indication_contents)){
+#                   for(i in 1:length(all_indication_contents)){
+#                     cname <- names_indication_contents[i]
+#
+#                     df <- data.frame('cname' = cname,
+#                                      'indication' = all_indication_contents[i],
+#                                      'indication_criteria' = NA,
+#                                      'drugname_generic' = drugname_generic,
+#                                      'drugname_trade' = drugname_trade,
+#                                      'drug_active_moiety' = drug_active_moiety,
+#                                      'effective_time' = effective_time,
+#                                      stringsAsFactors = F)
+#
+#                     all_main_indication_entries <- all_main_indication_entries |>
+#                       dplyr::bind_rows(df)
+#                   }
+#                 }
+#               }
+#             }
+#           }else{
+#             if("text" %in% names(indication_info_main)){
+#
+#               all_indication_contents <-
+#                 unlist(indication_info_main$text)
+#
+#               if(!is.null(all_indication_contents)){
+#                 names_indication_contents <- names(all_indication_contents)
+#                 names(all_indication_contents) <- NULL
+#                 if(length(all_indication_contents) > 0 &
+#                    length(names_indication_contents) > 0 &
+#                    length(all_indication_contents) == length(names_indication_contents)){
+#                   for(i in 1:length(all_indication_contents)){
+#                     cname <- names_indication_contents[i]
+#
+#                     df <- data.frame('cname' = cname,
+#                                      'indication' = all_indication_contents[i],
+#                                      'indication_criteria' = NA,
+#                                      'drugname_generic' = drugname_generic,
+#                                      'drugname_trade' = drugname_trade,
+#                                      'drug_active_moiety' = drug_active_moiety,
+#                                      'effective_time' = effective_time,
+#                                      stringsAsFactors = F)
+#
+#                     all_main_indication_entries <- all_main_indication_entries |>
+#                       dplyr::bind_rows(df)
+#                   }
+#                 }
+#               }
+#             }
+#           }
+#         }
+#         if(indication_section > 0 &
+#            !(stringr::str_detect(
+#              sec_title, "INDICATIONS")) &
+#            !stringr::str_detect(
+#              sec_title, "DOSAGE"
+#            )){
+#
+#           df_sec_title <- data.frame('cname' = 'section_title',
+#                                      'indication' = sec_title,
+#                                      'indication_criteria' = NA,
+#                                      'drugname_generic' = drugname_generic,
+#                                      'drugname_trade' = drugname_trade,
+#                                      'drug_active_moiety' = drug_active_moiety,
+#                                      'effective_time' = effective_time,
+#                                      stringsAsFactors = F)
+#
+#
+#           section_indication_details_found <- 0
+#
+#           indication_details <- xml2::as_list(sections[section_counter][[1]])
+#
+#           if("text" %in% names(indication_details)){
+#
+#             if(length(indication_details$text) == 1){
+#               if("paragraph" %in% names(indication_details$text)){
+#
+#                 ind_details <- unlist(indication_details$text$paragraph)
+#                 attributes(ind_details) <- NULL
+#                 ind_details <- ind_details[!nchar(ind_details) == 1]
+#                 ind_details <- stringr::str_squish(paste(ind_details, collapse=""))
+#
+#                 df <- data.frame('cname' = 'paragraph',
+#                                  'indication' = sec_title,
+#                                  'indication_criteria' = ind_details,
+#                                  'drugname_generic' = drugname_generic,
+#                                  'drugname_trade' = drugname_trade,
+#                                  'drug_active_moiety' = drug_active_moiety,
+#                                  'effective_time' = effective_time,
+#                                  stringsAsFactors = F)
+#
+#                 all_indication_entries <- all_indication_entries |>
+#                   dplyr::bind_rows(df)
+#
+#                 section_indication_details_found <- 1
+#
+#               }
+#             }else{
+#               if(!("list" %in% names(indication_details$text))){
+#                 if(length(indication_details$text) == 0){
+#                   next
+#                 }
+#                 for(n in 1:length(indication_details$text)){
+#                   if("content" %in% names(indication_details$text[[n]])){
+#
+#                     if(is.list(indication_details$text[[n]]$content) &
+#                        length(indication_details$text[[n]]$content) == 1){
+#
+#                       if(is.character(indication_details$text[[n]]$content[[1]])){
+#
+#                         df <- data.frame(
+#                           'cname' = 'section_title',
+#                           'indication' = sec_title,
+#                           'indication_criteria' = indication_details$text[[n]]$content[[1]],
+#                           'drugname_generic' = drugname_generic,
+#                           'drugname_trade' = drugname_trade,
+#                           'drug_active_moiety' = drug_active_moiety,
+#                           'effective_time' = effective_time,
+#                           stringsAsFactors = F)
+#
+#                         all_indication_entries <- all_indication_entries |>
+#                           dplyr::bind_rows(df)
+#                       }
+#
+#                       section_indication_details_found <- 1
+#
+#                     }else{
+#                       crit <- unlist(indication_details$text[[n]])
+#                       if(is.character(crit) & length(crit) == 1){
+#                         names(crit) <- NULL
+#                         if(nchar(crit[1]) > 1 &
+#                            !(stringr::str_detect(
+#                              crit[1],"Clinical Studies|Dosage and Administration"))){
+#                           df <- data.frame(
+#                             'cname' = 'section_title',
+#                             'indication' = sec_title,
+#                             'indication_criteria' = crit[1],
+#                             'drugname_generic' = drugname_generic,
+#                             'drugname_trade' = drugname_trade,
+#                             'drug_active_moiety' = drug_active_moiety,
+#                             'effective_time' = effective_time,
+#                             stringsAsFactors = F)
+#
+#                           all_indication_entries <- all_indication_entries |>
+#                             dplyr::bind_rows(df)
+#
+#                           section_indication_details_found <- 1
+#
+#                         }
+#                       }
+#                     }
+#                   }else{
+#
+#                     if(is.list(indication_details$text[[n]]) & length(indication_details$text[[n]]) > 0){
+#                       #cat(section_counter, '--', n, '---', length(indication_details$text[[n]]), '\n')
+#                       for(i in 1:length(indication_details$text[[n]])){
+#                         if(is.character(indication_details$text[[n]][[i]])){
+#                           df <- data.frame(
+#                             'cname' = 'section_title',
+#                             'indication' = sec_title,
+#                             'indication_criteria' = indication_details$text[[n]][[i]],
+#                             'drugname_generic' = drugname_generic,
+#                             'drugname_trade' = drugname_trade,
+#                             'drug_active_moiety' = drug_active_moiety,
+#                             'effective_time' = effective_time,
+#                             stringsAsFactors = F)
+#
+#                           all_indication_entries <- all_indication_entries |>
+#                             dplyr::bind_rows(df)
+#
+#                           section_indication_details_found <- 1
+#
+#                         }
+#                       }
+#                     }
+#                   }
+#                 }
+#               }
+#             }
+#
+#             if("paragraph" %in% names(indication_details$text) &
+#                length(indication_details$text) > 1){
+#
+#               indication_title <- ""
+#               indication_title_elements <- c()
+#               if(length(indication_details$text$paragraph) > 1){
+#                 for(j in 1:length(indication_details$text$paragraph)){
+#                   if(is.character(indication_details$text$paragraph[[j]])){
+#                     indication_title_elements <-
+#                       c(indication_title_elements,
+#                         indication_details$text$paragraph[[j]])
+#                   }
+#                 }
+#                 indication_title <- paste(indication_title_elements, collapse="")
+#               }else{
+#                 if(length(indication_details$text$paragraph) == 1){
+#                   if(is.character(indication_details$text$paragraph[[1]])){
+#                     indication_title <- as.character(indication_details$text$paragraph[[1]])
+#                   }
+#                 }
+#               }
+#               indication_criterions <- c()
+#
+#               if("list" %in% names(indication_details$text)){
+#
+#                 if("item" %in% names(indication_details$text$list)){
+#
+#                   if(length(indication_details$text$list) == 1){
+#                     indication_items <-
+#                       unlist(indication_details$text$list$item)
+#
+#                     if(!is.null(indication_items) &
+#                        is.vector(indication_items)){
+#                       ind_crit <- ""
+#                       #cat('--', unlist(names(indication_items)),'\n')
+#
+#                       if(length(indication_items) > 0){
+#                         for(m in 1:length(indication_items)){
+#                           if(is.null(names(indication_items[m]))){
+#                             next
+#                           }
+#                           if(names(indication_items[m]) == "" |
+#                              stringr::str_detect(names(indication_items[m]),"content([0-9])?$")){
+#                             ind_crit <- paste(ind_crit, stringr::str_trim(indication_items[m]))
+#                           }
+#                         }
+#                       }
+#                       indication_criterions <- c(indication_criterions,
+#                                                  paste(indication_title,
+#                                                        ind_crit, sep=" "))
+#                     }
+#                   }else{
+#
+#                     for(m in 1:length(indication_details$text$list)){
+#                       #if(nchar(unlist(indication_details$text$list[[m]])) > 1){
+#                       indication_criterions <-
+#                         c(indication_criterions,
+#                           paste(indication_title,
+#                                 unlist(indication_details$text$list[[m]]),
+#                                 sep = " - ")
+#                         )
+#                       #}
+#                     }
+#                   }
+#                 }
+#                 else{
+#                   for(j in 1:length(indication_details$text$list)){
+#
+#                     if(is.character(unlist(indication_details$text$list[[j]][[1]]))){
+#                       if(nchar(unlist(indication_details$text$list[[j]][[1]])) > 1){
+#                         indication_criterions <-
+#                           c(indication_criterions,
+#                             paste(
+#                               indication_title,
+#                               unlist(indication_details$text$list[[j]][[1]]),
+#                               sep = " - ")
+#                           )
+#                       }
+#                     }
+#                   }
+#                 }
+#               }
+#
+#               for(c in indication_criterions){
+#
+#                 df <- data.frame(
+#                   'cname' = 'section_title',
+#                   'indication' = sec_title,
+#                   'indication_criteria' = c,
+#                   'drugname_generic' = drugname_generic,
+#                   'drugname_trade' = drugname_trade,
+#                   'drug_active_moiety' = drug_active_moiety,
+#                   'effective_time' = effective_time,
+#                   stringsAsFactors = F)
+#
+#                 all_indication_entries <- all_indication_entries |>
+#                   dplyr::bind_rows(df)
+#
+#                 section_indication_details_found <- 1
+#
+#               }
+#             }
+#
+#             else{
+#
+#               if(length(indication_details$text) >= 1){
+#                 type <- unique(names(indication_details$text))
+#                 if(length(type) != 1){
+#                   break
+#                 }
+#                 if(unique(names(indication_details$text)) == "list"){
+#                   all_criterions <- c()
+#
+#                   for(j in 1:length(indication_details$text$list)){
+#                     if(length(indication_details$text$list[[j]]) == 0){
+#                       next
+#                     }
+#                     for(k in 1:length(indication_details$text$list[[j]])){
+#                       indication_criterion <- ""
+#                       if(is.list(indication_details$text$list[[j]][[k]])){
+#
+#                         if(length(indication_details$text$list[[j]][[k]]) == 1){
+#                           if(is.character(unlist(indication_details$text$list[[j]][[k]])) &
+#                              nchar(unlist(indication_details$text$list[[j]][[k]])) > 1){
+#                             indication_criterion <- as.character(
+#                               unlist(indication_details$text$list[[j]][[k]]))
+#
+#                             all_criterions <- c(all_criterions, indication_criterion)
+#                           }
+#                         }else{
+#                           indication_criterion <- ""
+#                           if(length(indication_details$text$list[[j]][[k]]) == 0){
+#                             next
+#                           }
+#                           for(l in 1:length(indication_details$text$list[[j]][[k]])){
+#                             if(is.character(indication_details$text$list[[j]][[k]][[l]])){
+#                               indication_criterion <- paste0(
+#                                 indication_criterion,
+#                                 as.character(
+#                                   indication_details$text$list[[j]][[k]][[l]]))
+#                             }
+#                           }
+#                           all_criterions <- c(all_criterions, indication_criterion)
+#
+#
+#                         }
+#                       }else{
+#                         indication_criterion <-
+#                           unlist(indication_details$text$list[[j]][[k]])
+#                         all_criterions <- c(all_criterions, indication_criterion)
+#
+#                       }
+#                     }
+#                   }
+#
+#                   for(c in all_criterions){
+#                     df <- data.frame(
+#                       'cname' = 'section_list',
+#                       'indication' = sec_title,
+#                       'indication_criteria' = c,
+#                       'drugname_generic' = drugname_generic,
+#                       'drugname_trade' = drugname_trade,
+#                       'drug_active_moiety' = drug_active_moiety,
+#                       'effective_time' = effective_time,
+#                       stringsAsFactors = F)
+#
+#                     all_indication_entries <- all_indication_entries |>
+#                       dplyr::bind_rows(df)
+#
+#                     section_indication_details_found <- 1
+#
+#                   }
+#                 }
+#               }
+#             }
+#           }
+#           if(section_indication_details_found == 0){
+#             all_indication_entries <- all_indication_entries |>
+#               dplyr::bind_rows(df_sec_title)
+#           }
+#         }
+#
+#         if(stringr::str_detect(sec_title,"CONTRAINDICATIONS") |
+#            stringr::str_detect(sec_title,"WARNINGS|DOSAGE")){
+#           indication_section <- 0
+#           break
+#         }
+#       }
+#     }
+#   }
+#
+#
+#
+#   if(nrow(all_indication_entries) == 0 &
+#      nrow(all_main_indication_entries) > 0){
+#     all_indication_entries <- all_indication_entries |>
+#       dplyr::bind_rows(all_main_indication_entries)
+#   }
+#
+#   if(nrow(all_indication_entries) == 0){
+#     return(all_indication_entries)
+#   }
+#
+#   #cancer_regex <- "cancer|carcinoma|wilms|esophageal|melanoma|myeloma"
+#   #cancer_regex <- paste0(cancer_regex,"|leukemia|lymphom|sarcoma|thymom|thyroid cancer")
+#   #cancer_regex <- paste0(cancer_regex,"|head and neck cancer|")
+#
+#   cancer_tissue_regex <- "endometrial|prostate|rectal|myeloid|anal|colorectal|wilms|kidney|ovarian|"
+#   cancer_tissue_regex <- paste0(
+#     cancer_tissue_regex,"thyroid|esophag|cervical|cervix|gastric|stomach|head and neck|ovary|")
+#   cancer_tissue_regex <- paste0(
+#    cancer_tissue_regex,"bone|testis|testicular|lung|liver|skin|pancreas|pancreatic|brain|bladder|")
+#   cancer_tissue_regex <- paste0(
+#     cancer_tissue_regex,"adrenal gland|renal cell|urothelial|lympho|hepatocellular|breast")
+#
+#   cancer_other_regex <- "melanoma|myeloma|glioblastoma|sarcoma|leukemia|lymphoma|"
+#   cancer_other_regex <- paste0(
+#     cancer_other_regex, "cholangiocarcinom|mesotheliom|glioma|neuroblastoma|tumor")
+#
+#   rownames(all_indication_entries) <- NULL
+#   all_indication_entries <- all_indication_entries |>
+#     dplyr::mutate(xml_fname = basename(xml_fname)) |>
+#     dplyr::mutate(initial_approval = initial_approval_date) |>
+#     dplyr::mutate(indication = stringr::str_trim(stringr::str_squish(indication))) |>
+#     dplyr::mutate(indication_criteria =
+#                     stringr::str_trim(stringr::str_squish(indication_criteria))) |>
+#     dplyr::mutate(cancer_indication = dplyr::if_else(
+#       !is.na(indication) &
+#         (stringr::str_detect(indication,"NSCLC|AML|CML|BRAF|KRAS|EGFR|HER2|ROS1|BRCA|ABL") |
+#       (stringr::str_detect(tolower(indication), cancer_tissue_regex) &
+#         stringr::str_detect(tolower(indication), "cancer|tumor|carcinoma|neoplasm|neoplastic"))),
+#       TRUE,FALSE
+#     )) |>
+#     dplyr::mutate(cancer_indication = dplyr::if_else(
+#       !is.na(indication) &
+#       stringr::str_detect(tolower(indication), cancer_other_regex),
+#       TRUE,as.logical(cancer_indication)
+#     )) |>
+#     dplyr::mutate(cancer_indication = dplyr::if_else(
+#       !is.na(indication_criteria) &
+#         (stringr::str_detect(indication_criteria,"NSCLC|AML|CML|BRAF|KRAS|EGFR|HER2|ROS1|BRCA|ABL") |
+#       (stringr::str_detect(tolower(indication_criteria), cancer_tissue_regex) &
+#         stringr::str_detect(tolower(indication_criteria), "cancer|tumor|carcinoma|neoplasm|neoplastic"))),
+#       TRUE,as.logical(cancer_indication)
+#     )) |>
+#     dplyr::mutate(cancer_indication = dplyr::if_else(
+#       !is.na(indication_criteria) &
+#       stringr::str_detect(tolower(indication_criteria), cancer_other_regex),
+#       TRUE,as.logical(cancer_indication)
+#     )) |>
+#     dplyr::filter(!stringr::str_detect(indication,"indicated( for)?:$")) |>
+#     dplyr::filter(!(stringr::str_detect(indication,"indicated for") &
+#                       stringr::str_detect(indication,":$"))) |>
+#     dplyr::filter(!stringr::str_detect(indication,"^Limitations of (U|u)se")) |>
+#     dplyr::filter(!stringr::str_detect(indication,"Limitations of (U|u)se")) |>
+#     dplyr::filter(!stringr::str_detect(indication,"Select patients for therapy based on")) |>
+#     dplyr::mutate(indication = Hmisc::capitalize(
+#       stringr::str_replace(
+#         indication,"^( )?:( )?",""))) |>
+#     dplyr::mutate(indication_criteria = Hmisc::capitalize(
+#       stringr::str_replace(
+#         indication_criteria,"^( )?:( )?",""))) |>
+#     dplyr::filter(is.na(indication_criteria) |
+#                     (!is.na(indication_criteria) & nchar(indication_criteria) >= 3)) |>
+#     dplyr::distinct()
+#
+#   return(all_indication_entries)
+#
+# }
 
-  existing_dataset_fname <-
-    paste0(path_data_raw,"/dailymed/dm_cancerdrug_indications.rds")
-  if(update == F){
-    if(file.exists(existing_dataset_fname)){
-      dm_drugs_with_indications <- readRDS(file = existing_dataset_fname)
-      return(dm_drugs_with_indications)
-    }
-  }
 
-  cancer_drug_names <-
-    unique(toupper(oncoPharmaDB::oncopharmadb$nci_concept_display_name))
+merge_nci_open_targets <- function(ot_drugs = NULL,
+                                 nci_antineo_all = NULL){
 
-  all_drug_indications <- data.frame()
-  for(i in 16:21){
-    year = paste0("20", i)
-    if(i < 10){
-      year = paste0("200",i)
-    }
+  ot_nci_matched <- list()
 
-    index <- 1
-    for(f in list.files(
-      path = paste0("data-raw/dailymed/prescription/", year),
-      pattern = ".xml", full.names = T)){
+  ## X-ref Open Targets and NCI by molecule id
+  ot_nci_matched[['targeted_by_id']] <- ot_drugs$targeted |>
+    dplyr::left_join(nci_antineo_all[['with_chembl_id']],
+                     by = c("molecule_chembl_id")) |>
+    dplyr::filter(!is.na(nci_drug_name)) |>
+    dplyr::select(-c(nci_drug_name_lc, drug_name_lc))
 
-      index = index + 1
-
-      #cat(f,'\n')
-      if(index %% 50 == 0){
-        cat(year,' -- processed: ', index, ' indication records\n')
-      }
-      drug_indications <-
-        get_drug_indications_dm(xml_fname = f,
-                                cancer_drug_names = cancer_drug_names)
-      if(nrow(drug_indications) > 0){
-        all_drug_indications <- all_drug_indications |>
-          dplyr::bind_rows(drug_indications)
-      }
-    }
-    cat(year,' --- processed: ', index, ' indication records\n')
-  }
+  ## X-ref Open Targets and NCI by drug name
+  ot_nci_matched[['targeted_by_name']] <- ot_drugs$targeted |>
+    dplyr::left_join(
+      dplyr::select(nci_antineo_all[['with_chembl_id']],
+                    -molecule_chembl_id),
+                     by = c("drug_name_lc" = "nci_drug_name_lc")) |>
+    dplyr::anti_join(
+      ot_nci_matched[['targeted_by_id']]) |>
+    dplyr::filter(!is.na(nci_drug_name)) |>
+    dplyr::select(-drug_name_lc)
 
 
-  comb_regimen_indications <- all_drug_indications |>
-    dplyr::filter(cancer_indication == T) |>
-    dplyr::mutate(comb_regimen_indication = dplyr::if_else(
-      !is.na(indication_criteria) &
-      stringr::str_detect(tolower(indication_criteria), "in combination with") &
-        !stringr::str_detect(tolower(indication_criteria), "alone (or|and) in combination"),
-      TRUE, FALSE, FALSE
+  ## X-ref Open Targeets (no target) by molecule identifier
+  ot_nci_matched[['untargeted_by_id']] <- ot_drugs$untargeted |>
+    dplyr::left_join(nci_antineo_all[['with_chembl_id']],
+                     by = c("molecule_chembl_id")) |>
+    dplyr::filter(!is.na(nci_drug_name)) |>
+    dplyr::select(-c(nci_drug_name_lc, drug_name_lc))
+
+  ## X-ref Open Targeets (no target) by drug name
+  ot_nci_matched[['untargeted_by_name']] <- ot_drugs$untargeted |>
+    dplyr::left_join(
+      dplyr::select(nci_antineo_all[['with_chembl_id']],
+                    -molecule_chembl_id),
+      by = c("drug_name_lc" = "nci_drug_name_lc")) |>
+    dplyr::anti_join(
+      ot_nci_matched[['untargeted_by_id']]) |>
+    dplyr::filter(!is.na(nci_drug_name)) |>
+    dplyr::select(-drug_name_lc)
+
+
+  ot_nci_matched_all <- do.call(rbind, ot_nci_matched) |>
+    dplyr::distinct()
+
+  ot_targeted_remain <- ot_drugs$targeted |>
+    dplyr::anti_join(ot_nci_matched_all) |>
+    dplyr::left_join(
+      nci_antineo_all[['no_chembl_id']],
+      by = c("drug_name_lc" = "nci_drug_name_lc")) |>
+    dplyr::select(-drug_name_lc)
+
+  ot_drugs_all <- ot_nci_matched_all |>
+    dplyr::bind_rows(ot_targeted_remain) |>
+    dplyr::mutate(
+      nci_cd_name =
+        dplyr::if_else(is.na(nci_cd_name) &
+                         !stringr::str_detect(drug_name,"[0-9]"),
+                       Hmisc::capitalize(tolower(drug_name)),
+                       nci_cd_name)) |>
+    dplyr::mutate(
+      nci_cd_name = dplyr::if_else(
+        is.na(nci_cd_name) &
+          stringr::str_detect(drug_name,"[0-9]"),
+        drug_name,
+        nci_cd_name)) |>
+    dplyr::mutate(opentargets = TRUE)
+
+    #dplyr::mutate(nci_version = nci_db_release) |>
+    #dplyr::mutate(chembl_version = chembl_db_release) |>
+    #dplyr::mutate(opentargets_version = opentargets_version)
+
+  nci_missing_1 <- nci_antineo_all$no_chembl_id |>
+    dplyr::anti_join(ot_drugs_all,
+                     by = "nci_cd_name") |>
+    dplyr::select(-nci_drug_name_lc)
+
+  nci_missing_2 <- nci_antineo_all$with_chembl_id |>
+    dplyr::anti_join(ot_drugs_all,
+                     by = "molecule_chembl_id") |>
+    dplyr::select(-nci_drug_name_lc)
+
+  nci_missing <- dplyr::bind_rows(
+    nci_missing_1,
+    nci_missing_2) |>
+    dplyr::distinct() |>
+    dplyr::mutate(opentargets = FALSE)
+    # dplyr::mutate(nci_version = nci_db_release,
+    #               chembl_version = chembl_db_release,
+    #               drug_name = toupper(nci_cd_name),
+    #               opentargets_version = NA)
+
+  all_cancer_drugs <- ot_drugs_all |>
+    dplyr::bind_rows(nci_missing) |>
+    dplyr::distinct()
+
+
+  ## Figure out cases where a single drug maps to multiple
+  ## molecule chembl identifiers
+  rownames(all_cancer_drugs) <- NULL
+
+  custom_chembl_map <- readr::read_tsv(
+    file = "data-raw/custom_chembl_map.tsv",
+    col_names = F, show_col_types = F)
+
+  colnames(custom_chembl_map) <-
+    c("nci_cd_name", "molecule_chembl_id")
+
+  custom_name_ignore <- readr::read_tsv(
+      file = "data-raw/drug_names_ignore.tsv",
+    col_names = F, show_col_types = F)
+  colnames(custom_name_ignore) <- c("nci_cd_name")
+
+  name2chembl_id <- all_cancer_drugs |>
+    dplyr::filter(!is.na(molecule_chembl_id)) |>
+    dplyr::group_by(nci_cd_name) |>
+    dplyr::summarise(m = paste(
+      sort(unique(molecule_chembl_id)), collapse=";"))
+
+  ## Drugs that map to a single identifier
+  name2chembl_unique <- name2chembl_id |>
+    dplyr::filter(!stringr::str_detect(m,";")) |>
+    dplyr::inner_join(all_cancer_drugs) |>
+    dplyr::select(-m)
+
+  ## Drugs that map to multiple identifiers
+  name2chembl_ambiguous_curated <- name2chembl_id |>
+    dplyr::filter(stringr::str_detect(m, ";")) |>
+    dplyr::inner_join(custom_chembl_map) |>
+    dplyr::inner_join(all_cancer_drugs) |>
+    dplyr::select(-m)
+
+  all_drugs <- dplyr::bind_rows(
+    dplyr::filter(all_cancer_drugs, is.na(molecule_chembl_id)),
+    name2chembl_unique,
+    name2chembl_ambiguous_curated
+  )
+
+  salt_forms <- all_drugs |>
+    dplyr::filter(stringr::str_detect(
+      tolower(nci_cd_name), " (maleate|tosylate|dimaleate|succinate|meglumine|hydrobromide|sulfate|ditosylate|fumarate|dimesylate|lactate|potassium|dihydrochloride|anhydrous|hydrochloride|chloride|acetate|disodium|hydrochloride monohydrate|sodium|phosphate|dimeglumine|diphosphate|camsylate|s-malate|citrate|mesylate|acetate|calcium)$")) |>
+    dplyr::filter(!is.na(opentargets_version)) |>
+    dplyr::mutate(tradename = stringr::str_replace(
+      nci_cd_name,
+      " ((M|m)aleate|(A|a)nhydrous|(T|t)osylate|(D|d)imesylate|(D|d)imeglumine|(S|s)uccinate|(M|m)eglumine|(H|h)ydrobromide|(S|s)ulfate|(F|f)umarate|(D|d)imaleate|(D|d)itosylate|(L|l)actate|(P|p)otassium|(H|h)ydrochloride (M|m)onohydrate|(D|d)ihydrochloride|(H|h)ydrochloride|(S|s)-malate|(D|d)isodium|(C|c)amsylate|(C|c)hloride|(A|a)cetate|(S|s)odium|(P|p)hosphate|(D|d)iphosphate|(C|c)itrate|(M|m)esylate|(A|a)cetate|(C|c)alcium)$", "")) |>
+    dplyr::select(tradename, nci_cd_name) |>
+    dplyr::distinct() |>
+    dplyr::mutate(is_salt = T) |>
+    dplyr::inner_join(
+      dplyr::select(all_drugs, nci_cd_name),
+      by = c("tradename" = "nci_cd_name")) |>
+    dplyr::distinct() |>
+    dplyr::select(-tradename)
+
+
+  all_drugs_final <- all_drugs |>
+    dplyr::left_join(salt_forms) |>
+    dplyr::mutate(is_salt = dplyr::if_else(
+      is.na(is_salt),
+      as.logical(FALSE),
+      as.logical(is_salt)
     )) |>
-    dplyr::select(drugname_generic, indication, indication_criteria,
-                  comb_regimen_indication, xml_fname) |>
-    dplyr::filter(comb_regimen_indication == T) |>
+    dplyr::anti_join(custom_name_ignore)
+
+  ## antibody drug conjugates
+  adc_candidates <- all_drugs_final |>
+    dplyr::filter(stringr::str_detect(
+      nci_concept_definition, "ADC|antibody(-| )drug conjugate")) |>
+    dplyr::mutate(is_adc = TRUE) |>
+    dplyr::mutate(is_adc = dplyr::if_else(
+      stringr::str_detect(nci_concept_definition, "ADCC") &
+        !(stringr::str_detect(
+          tolower(nci_concept_definition),
+          "(antibody(-| )drug conjugate)") &
+            (is.na(drug_type) |
+               drug_type == "Small molecule" |
+               drug_type == "Antibody")),
+      as.logical(FALSE),
+      as.logical(is_adc)
+    )) |>
+    dplyr::select(nci_cd_name, is_adc) |>
+    dplyr::distinct()
+
+  all_drugs_final <- all_drugs_final |>
+    dplyr::left_join(adc_candidates) |>
+    dplyr::mutate(is_adc = dplyr::if_else(
+      is.na(is_adc),
+      as.logical(FALSE),
+      as.logical(is_adc)
+    ))
+
+
+  return(all_drugs_final)
+
+  # ambig <- all_drugs_final |>
+  #   dplyr::filter(!is.na(molecule_chembl_id)) |>
+  #   #dplyr::filter(!is.na(opentargets_version)) |>
+  #   #dplyr::filter(is.na(is_salt)) |>
+  #   dplyr::group_by(molecule_chembl_id) |>
+  #   dplyr::summarise(m = paste(unique(nci_cd_name),
+  #                              collapse = "@")) |>
+  #   dplyr::distinct() |>
+  #   dplyr::
+
+}
+
+map_custom_nci_targets <- function(gene_info = NULL,
+                                   path_data_raw = NULL,
+                                   drug_df = NULL){
+
+  drug_target_patterns <-
+    read.table(file = file.path(
+      path_data_raw,
+      "custom_drug_target_regex_nci.tsv"),
+      sep = "\t", header = T, stringsAsFactors = F, quote = "") |>
+    dplyr::inner_join(gene_info, by = "symbol") |>
     dplyr::distinct()
 
 
-  indications_otm_input1 <- all_drug_indications |>
-    dplyr::filter(cancer_indication == T) |>
-    dplyr::select(indication,
-                  xml_fname) |>
-    dplyr::rename(value = indication, nct_id = xml_fname) |>
-    dplyr::mutate(property = "condition") |>
-    dplyr::filter(!is.na(value))
+  all_inhibitors_no_target <- ot_nci_drugs |>
+    dplyr::filter(is.na(target_symbol)) |>
+    dplyr::filter(stringr::str_detect(
+      tolower(nci_cd_name),
+      "inhibitor|antagonist|antibody|blocker") |
+        stringr::str_detect(
+          tolower(nci_cd_name),
+          "ib$|mab$|mab/|^anti-") |
+        (stringr::str_detect(nci_concept_definition,"KRAS") &
+           stringr::str_detect(nci_concept_definition,"inhibitor"))) |>
+    dplyr::filter(!stringr::str_detect(
+      nci_cd_name,
+      " CAR T|SARS-CoV-2| Regimen$")) |>
+    dplyr::filter(!stringr::str_detect(
+      nci_concept_definition,
+      "SARS-CoV-2"))
 
-  indications_otm_input2 <- all_drug_indications |>
-    dplyr::filter(cancer_indication == T) |>
-    dplyr::select(indication_criteria,
-                  xml_fname) |>
-    dplyr::rename(value = indication_criteria,
-                  nct_id = xml_fname) |>
-    dplyr::mutate(property = "condition") |>
-    dplyr::filter(!is.na(value))
+  custom_nci_targeted_drugs <- data.frame()
+  for(i in 1:nrow(drug_target_patterns)){
+    pattern <- drug_target_patterns[i, "pattern"]
+    target_symbol <- drug_target_patterns[i, "symbol"]
+    target_genename <- drug_target_patterns[i, "genename"]
+    target_entrezgene <- drug_target_patterns[i, "target_entrezgene"]
+    target_type <- drug_target_patterns[i, "target_type"]
+    target_ensembl_gene_id <- drug_target_patterns[i, "target_ensembl_gene_id"]
+    #target_uniprot_id <- drug_target_patterns[i, "target_uniprot_id"]
 
-  indications_otm_input <- indications_otm_input1 |>
-    dplyr::bind_rows(indications_otm_input2)
+    hits <- all_inhibitors_no_target |>
+      dplyr::filter(stringr::str_detect(
+        nci_cd_name,
+        pattern = pattern) |
+          (stringr::str_detect(
+            nci_cd_name,
+            "^(Inhibitor of|Anti-)|ib$|Inhibitor|targeting|ine$|ate$|ide$|mab$|antibody|ant$|mab/") &
+             stringr::str_detect(nci_concept_definition, pattern))
+      )
 
-  indications_mapped <- oncoTrialMiner::index_phenotype(
-    ct_data_raw = indications_otm_input
-  )
+    if(nrow(hits) > 0){
 
-  tmp <- indications_mapped$per_xref |>
-    dplyr::select(nct_id, cui, primary_site, efo_id,
-                  cui_name, ct_condition_raw) |>
-    dplyr::rename(xml_fname = nct_id,
-                  indication = ct_condition_raw) |>
+      for(n in 1:nrow(hits)){
+        hit <- hits[n,]
+
+        if(stringr::str_detect(hit$nci_cd_name,
+                               "mab$|monoclonal antibody")){
+          hit$drug_type <- "Antibody"
+        }else{
+          hit$drug_type <- "Small molecule"
+        }
+
+        hit$drug_action_type <- "INHIBITOR"
+        if(stringr::str_detect(
+          tolower(hit$nci_cd_name),
+          "antagonist")){
+          hit$drug_action_type <- "ANTAGONIST"
+        }
+        if(stringr::str_detect(
+          tolower(hit$nci_cd_name),
+          "blocker")){
+          hit$drug_action_type <- "BLOCKER"
+        }
+        hit$target_symbol <- target_symbol
+        hit$target_genename <- target_genename
+        hit$target_type <- target_type
+        hit$target_entrezgene <- target_entrezgene
+        hit$target_ensembl_gene_id <- target_ensembl_gene_id
+        #hit$target_uniprot_id <- target_uniprot_id
+        hit$drug_clinical_source <- "nci_thesaurus_custom"
+        hit$cancer_drug <- TRUE
+
+        ## set general indications for unknown cases
+        if(is.na(hit$disease_efo_id) & is.na(hit$disease_efo_label) &
+           is.na(hit$cui) & is.na(hit$cui_name)){
+          hit$disease_efo_id = "EFO:0000311"
+          hit$disease_efo_label = "cancer"
+          hit$cui = "C0006826"
+          hit$cui_name = "Malignant neoplastic disease"
+        }
+
+        custom_nci_targeted_drugs <- custom_nci_targeted_drugs |>
+          dplyr::bind_rows(hit)
+
+      }
+    }
+  }
+
+
+  ### CHECK HOW MANY TARGET-LACKING INHIBITORS ARE MISSING
+  ### FROM THE CUSTOM NCI MATCHING ROUTINE
+
+  inhibitors_no_target_nonmapped <- all_inhibitors_no_target |>
+    dplyr::anti_join(custom_nci_targeted_drugs, by = "nci_cd_name") |>
+    dplyr::filter(!stringr::str_detect(
+      nci_concept_definition, "(A|a)ntibody(-| )drug conjugate \\(ADC\\)"
+    )) |>
+    dplyr::select(nci_cd_name,
+                  nci_concept_definition) |>
     dplyr::distinct()
 
-  dm_drugs_with_mapped_indications1 <- all_drug_indications |>
-    dplyr::select(xml_fname,
-                  drugname_generic,
-                  drugname_trade,
-                  indication) |>
-    dplyr::filter(!is.na(indication)) |>
-    dplyr::inner_join(tmp, by = c("xml_fname", "indication")) |>
+
+  ot_nci_drugs_curated <-
+    dplyr::anti_join(ot_nci_drugs, custom_nci_targeted_drugs,
+                     by = "nci_cd_name") |>
+    dplyr::bind_rows(custom_nci_targeted_drugs) |>
+    dplyr::arrange(target_symbol, nci_cd_name) |>
+    dplyr::mutate(drug_action_type = dplyr::if_else(
+      (stringr::str_detect(tolower(nci_cd_name),"inhibitor") &
+         is.na(drug_action_type)) |
+        (!is.na(nci_cd_name) &
+           stringr::str_detect(nci_cd_name,"mab$") &
+           is.na(drug_action_type)),
+      "INHIBITOR",
+      as.character(drug_action_type))) |>
+    dplyr::mutate(cancer_drug = dplyr::if_else(
+      is.na(cancer_drug) &
+        (stringr::str_detect(
+          tolower(nci_concept_definition),
+          "anti-tumor|chemotherapy|cancer vaccine|immunothera|monoclonal antibody|antineoplastic|treatment of cancer|treatment of metastat") |
+           stringr::str_detect(tolower(nci_cd_name)," regimen|recombinant|carcinoma|immune checkpoint|anti-programmed cell death ")),
+      as.logical(TRUE),
+      as.logical(cancer_drug)
+    )) |>
+    dplyr::mutate(drug_action_type = dplyr::if_else(
+      is.na(drug_action_type) &
+        stringr::str_detect(drug_action_type,"^(SUBSTRATE|HYDROLYTIC ENZYME|RELEASING AGENT)"),
+      paste0(drug_action_type,"_OTHER"),
+      as.character(drug_action_type)
+    )) |>
+    dplyr::mutate(comb_regimen_indication = F)
+
+
+  return(ot_nci_drugs_curated)
+}
+
+assign_drug_category <- function(drug_df = NULL,
+                                 path_data_raw = NULL){
+
+  drug_df <- drug_df |>
+    dplyr::distinct() |>
+    dplyr::mutate(antimetabolite = dplyr::if_else(
+      !is.na(nci_concept_definition) &
+        stringr::str_detect(
+          tolower(nci_concept_definition),
+          "antimetabol|anti-metabol|nucleoside analog"),TRUE,FALSE)
+    ) |>
+    dplyr::mutate(topoisomerase_inhibitor = dplyr::if_else(
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(
+           nci_concept_definition,
+           "(T|t)opoisomerase II-mediated|(T|t)opoisomerase( I|II )? \\(.*\\) inhibitor|inhibit(ion|or) of (T|t)opoisomerase|(stabilizes|interrupts|binds to|interacts with|inhibits( the activity of)?)( the)?( DNA)? (t|T)opoisomerase|(T|t)opoisomerase( (I|II))? inhibitor")) |
+        (!is.na(target_genename) &
+           stringr::str_detect(target_genename,"topoisomerase")),TRUE,FALSE)
+    ) |>
+    dplyr::mutate(hedgehog_antagonist = dplyr::if_else(
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(
+           nci_concept_definition,
+           "Hedgehog") & stringr::str_detect(
+             nci_cd_name,"Smoothened Antagonist|(ate|ib)$")) |
+        (!is.na(nci_cd_name) &
+           stringr::str_detect(
+             nci_cd_name,"Hedgehog Inhibitor|SMO Protein Inhibitor")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(hdac_inhibitor = dplyr::if_else(
+      (!is.na(target_symbol) &
+         stringr::str_detect(
+           target_symbol,
+           "^HDAC")) |
+        (!is.na(nci_concept_definition) &
+           stringr::str_detect(nci_concept_definition,"inhibitor of histone deacetylase")) |
+        (!is.na(nci_cd_name) &
+           stringr::str_detect(nci_cd_name,"HDAC Inhibitor")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(alkylating_agent = dplyr::if_else(
+      is.na(drug_moa) &
+        !stringr::str_detect(nci_cd_name,
+                             "antiangiogenic") &
+        !is.na(nci_concept_definition) &
+        stringr::str_detect(
+          tolower(nci_concept_definition),
+          "alkylating agent|alkylating activities"),TRUE,FALSE)
+    ) |>
+    dplyr::mutate(parp_inhibitor = dplyr::if_else(
+      !is.na(target_symbol) &
+        stringr::str_detect(
+          target_symbol,
+          "^PARP[0-9]{1}"),TRUE,FALSE)
+    ) |>
+    dplyr::mutate(bet_inhibitor = dplyr::if_else(
+      !is.na(target_symbol) &
+        stringr::str_detect(
+          target_symbol,
+          "^BRD(T|[1-9]{1})") |
+        (!is.na(nci_cd_name) &
+           stringr::str_detect(
+             nci_cd_name,"BET( Bromodomain)? Inhibitor")),TRUE,FALSE)
+    ) |>
+    dplyr::mutate(tubulin_inhibitor = dplyr::if_else(
+      (!is.na(drug_action_type) &
+         drug_action_type != "STABILISER" &
+         !is.na(target_genename) &
+         stringr::str_detect(
+           tolower(target_genename),
+           "tubulin")) |
+        (!is.na(nci_concept_definition) & stringr::str_detect(
+          tolower(nci_concept_definition),
+          "binds to tubulin|disrupts microtubule|microtubule disrupt")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(ar_antagonist = dplyr::if_else(
+      (!is.na(target_genename) &
+         stringr::str_detect(
+           tolower(target_genename),
+           "androgen receptor")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(kinase_inhibitor = dplyr::if_else(
+      (!is.na(target_symbol) & stringr::str_detect(target_symbol,"EGFR|PTPN11|ABL1|FGFR|PDGFR|CSF1R")) |
+        (((!is.na(drug_action_type) &
+             stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist")) |
+            stringr::str_detect(tolower(nci_cd_name),"ib$")) &
+           (!is.na(target_genename) &
+              stringr::str_detect(tolower(target_genename),"kinase|eph receptor"))) |
+        (!is.na(nci_concept_definition) &
+           stringr::str_detect(nci_concept_definition,"kinase inhibit(or|ion)")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(angiogenesis_inhibitor = dplyr::if_else(
+      stringr::str_detect(tolower(drug_action_type),"blocker|inhibitor|antagonist") &
+        (!is.na(nci_cd_name) &
+           stringr::str_detect(tolower(nci_cd_name),
+                               "antiangiogenic|angiogenesis inhibitor")) |
+        (!is.na(nci_concept_definition) &
+           stringr::str_detect(
+             tolower(nci_concept_definition),
+             "antiangiogenic activities|angiogenesis inhibitor|(inhibiting|blocking)( tumor)? angiogenesis|anti(-)?angiogenic|(inhibits|((inhibition|reduction) of))( .*) angiogenesis")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(monoclonal_antibody = dplyr::if_else(
+      (!is.na(drug_type) & drug_type == "Antibody") |
+        (stringr::str_detect(tolower(nci_cd_name),
+                             "^anti-|mab |mab$|monoclonal antibody") &
+           (!is.na(nci_concept_definition) &
+              stringr::str_detect(nci_concept_definition,"monoclonal antibody"))),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(proteasome_inhibitor = dplyr::if_else(
+      (stringr::str_detect(tolower(nci_cd_name),
+                           "^proteasome") &
+         !stringr::str_detect(tolower(nci_cd_name),"vaccine")) |
+        (!is.na(nci_concept_definition) &
+           stringr::str_detect(
+             tolower(nci_concept_definition),"proteasome inhibitor|inhibits the proteasome|inhibition of proteasome")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(hormone_therapy = dplyr::if_else(
+      stringr::str_detect(tolower(nci_cd_name),
+                          "aromatase inhib|estrogen receptor (inhibitor|degrader|modulator)") |
+        (!is.na(nci_concept_definition) &
+           stringr::str_detect(
+             tolower(nci_concept_definition),"inhibitor of estrogen|estrogen receptor (modulator|inhibitor|degrader)|antiestrogen|aromatase inhibit(or|ion)") &
+           !stringr::str_detect(nci_concept_definition,"antiestrogen resistance")) |
+        (!is.na(target_symbol) & stringr::str_detect(target_symbol,"ESR[0-9]|GNRHR")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(anthracycline = dplyr::if_else(
+      (!is.na(nci_concept_definition) &
+         stringr::str_detect(
+           tolower(nci_concept_definition),
+           "anthracycline|anthracenedione")),
+      TRUE, FALSE)
+    ) |>
+    dplyr::mutate(immune_checkpoint_inhibitor = dplyr::if_else(
+      (!is.na(nci_concept_definition) &
+         !stringr::str_detect(
+           tolower(nci_cd_name), "oncolytic|pentoxifylline|vaccine") &
+         stringr::str_detect(
+           tolower(nci_concept_definition),
+           "immune checkpoint inhib")) |
+        stringr::str_detect(nci_cd_name,"(Anti-(PD|CTLA)-)") |
+        (stringr::str_detect(nci_cd_name,
+                             "Tremelimumab|Milatuzumab")) |
+        (!is.na(target_symbol) &
+           !stringr::str_detect(
+             tolower(nci_cd_name), "oncolytic|pentoxifylline") &
+           (target_symbol == "CD274" |
+              target_symbol == "CTLA4" |
+              target_symbol == "PDCD1" |
+              target_symbol == "TIGIT")) |
+        (!is.na(nci_concept_definition) &
+           !is.na(target_symbol) &
+           stringr::str_detect(nci_concept_definition,
+                               "immunemodulating|immune response") &
+           !stringr::str_detect(
+             tolower(nci_cd_name), "oncolytic|pentoxifylline|vaccine") &
+           (target_symbol == "ADORA2A" |
+              target_symbol == "ADORA2B")),
+      TRUE,FALSE)
+    ) |>
+    dplyr::mutate(immune_checkpoint_inhibitor = dplyr::if_else(
+      !is.na(nci_cd_name) &
+        immune_checkpoint_inhibitor == T &
+        stringr::str_detect(nci_cd_name,"NLM-001|CEA-MUC-1|Oncolytic|Vaccine"),
+      as.logical(FALSE),
+      as.logical(immune_checkpoint_inhibitor)
+    )) |>
+    dplyr::mutate(platinum_compound = dplyr::if_else(
+      !is.na(drug_name) &
+        stringr::str_detect(tolower(drug_name),"platin$"),
+      as.logical(TRUE),
+      as.logical(FALSE)
+    ))
+
+  ## Make sure each drug is assigned an unambiguous value for each category
+  nciCDN2Category <- list()
+  for(c in c('immune_checkpoint_inhibitor',
+             'topoisomerase_inhibitor',
+             'tubulin_inhibitor',
+             'kinase_inhibitor',
+             'hdac_inhibitor',
+             'parp_inhibitor',
+             'bet_inhibitor',
+             'ar_antagonist',
+             'monoclonal_antibody',
+             'antimetabolite',
+             'angiogenesis_inhibitor',
+             'alkylating_agent',
+             'anthracycline',
+             'platinum_compound',
+             'proteasome_inhibitor',
+             'hormone_therapy',
+             'hedgehog_antagonist')){
+
+    cat <- drug_df[,c]
+    name <- drug_df$nci_cd_name
+
+    nciCDN2Category[[c]] <- as.data.frame(
+      data.frame(
+        'nci_cd_name' = name,
+        stringsAsFactors = F
+      ) |>
+        dplyr::mutate(!!c := cat) |>
+        dplyr::distinct() |>
+        dplyr::group_by(nci_cd_name) |>
+        dplyr::summarise(!!c := paste(!!dplyr::sym(c), collapse="/")) |>
+        dplyr::mutate(!!c := dplyr::if_else(
+          stringr::str_detect(!!dplyr::sym(c),"/"),
+          TRUE,
+          as.logical(!!dplyr::sym(c))))
+    )
+
+    drug_df[,c] <- NULL
+    drug_df <- drug_df |>
+      dplyr::left_join(
+        nciCDN2Category[[c]], by = "nci_cd_name"
+      )
+
+  }
+
+  fda_epc_codes <-
+    as.data.frame(
+      get_fda_ndc_mapping(path_data_raw = path_data_raw) |>
+        dplyr::group_by(drug) |>
+        dplyr::summarise(fda_epc_category = paste(fda_epc_category, collapse = "; "),
+                         .groups = "drop")
+    )
+
+  drug_df <- drug_df |>
+    dplyr::left_join(fda_epc_codes, by = c("drug_name" = "drug"))
+
+
+  return(drug_df)
+
+}
+
+clean_final_drug_list <- function(drug_df = NULL){
+
+  oncopharmadb <- drug_df |>
+    #dplyr::filter(nci_cd_name != "Lapatinib Ditosylate") |>
+    dplyr::filter(nci_cd_name != "Abivertinib Maleate") |>
+    dplyr::mutate(nci_cd_name = dplyr::if_else(
+      is.na(nci_cd_name),
+      stringr::str_to_title(drug_name),
+      as.character(nci_cd_name)
+    )) |>
+    dplyr::mutate(nci_cd_name = dplyr::if_else(
+      nci_cd_name == "Cediranib Maleate",
+      "Cediranib",
+      as.character(nci_cd_name)
+    )) |>
+    # dplyr::mutate(nci_cd_name = dplyr::if_else(
+    #   nci_cd_name == "Abivertinib Maleate",
+    #   "Avitinib Maleate",
+    #   as.character(nci_cd_name)
+    # )) |>
+    # dplyr::mutate(drug_name = dplyr::if_else(
+    #   nci_cd_name == "Avitinib Maleate",
+    #   "AVITINIB MALEATE",
+    #   as.character(drug_name)
+    # )) |>
+    dplyr::mutate(is_salt = dplyr::if_else(
+      nci_cd_name == "Avitinib Maleate",
+      as.logical(NA),
+      as.logical(is_salt)
+    )) |>
+    dplyr::mutate(drug_name = dplyr::if_else(
+      nci_cd_name == "Doxycycline" &
+        !is.na(molecule_chembl_id) &
+        molecule_chembl_id == "CHEMBL1433",
+      "DOXYCYCLINE",
+      as.character(drug_name))) |>
     dplyr::distinct()
 
-  dm_drugs_with_mapped_indications2 <- all_drug_indications |>
-    dplyr::select(xml_fname,
-                  drugname_generic,
-                  drugname_trade,
-                  indication_criteria) |>
-    dplyr::rename(indication = indication_criteria) |>
-    dplyr::filter(!is.na(indication)) |>
-    dplyr::inner_join(tmp, by = c("xml_fname", "indication")) |>
-    #dplyr::select(-c(xml_fname, indication)) |>
-    dplyr::distinct()
 
-  dm_drugs_with_indications <- as.data.frame(
-    dm_drugs_with_mapped_indications2 |>
-      dplyr::bind_rows(dm_drugs_with_mapped_indications1) |>
-
-      dplyr::left_join(dplyr::select(comb_regimen_indications,
-                                     drugname_generic,
-                                     indication_criteria,
-                                     comb_regimen_indication,
-                                     xml_fname),
-                       by = c("xml_fname" = "xml_fname",
-                              "indication" = "indication_criteria",
-                              "drugname_generic" = "drugname_generic")) |>
-      dplyr::left_join(dplyr::select(comb_regimen_indications,
-                                     drugname_generic,
-                                     indication,
-                                     comb_regimen_indication,
-                                     xml_fname),
-                       by = c("xml_fname" = "xml_fname",
-                              "indication" = "indication",
-                              "drugname_generic" = "drugname_generic")) |>
-      dplyr::mutate(comb_regimen_indication = dplyr::if_else(
-        !is.na(comb_regimen_indication.x) & comb_regimen_indication.x == TRUE,
-        TRUE, as.logical(FALSE)
-      )) |>
-      dplyr::mutate(comb_regimen_indication = dplyr::if_else(
-        !is.na(comb_regimen_indication.y) &
-          comb_regimen_indication.y == TRUE,
-        TRUE, as.logical(comb_regimen_indication)
-      )) |>
-      dplyr::select(-c(comb_regimen_indication.x,
-                       comb_regimen_indication.y)) |>
+  drug_action_types <- as.data.frame(
+    oncopharmadb |>
+      dplyr::select(nci_cd_name, drug_action_type) |>
       dplyr::distinct() |>
-      dplyr::mutate(drug_name_nci = tolower(drugname_generic)) |>
-      dplyr::select(-drugname_generic) |>
-      dplyr::group_by(drug_name_nci, cui, efo_id,
-                      cui_name, primary_site,
-                      comb_regimen_indication) |>
-      dplyr::summarise(drugname_trade =
-                         paste(unique(drugname_trade), collapse="|"),
-                       drug_clinical_id = paste(unique(
-                         stringr::str_replace(
-                           xml_fname,"\\.xml$",""
-                         )), collapse=","),
-                       .groups = "drop") |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "renal cell carcinoma"),
-        "EFO:0000681", as.character(efo_id)
-      )) |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "urothelial carcinoma"),
-        "EFO:0008528", as.character(efo_id)
-      )) |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "mantle cell lymphoma"),
-        "EFO:1001469", as.character(efo_id)
-      )) |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "non-small cell lung cancer"),
-        "EFO:0003060", as.character(efo_id)
-      )) |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "gastrointestinal stromal"),
-        "Orphanet:44890", as.character(efo_id)
-      )) |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "mediastinal large b-cell lymphoma"),
-        "MONDO:0004021", as.character(efo_id)
-      )) |>
-      dplyr::mutate(efo_id = dplyr::if_else(
-        (is.na(efo_id) | efo_id == "NA") &
-          stringr::str_detect(tolower(cui_name), "pancreatic neuroendocrine tumor"),
-        "EFO:1000045", as.character(efo_id)
-      )) |>
-      dplyr::filter(!is.na(cui) & efo_id != "NA")
+      dplyr::group_by(nci_cd_name) |>
+      dplyr::summarise(drug_action_type = paste(
+        drug_action_type, collapse = "/"
+      ))
   )
 
-  dm_drugs_with_indications <- as.data.frame(
-    dm_drugs_with_indications |>
-      tidyr::separate_rows(efo_id,sep="\\|") |>
-      dplyr::left_join(dplyr::select(
-        oncoPhenoMap::auxiliary_maps$efo$efo2name, efo_id, efo_name
-      ), by = "efo_id") |>
-      dplyr::rename(disease_efo_id = efo_id,
-                    disease_efo_label = efo_name) |>
-      #dplyr::mutate(drug_name_nci = tolower(drugname_generic)) |>
-      dplyr::mutate(drug_max_phase_indication = NA,
-                    drug_clinical_source = "DailyMedParseSN",
-                    #drug_clinical_id = NA,
-                    drug_max_ct_phase = NA,
-                    drug_approved_indication = TRUE) |>
+  oncopharmadb$drug_action_type <- NULL
+  oncopharmadb <- oncopharmadb |>
+    dplyr::left_join(drug_action_types,
+                     by = "nci_cd_name") |>
+    dplyr::select(drug_name,
+                  nci_cd_name,
+                  drug_type,
+                  drug_action_type,
+                  molecule_chembl_id,
+                  drug_moa,
+                  drug_max_phase_indication,
+                  dplyr::everything())
+
+
+  drug_max_ct_phase <- as.data.frame(
+    oncopharmadb |>
+      dplyr::select(nci_cd_name, drug_max_ct_phase) |>
+      dplyr::group_by(nci_cd_name) |>
+      dplyr::summarise(drug_max_ct_phase = max(drug_max_ct_phase))
+  )
+
+  oncopharmadb$drug_max_ct_phase <- NULL
+
+  #tmp2 <- tmp |>
+  oncopharmadb <- oncopharmadb |>
+    dplyr::left_join(drug_max_ct_phase,
+                     by = "nci_cd_name") |>
+    #dplyr::filter(!is.na(cancer_drug)) |>
+    dplyr::select(-c(drug_moa, cancer_drug)) |>
+
+    dplyr::rename(nci_concept_synonym = nci_drug_name) |>
+    dplyr::mutate(nci_concept_synonym2 = dplyr::if_else(
+      is.na(nci_concept_synonym_all) & !is.na(drug_synonyms),
+      as.character(tolower(drug_synonyms)),
+      as.character(tolower(nci_concept_synonym_all))
+    )) |>
+    dplyr::mutate(nci_concept_synonym_all2 = nci_concept_synonym_all) |>
+    dplyr::rename(nci_concept_synonym_old = nci_concept_synonym) |>
+    tidyr::separate_rows(nci_concept_synonym2,
+                         sep="\\|") |>
+    dplyr::rename(nci_concept_synonym = nci_concept_synonym2) |>
+    dplyr::select(-c(nci_concept_synonym_old,
+                     nci_concept_synonym_all2,
+                     drug_synonyms,
+                     drug_tradenames,
+                     drug_description)) |>
+    dplyr::distinct() |>
+    dplyr::select(drug_name, nci_cd_name, drug_type,
+                  drug_action_type, molecule_chembl_id,
+                  drug_max_phase_indication, drug_max_ct_phase,
+                  target_genename, target_symbol,
+                  target_type, target_ensembl_gene_id,
+                  target_entrezgene,
+                  disease_efo_id, disease_efo_label,
+                  cui, cui_name, primary_site,
+                  nci_concept_synonym,
+                  nci_concept_synonym_all,
+                  dplyr::everything()) |>
+    dplyr::mutate(nci_concept_definition =
+                    stringi::stri_enc_toascii(nci_concept_definition)) |>
+    dplyr::mutate(nci_concept_synonym_all =
+                    stringi::stri_enc_toascii(nci_concept_synonym_all)) |>
+    dplyr::mutate(nci_concept_synonym =
+                    stringi::stri_enc_toascii(nci_concept_synonym)) |>
+    dplyr::mutate(drug_name =
+                    stringi::stri_enc_toascii(drug_name)) |>
+    dplyr::mutate(
+      nci_cd_name =
+        stringi::stri_enc_toascii(nci_cd_name)) |>
+    #dplyr::filter(!stringr::str_detect(nci_concept_synonym,"^([a-z]{3,4})$")) |>
+    dplyr::mutate(drug_action_type = stringr::str_replace_all(
+      drug_action_type, "/NA|NA/",""
+    ))
+
+
+  ## Simplify records with only "cancer" indications, mapping them to a unique
+  ## EFO/CUI cross-ref, avoiding similar records with "neoplasm", "carcinoma" etc.
+
+  oncopharmaDB_cancer_no_indication <- oncopharmadb |>
+    dplyr::filter(is.na(disease_efo_id))
+
+  oncopharmaDB_cancer_NOS <- as.data.frame(
+    oncopharmadb |>
+      dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id)) |>
+      dplyr::mutate(disease_efo_id = "EFO:0000311",
+                    disease_efo_label = "cancer",
+                    cui = "C0006826",
+                    cui_name = "Malignant neoplastic disease") |>
+      dplyr::group_by(
+        dplyr::across(-dplyr::ends_with(c("drug_clinical_id")))) |>
+      dplyr::summarise(
+        drug_clinical_id = paste(unique(drug_clinical_id), collapse=","),
+        .groups = "drop"
+      ) |>
       dplyr::distinct()
   )
 
-  saveRDS(dm_drugs_with_indications, existing_dataset_fname)
-
-  return(dm_drugs_with_indications)
-}
-
-
-
-
-get_drug_indications_dm <- function(xml_fname = NULL,
-                                    cancer_drug_names = NULL){
-
-  invisible(assertthat::assert_that(
-    file.exists(xml_fname),
-    msg = paste0("File name ", xml_fname," does not exist")))
-  con <- file(description = xml_fname)
-  tmp <- xml2::read_xml(con, options = c("HUGE","NOBLANKS"))
-  xml2::xml_ns_strip(tmp)
-
-
-  drugname_trade <-  stringr::str_trim(xml2::xml_text(xml2::xml_find_all(
-    tmp, "//manufacturedProduct/name")[1]))
-  if(length(drugname_trade) == 0){
-    drugname_trade <- NA
-  }
-
-  drug_active_moiety <- xml2::xml_text(xml2::xml_find_all(
-    tmp, "//manufacturedProduct/ingredient/ingredientSubstance/activeMoiety/activeMoiety/name")[1])
-  if(length(drug_active_moiety) == 0){
-    drug_active_moiety <- NA
-  }
-
-  initial_approval_date <- NA
-  full_title <- ""
-  title_elements <- xml2::as_list(xml2::xml_find_first(tmp,".//title"))
-
-  if(is.list(title_elements)){
-    if(length(title_elements) > 0){
-      for(i in 1:length(title_elements)){
-        title_data <- stringr::str_squish(stringr::str_trim(unlist(title_elements[[i]])))
-        if(is.list(title_data)){
-          cat('BALLE\n')
-        }
-        if(is.null(title_data)){
-          next
-        }
-        if(!is.character(title_data)){
-          next
-        }
-        full_title <- paste0(full_title, title_data)
-      }
-    }
-  }
-
-  #cat(full_title, '\n')
-  if(full_title != ""){
-    t <- stringr::str_match(full_title,"Initial U.S. Approval: [0-9]{4}")
-    if(length(t) == 1){
-      initial_approval_date <- stringr::str_trim(
-        stringr::str_replace(
-          t, "Initial U.S. Approval: ",""
-        ))
-    }
-  }
-
-  drugname_generic <- xml2::xml_text(xml2::xml_find_all(
-    tmp, "//manufacturedProduct/asEntityWithGeneric/genericMedicine/name")[1])
-  if(length(drugname_generic) == 0){
-    drugname_generic <- NA
-  }
-  sections <- xml2::xml_find_all(tmp,".//component/section")
-
-  indication_section <- 0
-  section_counter <- 0
-  all_indication_entries <- data.frame()
-  all_main_indication_entries <- data.frame()
-  effective_time <- NA
-
-  is_cancer_drug <- F
-  if(!is.null(cancer_drug_names) &
-     !is.na(drugname_trade)){
-    if(toupper(drugname_trade) %in% cancer_drug_names){
-      is_cancer_drug <- T
-    }
-  }
-
-  if(!is.null(cancer_drug_names) &
-     !is.na(drugname_generic)){
-    if(toupper(drugname_generic) %in% cancer_drug_names){
-      is_cancer_drug <- T
-    }
-  }
-
-  if(!is.null(cancer_drug_names) &
-     !is.na(drug_active_moiety)){
-    if(toupper(drug_active_moiety) %in% cancer_drug_names){
-      is_cancer_drug <- T
-    }
-  }
-
-  if(is_cancer_drug == F){
-    return(all_indication_entries)
-  }
-
-  #cat(drugname_generic, '\n')
-
-  for(s in sections){
-    section_counter <- section_counter + 1
-    section_titles <- xml2::xml_text(xml2::xml_find_first(s, ".//title"))
-    for(sec_title in unique(section_titles)){
-      sec_title <- stringr::str_squish(stringr::str_trim(sec_title))
-      if(!is.na(sec_title) & nchar(sec_title) > 0){
-
-        if(stringr::str_detect(sec_title,"INDICATIONS") &
-           stringr::str_detect(sec_title,"USAGE")){
-          indication_section <- indication_section + 1
-
-          indication_info_main <- xml2::as_list(sections[section_counter][[1]])
-          effective_time <- attributes(
-            indication_info_main$effectiveTime)$value
-
-          if("excerpt" %in% names(indication_info_main)){
-            if("highlight" %in% names(indication_info_main$excerpt)){
-              if("text" %in% names(indication_info_main$excerpt$highlight)){
-
-                all_indication_contents <-
-                  unlist(indication_info_main$excerpt$highlight$text)
-
-                names_indication_contents <- names(all_indication_contents)
-                names(all_indication_contents) <- NULL
-
-                indication <- ""
-                indication_criteria <- NA
-                prev_cname <- ""
-                if(length(all_indication_contents) > 0 &
-                   length(names_indication_contents) > 0 &
-                  length(all_indication_contents) == length(names_indication_contents)){
-                  for(i in 1:length(all_indication_contents)){
-                    cname <- names_indication_contents[i]
-
-                    df <- data.frame('cname' = cname,
-                                     'indication' = all_indication_contents[i],
-                                     'indication_criteria' = NA,
-                                     'drugname_generic' = drugname_generic,
-                                     'drugname_trade' = drugname_trade,
-                                     'drug_active_moiety' = drug_active_moiety,
-                                     'effective_time' = effective_time,
-                                     stringsAsFactors = F)
-
-                    all_main_indication_entries <- all_main_indication_entries |>
-                      dplyr::bind_rows(df)
-                  }
-                }
-              }
-            }
-          }else{
-            if("text" %in% names(indication_info_main)){
-
-              all_indication_contents <-
-                unlist(indication_info_main$text)
-
-              if(!is.null(all_indication_contents)){
-                names_indication_contents <- names(all_indication_contents)
-                names(all_indication_contents) <- NULL
-                if(length(all_indication_contents) > 0 &
-                   length(names_indication_contents) > 0 &
-                   length(all_indication_contents) == length(names_indication_contents)){
-                  for(i in 1:length(all_indication_contents)){
-                    cname <- names_indication_contents[i]
-
-                    df <- data.frame('cname' = cname,
-                                     'indication' = all_indication_contents[i],
-                                     'indication_criteria' = NA,
-                                     'drugname_generic' = drugname_generic,
-                                     'drugname_trade' = drugname_trade,
-                                     'drug_active_moiety' = drug_active_moiety,
-                                     'effective_time' = effective_time,
-                                     stringsAsFactors = F)
-
-                    all_main_indication_entries <- all_main_indication_entries |>
-                      dplyr::bind_rows(df)
-                  }
-                }
-              }
-            }
-          }
-        }
-        if(indication_section > 0 &
-           !(stringr::str_detect(
-             sec_title, "INDICATIONS")) &
-           !stringr::str_detect(
-             sec_title, "DOSAGE"
-           )){
-
-          df_sec_title <- data.frame('cname' = 'section_title',
-                                     'indication' = sec_title,
-                                     'indication_criteria' = NA,
-                                     'drugname_generic' = drugname_generic,
-                                     'drugname_trade' = drugname_trade,
-                                     'drug_active_moiety' = drug_active_moiety,
-                                     'effective_time' = effective_time,
-                                     stringsAsFactors = F)
-
-
-          section_indication_details_found <- 0
-
-          indication_details <- xml2::as_list(sections[section_counter][[1]])
-
-          if("text" %in% names(indication_details)){
-
-            if(length(indication_details$text) == 1){
-              if("paragraph" %in% names(indication_details$text)){
-
-                ind_details <- unlist(indication_details$text$paragraph)
-                attributes(ind_details) <- NULL
-                ind_details <- ind_details[!nchar(ind_details) == 1]
-                ind_details <- stringr::str_squish(paste(ind_details, collapse=""))
-
-                df <- data.frame('cname' = 'paragraph',
-                                 'indication' = sec_title,
-                                 'indication_criteria' = ind_details,
-                                 'drugname_generic' = drugname_generic,
-                                 'drugname_trade' = drugname_trade,
-                                 'drug_active_moiety' = drug_active_moiety,
-                                 'effective_time' = effective_time,
-                                 stringsAsFactors = F)
-
-                all_indication_entries <- all_indication_entries |>
-                  dplyr::bind_rows(df)
-
-                section_indication_details_found <- 1
-
-              }
-            }else{
-              if(!("list" %in% names(indication_details$text))){
-                if(length(indication_details$text) == 0){
-                  next
-                }
-                for(n in 1:length(indication_details$text)){
-                  if("content" %in% names(indication_details$text[[n]])){
-
-                    if(is.list(indication_details$text[[n]]$content) &
-                       length(indication_details$text[[n]]$content) == 1){
-
-                      if(is.character(indication_details$text[[n]]$content[[1]])){
-
-                        df <- data.frame(
-                          'cname' = 'section_title',
-                          'indication' = sec_title,
-                          'indication_criteria' = indication_details$text[[n]]$content[[1]],
-                          'drugname_generic' = drugname_generic,
-                          'drugname_trade' = drugname_trade,
-                          'drug_active_moiety' = drug_active_moiety,
-                          'effective_time' = effective_time,
-                          stringsAsFactors = F)
-
-                        all_indication_entries <- all_indication_entries |>
-                          dplyr::bind_rows(df)
-                      }
-
-                      section_indication_details_found <- 1
-
-                    }else{
-                      crit <- unlist(indication_details$text[[n]])
-                      if(is.character(crit) & length(crit) == 1){
-                        names(crit) <- NULL
-                        if(nchar(crit[1]) > 1 &
-                           !(stringr::str_detect(
-                             crit[1],"Clinical Studies|Dosage and Administration"))){
-                          df <- data.frame(
-                            'cname' = 'section_title',
-                            'indication' = sec_title,
-                            'indication_criteria' = crit[1],
-                            'drugname_generic' = drugname_generic,
-                            'drugname_trade' = drugname_trade,
-                            'drug_active_moiety' = drug_active_moiety,
-                            'effective_time' = effective_time,
-                            stringsAsFactors = F)
-
-                          all_indication_entries <- all_indication_entries |>
-                            dplyr::bind_rows(df)
-
-                          section_indication_details_found <- 1
-
-                        }
-                      }
-                    }
-                  }else{
-
-                    if(is.list(indication_details$text[[n]]) & length(indication_details$text[[n]]) > 0){
-                      #cat(section_counter, '--', n, '---', length(indication_details$text[[n]]), '\n')
-                      for(i in 1:length(indication_details$text[[n]])){
-                        if(is.character(indication_details$text[[n]][[i]])){
-                          df <- data.frame(
-                            'cname' = 'section_title',
-                            'indication' = sec_title,
-                            'indication_criteria' = indication_details$text[[n]][[i]],
-                            'drugname_generic' = drugname_generic,
-                            'drugname_trade' = drugname_trade,
-                            'drug_active_moiety' = drug_active_moiety,
-                            'effective_time' = effective_time,
-                            stringsAsFactors = F)
-
-                          all_indication_entries <- all_indication_entries |>
-                            dplyr::bind_rows(df)
-
-                          section_indication_details_found <- 1
-
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
-            if("paragraph" %in% names(indication_details$text) &
-               length(indication_details$text) > 1){
-
-              indication_title <- ""
-              indication_title_elements <- c()
-              if(length(indication_details$text$paragraph) > 1){
-                for(j in 1:length(indication_details$text$paragraph)){
-                  if(is.character(indication_details$text$paragraph[[j]])){
-                    indication_title_elements <-
-                      c(indication_title_elements,
-                        indication_details$text$paragraph[[j]])
-                  }
-                }
-                indication_title <- paste(indication_title_elements, collapse="")
-              }else{
-                if(length(indication_details$text$paragraph) == 1){
-                  if(is.character(indication_details$text$paragraph[[1]])){
-                    indication_title <- as.character(indication_details$text$paragraph[[1]])
-                  }
-                }
-              }
-              indication_criterions <- c()
-
-              if("list" %in% names(indication_details$text)){
-
-                if("item" %in% names(indication_details$text$list)){
-
-                  if(length(indication_details$text$list) == 1){
-                    indication_items <-
-                      unlist(indication_details$text$list$item)
-
-                    if(!is.null(indication_items) &
-                       is.vector(indication_items)){
-                      ind_crit <- ""
-                      #cat('--', unlist(names(indication_items)),'\n')
-
-                      if(length(indication_items) > 0){
-                        for(m in 1:length(indication_items)){
-                          if(is.null(names(indication_items[m]))){
-                            next
-                          }
-                          if(names(indication_items[m]) == "" |
-                             stringr::str_detect(names(indication_items[m]),"content([0-9])?$")){
-                            ind_crit <- paste(ind_crit, stringr::str_trim(indication_items[m]))
-                          }
-                        }
-                      }
-                      indication_criterions <- c(indication_criterions,
-                                                 paste(indication_title,
-                                                       ind_crit, sep=" "))
-                    }
-                  }else{
-
-                    for(m in 1:length(indication_details$text$list)){
-                      #if(nchar(unlist(indication_details$text$list[[m]])) > 1){
-                      indication_criterions <-
-                        c(indication_criterions,
-                          paste(indication_title,
-                                unlist(indication_details$text$list[[m]]),
-                                sep = " - ")
-                        )
-                      #}
-                    }
-                  }
-                }
-                else{
-                  for(j in 1:length(indication_details$text$list)){
-
-                    if(is.character(unlist(indication_details$text$list[[j]][[1]]))){
-                      if(nchar(unlist(indication_details$text$list[[j]][[1]])) > 1){
-                        indication_criterions <-
-                          c(indication_criterions,
-                            paste(
-                              indication_title,
-                              unlist(indication_details$text$list[[j]][[1]]),
-                              sep = " - ")
-                          )
-                      }
-                    }
-                  }
-                }
-              }
-
-              for(c in indication_criterions){
-
-                df <- data.frame(
-                  'cname' = 'section_title',
-                  'indication' = sec_title,
-                  'indication_criteria' = c,
-                  'drugname_generic' = drugname_generic,
-                  'drugname_trade' = drugname_trade,
-                  'drug_active_moiety' = drug_active_moiety,
-                  'effective_time' = effective_time,
-                  stringsAsFactors = F)
-
-                all_indication_entries <- all_indication_entries |>
-                  dplyr::bind_rows(df)
-
-                section_indication_details_found <- 1
-
-              }
-            }
-
-            else{
-
-              if(length(indication_details$text) >= 1){
-                type <- unique(names(indication_details$text))
-                if(length(type) != 1){
-                  break
-                }
-                if(unique(names(indication_details$text)) == "list"){
-                  all_criterions <- c()
-
-                  for(j in 1:length(indication_details$text$list)){
-                    if(length(indication_details$text$list[[j]]) == 0){
-                      next
-                    }
-                    for(k in 1:length(indication_details$text$list[[j]])){
-                      indication_criterion <- ""
-                      if(is.list(indication_details$text$list[[j]][[k]])){
-
-                        if(length(indication_details$text$list[[j]][[k]]) == 1){
-                          if(is.character(unlist(indication_details$text$list[[j]][[k]])) &
-                             nchar(unlist(indication_details$text$list[[j]][[k]])) > 1){
-                            indication_criterion <- as.character(
-                              unlist(indication_details$text$list[[j]][[k]]))
-
-                            all_criterions <- c(all_criterions, indication_criterion)
-                          }
-                        }else{
-                          indication_criterion <- ""
-                          if(length(indication_details$text$list[[j]][[k]]) == 0){
-                            next
-                          }
-                          for(l in 1:length(indication_details$text$list[[j]][[k]])){
-                            if(is.character(indication_details$text$list[[j]][[k]][[l]])){
-                              indication_criterion <- paste0(
-                                indication_criterion,
-                                as.character(
-                                  indication_details$text$list[[j]][[k]][[l]]))
-                            }
-                          }
-                          all_criterions <- c(all_criterions, indication_criterion)
-
-
-                        }
-                      }else{
-                        indication_criterion <-
-                          unlist(indication_details$text$list[[j]][[k]])
-                        all_criterions <- c(all_criterions, indication_criterion)
-
-                      }
-                    }
-                  }
-
-                  for(c in all_criterions){
-                    df <- data.frame(
-                      'cname' = 'section_list',
-                      'indication' = sec_title,
-                      'indication_criteria' = c,
-                      'drugname_generic' = drugname_generic,
-                      'drugname_trade' = drugname_trade,
-                      'drug_active_moiety' = drug_active_moiety,
-                      'effective_time' = effective_time,
-                      stringsAsFactors = F)
-
-                    all_indication_entries <- all_indication_entries |>
-                      dplyr::bind_rows(df)
-
-                    section_indication_details_found <- 1
-
-                  }
-                }
-              }
-            }
-          }
-          if(section_indication_details_found == 0){
-            all_indication_entries <- all_indication_entries |>
-              dplyr::bind_rows(df_sec_title)
-          }
-        }
-
-        if(stringr::str_detect(sec_title,"CONTRAINDICATIONS") |
-           stringr::str_detect(sec_title,"WARNINGS|DOSAGE")){
-          indication_section <- 0
-          break
-        }
-      }
-    }
-  }
-
-
-
-  if(nrow(all_indication_entries) == 0 &
-     nrow(all_main_indication_entries) > 0){
-    all_indication_entries <- all_indication_entries |>
-      dplyr::bind_rows(all_main_indication_entries)
-  }
-
-  if(nrow(all_indication_entries) == 0){
-    return(all_indication_entries)
-  }
-
-  #cancer_regex <- "cancer|carcinoma|wilms|esophageal|melanoma|myeloma"
-  #cancer_regex <- paste0(cancer_regex,"|leukemia|lymphom|sarcoma|thymom|thyroid cancer")
-  #cancer_regex <- paste0(cancer_regex,"|head and neck cancer|")
-
-  cancer_tissue_regex <- "endometrial|prostate|rectal|myeloid|anal|colorectal|wilms|kidney|ovarian|"
-  cancer_tissue_regex <- paste0(
-    cancer_tissue_regex,"thyroid|esophag|cervical|cervix|gastric|stomach|head and neck|ovary|")
-  cancer_tissue_regex <- paste0(
-   cancer_tissue_regex,"bone|testis|testicular|lung|liver|skin|pancreas|pancreatic|brain|bladder|")
-  cancer_tissue_regex <- paste0(
-    cancer_tissue_regex,"adrenal gland|renal cell|urothelial|lympho|hepatocellular|breast")
-
-  cancer_other_regex <- "melanoma|myeloma|glioblastoma|sarcoma|leukemia|lymphoma|"
-  cancer_other_regex <- paste0(
-    cancer_other_regex, "cholangiocarcinom|mesotheliom|glioma|neuroblastoma|tumor")
-
-  rownames(all_indication_entries) <- NULL
-  all_indication_entries <- all_indication_entries |>
-    dplyr::mutate(xml_fname = basename(xml_fname)) |>
-    dplyr::mutate(initial_approval = initial_approval_date) |>
-    dplyr::mutate(indication = stringr::str_trim(stringr::str_squish(indication))) |>
-    dplyr::mutate(indication_criteria =
-                    stringr::str_trim(stringr::str_squish(indication_criteria))) |>
-    dplyr::mutate(cancer_indication = dplyr::if_else(
-      !is.na(indication) &
-        (stringr::str_detect(indication,"NSCLC|AML|CML|BRAF|KRAS|EGFR|HER2|ROS1|BRCA|ABL") |
-      (stringr::str_detect(tolower(indication), cancer_tissue_regex) &
-        stringr::str_detect(tolower(indication), "cancer|tumor|carcinoma|neoplasm|neoplastic"))),
-      TRUE,FALSE
+  oncopharmaDB_cancer_specific <- oncopharmadb |>
+    dplyr::filter(!is.na(primary_site))
+
+
+  oncopharmadb <- oncopharmaDB_cancer_no_indication |>
+    dplyr::bind_rows(oncopharmaDB_cancer_specific) |>
+    dplyr::bind_rows(oncopharmaDB_cancer_NOS) |>
+    dplyr::arrange(nci_cd_name) |>
+    dplyr::mutate(nci_cd_name = dplyr::if_else(
+      stringr::str_detect(nci_cd_name,";-"),
+      drug_name,
+      as.character(nci_cd_name)
     )) |>
-    dplyr::mutate(cancer_indication = dplyr::if_else(
-      !is.na(indication) &
-      stringr::str_detect(tolower(indication), cancer_other_regex),
-      TRUE,as.logical(cancer_indication)
-    )) |>
-    dplyr::mutate(cancer_indication = dplyr::if_else(
-      !is.na(indication_criteria) &
-        (stringr::str_detect(indication_criteria,"NSCLC|AML|CML|BRAF|KRAS|EGFR|HER2|ROS1|BRCA|ABL") |
-      (stringr::str_detect(tolower(indication_criteria), cancer_tissue_regex) &
-        stringr::str_detect(tolower(indication_criteria), "cancer|tumor|carcinoma|neoplasm|neoplastic"))),
-      TRUE,as.logical(cancer_indication)
-    )) |>
-    dplyr::mutate(cancer_indication = dplyr::if_else(
-      !is.na(indication_criteria) &
-      stringr::str_detect(tolower(indication_criteria), cancer_other_regex),
-      TRUE,as.logical(cancer_indication)
-    )) |>
-    dplyr::filter(!stringr::str_detect(indication,"indicated( for)?:$")) |>
-    dplyr::filter(!(stringr::str_detect(indication,"indicated for") &
-                      stringr::str_detect(indication,":$"))) |>
-    dplyr::filter(!stringr::str_detect(indication,"^Limitations of (U|u)se")) |>
-    dplyr::filter(!stringr::str_detect(indication,"Limitations of (U|u)se")) |>
-    dplyr::filter(!stringr::str_detect(indication,"Select patients for therapy based on")) |>
-    dplyr::mutate(indication = Hmisc::capitalize(
-      stringr::str_replace(
-        indication,"^( )?:( )?",""))) |>
-    dplyr::mutate(indication_criteria = Hmisc::capitalize(
-      stringr::str_replace(
-        indication_criteria,"^( )?:( )?",""))) |>
-    dplyr::filter(is.na(indication_criteria) |
-                    (!is.na(indication_criteria) & nchar(indication_criteria) >= 3)) |>
+    dplyr::filter(!is.na(nci_cd_name))
+
+
+  oncopharmadb$drug_name <- NULL
+  oncopharmadb$drug_name <- oncopharmadb$nci_cd_name
+  oncopharmadb$nci_cd_name <- NULL
+  oncopharmadb$nci_concept_synonym <- NULL
+
+  blackbox_warnings <- as.data.frame(oncopharmadb |>
+    dplyr::select(drug_name, drug_blackbox_warning) |>
+    dplyr::distinct() |>
+      dplyr::group_by(drug_name) |>
+    dplyr::summarise(drug_blackbox_warning = paste(
+      unique(drug_blackbox_warning), collapse=","))
+  )
+
+  nci_t_map <- as.data.frame(oncopharmadb |>
+    dplyr::select(drug_name, nci_t, nci_concept_definition) |>
+    dplyr::distinct() |>
+    dplyr::group_by(drug_name) |>
+    dplyr::summarise(
+      nci_t = paste(
+        unique(nci_t), collapse=","),
+      nci_concept_definition = paste(
+        unique(nci_concept_definition),
+        collapse = ",")
+    ), .groups = "drop"
+  )
+
+  oncopharmadb$nci_t <- NULL
+  oncopharmadb$nci_concept_definition <- NULL
+  oncopharmadb$drug_blackbox_warning <- NULL
+  oncopharmadb2 <- oncopharmadb |>
+    dplyr::left_join(nci_t_map) |>
+    dplyr::left_join(blackbox_warnings) |>
     dplyr::distinct()
 
-  return(all_indication_entries)
+  drug_maps <- list()
+  drug_maps[['id2name']] <- oncopharmadb2 |>
+    dplyr::select(drug_name) |>
+    dplyr::distinct() |>
+    dplyr::mutate(drug_id = dplyr::row_number())
 
-}
+  if(nrow(drug_maps[['id2name']]) != length(unique(oncopharmadb2$drug_name))){
+    lgr::lgr$fatal("Ambiguous drug names")
+    return(0)
+  }
 
+  oncopharmadb2 <- oncopharmadb2 |>
+    dplyr::left_join(drug_maps[['id2name']], by = "drug_name")
 
-get_uniprot_map <- function(basedir = NULL,
-                            uniprot_release = "2021_04"){
-
-  rlogging::message("Retrieving UniProtKB annotation")
-
-  ## read uniprot ID mapping
-  idmapping_fname <- paste0(basedir,'/data-raw/uniprot/',uniprot_release,'/HUMAN_9606_idmapping.dat.gz')
-  idmapping_up_kb <- read.table(gzfile(idmapping_fname),sep="\t",header = F,quote = "", stringsAsFactors = F) |>
-    dplyr::filter(V2 == 'Ensembl_TRS' | V2 == 'UniProtKB-ID' | V2 == 'Ensembl' | V2 == 'GeneID' | V2 == 'RefSeq_NT') |>
-    magrittr::set_colnames(c('acc','type','name')) |>
-    dplyr::mutate(acc = stringr::str_replace(acc,"-[0-9]{1,}",""))
-
-  #reviewed_uniprot_accs <-
-  #  readRDS(file=paste0(basedir,"/data-raw/uniprot/",uniprot_release,"/reviewed_uniprot_accessions.rds"))
-
-  ## UniProt accession to Ensembl transcript ID
-  ensembl_up_acc <- dplyr::filter(idmapping_up_kb, type == 'Ensembl_TRS') |>
-    dplyr::select(acc, name) |>
-    dplyr::rename(uniprot_acc = acc, ensembl_transcript_id = name) |>
+  drug_maps[['id2target']] <- oncopharmadb2 |>
+    dplyr::select(drug_id,
+                  target_symbol,
+                  target_entrezgene,
+                  target_genename,
+                  target_ensembl_gene_id,
+                  target_type) |>
     dplyr::distinct()
-  ## remove transcripts mapped to more than one UniProt acc
-  unique_ensembl_trans <- as.data.frame(
-    dplyr::group_by(ensembl_up_acc, ensembl_transcript_id) |>
-      dplyr::summarise(n_trans = dplyr::n(), .groups = "drop") |>
-      dplyr::filter(n_trans == 1))
-  ensembl_up_acc <- dplyr::semi_join(
-    ensembl_up_acc,
-    dplyr::select(unique_ensembl_trans, ensembl_transcript_id),
-    by=c("ensembl_transcript_id"))
 
-  ## UniProt accession to UniProt ID
-  up_id_acc <- as.data.frame(
-    dplyr::filter(idmapping_up_kb, type == 'UniProtKB-ID') |>
-      dplyr::group_by(acc) |>
-      dplyr::summarise(uniprot_id = paste(unique(name), collapse="&"),
-                       .groups = "drop") |>
-      dplyr::rename(uniprot_acc = acc))
+  drug_maps[['id2indication']] <- oncopharmadb2 |>
+    dplyr::select(drug_id,
+                  drug_max_phase_indication,
+                  drug_approved_indication,
+                  drug_clinical_source,
+                  drug_year_first_approval,
+                  drug_clinical_id,
+                  drug_max_ct_phase,
+                  disease_efo_id,
+                  disease_efo_label,
+                  cui,
+                  cui_name,
+                  primary_site) |>
+    dplyr::distinct()
 
-  ## UniProt accession to UniProt ID
-  ensembl_id_acc <- as.data.frame(
-    dplyr::filter(idmapping_up_kb, type == 'Ensembl') |>
-      dplyr::group_by(acc) |>
-      dplyr::summarise(ensembl_gene_id = paste(unique(name), collapse="&"),
-                       .groups = "drop") |>
-      dplyr::rename(uniprot_acc = acc))
+  drug_maps[['id2synonym']] <- oncopharmadb2 |>
+    dplyr::select(drug_id,
+                  nci_concept_synonym_all) |>
+    dplyr::distinct()
 
-  rlogging::message("A total of ",nrow(up_id_acc)," UniProt protein accessions were parsed")
+  drug_maps[['id2basic']] <- oncopharmadb2 |>
+    dplyr::select(drug_id,
+                  molecule_chembl_id,
+                  drug_type,
+                  drug_action_type,
+                  is_salt,
+                  is_adc,
+                  drug_blackbox_warning,
+                  nci_concept_definition,
+                  nci_t,
+                  opentargets,
+                  comb_regimen_indication,
+                  immune_checkpoint_inhibitor,
+                  topoisomerase_inhibitor,
+                  tubulin_inhibitor,
+                  kinase_inhibitor,
+                  hdac_inhibitor,
+                  parp_inhibitor,
+                  bet_inhibitor,
+                  monoclonal_antibody,
+                  antimetabolite,
+                  angiogenesis_inhibitor,
+                  alkylating_agent,
+                  anthracycline,
+                  platinum_compound,
+                  proteasome_inhibitor,
+                  hormone_therapy,
+                  hedgehog_antagonist,
+                  fda_epc_category) |>
+        dplyr::distinct()
 
-
-  ## UniProt accession to RefSeq ID
-  refseq_id_acc <- as.data.frame(
-    dplyr::filter(idmapping_up_kb, type == 'RefSeq_NT') |>
-      dplyr::mutate(name = stringr::str_replace(name,"\\.[0-9]{1,}$","")) |>
-      dplyr::group_by(acc) |>
-      dplyr::summarise(refseq_mrna = paste(unique(name), collapse="&"),
-                       .groups = "drop") |>
-      dplyr::rename(uniprot_acc = acc))
-
-
-  uniprot_map <- dplyr::full_join(
-    dplyr::left_join(refseq_id_acc, up_id_acc,by=c("uniprot_acc")),
-    dplyr::left_join(ensembl_up_acc, up_id_acc,by=c("uniprot_acc")),
-    by=c("uniprot_acc","uniprot_id")) |>
-    dplyr::left_join(ensembl_id_acc)
-
-  ## UniProt accession and ID for Ensembl transcript IDs
-  #uniprot_map <- uniprot_map |>
-    #dplyr::left_join(uniprot_acc_to_corum_ids,by=c("uniprot_acc")) |>
-    #dplyr::left_join(reviewed_uniprot_accs, by=c("uniprot_acc","uniprot_id")) |>
-    #dplyr::rename(uniprot_reviewed = reviewed)
-
-  return(list('uniprot_map' = uniprot_map))
+  # tmp <- drug_maps$id2name |>
+  #   dplyr::left_join(drug_maps$id2basic) |>
+  #   dplyr::left_join(drug_maps$id2target) |>
+  #   dplyr::left_join(drug_maps$id2indication) |>
+  #   dplyr::left_join(drug_maps$id2synonym)
+  #
+  #
+  return(drug_maps)
 
 }
 
+
+expand_drug_aliases <- function(drug_index_map = NULL,
+                                path_data_raw = NULL,
+                                chembl_pubchem_datestamp = chembl_pubchem_datestamp){
+
+  chembl_pubchem_xref <-
+    get_chembl_pubchem_compound_xref(
+      datestamp = chembl_pubchem_datestamp,
+      path_data_raw = path_data_raw)
+
+  non_ambiguous_synonyms <- as.data.frame(
+    drug_index_map[['id2synonym']] |>
+      dplyr::select(drug_id, nci_concept_synonym_all) |>
+      tidyr::separate_rows(nci_concept_synonym_all, sep="\\|") |>
+      dplyr::distinct() |>
+      dplyr::rename(nci_concept_synonym = nci_concept_synonym_all) |>
+      dplyr::group_by(nci_concept_synonym) |>
+      dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
+      dplyr::filter(n == 1 & nchar(nci_concept_synonym) >= 4)
+  )
+
+  ## Drug alias to NCI concept display name (primary name)
+  antineopharma_synonyms <-
+    drug_index_map[['id2synonym']] |>
+    dplyr::select(drug_id, nci_concept_synonym_all) |>
+    tidyr::separate_rows(nci_concept_synonym_all, sep="\\|") |>
+    dplyr::distinct() |>
+    dplyr::rename(nci_concept_synonym = nci_concept_synonym_all) |>
+    dplyr::inner_join(non_ambiguous_synonyms, by = "nci_concept_synonym") |>
+    dplyr::rename(alias = nci_concept_synonym) |>
+    dplyr::select(-n) |>
+    dplyr::left_join(
+      dplyr::select(drug_index_map[['id2basic']],
+                    drug_id, molecule_chembl_id),
+      by = "drug_id") |>
+    dplyr::distinct()
+
+  ## include also the primary name among aliases
+  tmp <- drug_index_map[['id2name']] |>
+    dplyr::select(drug_id, drug_name) |>
+    dplyr::mutate(alias = drug_name) |>
+    dplyr::select(-drug_name) |>
+    dplyr::left_join(
+      dplyr::select(drug_index_map[['id2basic']], drug_id, molecule_chembl_id),
+      by = "drug_id"
+    ) |>
+    dplyr::distinct()
+
+  antineopharma_synonyms <- antineopharma_synonyms |>
+    dplyr::bind_rows(tmp) |>
+    dplyr::arrange(drug_id) |>
+    dplyr::distinct()
+
+
+  ## Extend aliases with those found in PubChem
+
+  ## get drug set that contains PubChem cross-references
+  unique_chembl_pubchem <- drug_index_map[['id2basic']] |>
+    dplyr::select(drug_id, molecule_chembl_id) |>
+    dplyr::filter(!is.na(molecule_chembl_id)) |>
+    dplyr::distinct() |>
+    dplyr::left_join(chembl_pubchem_xref, by="molecule_chembl_id") |>
+    dplyr::filter(!is.na(pubchem_cid)) |>
+    dplyr::select(-c(chembl_db_version))
+
+
+  ## Retrieve aliases for drugs with PubChem x-refs
+  lgr::lgr$info("Retrieving additional drug aliases/synonyms for PubChem-mapped compounds")
+  pubchem_synonym_files <-
+    sort(list.files(path = file.path(path_data_raw, "pubchem"),
+                    pattern = "CID-Synonym-filtered_",
+                    full.names = T))
+
+  antineopharma_synonyms_pubchem <- data.frame()
+  for(f in pubchem_synonym_files){
+    synonym_data <- as.data.frame(readr::read_tsv(
+      f, col_names = c('pubchem_cid','alias'),
+      col_types = "dc",
+      progress = F
+    ))
+
+    pubchem_alias_df <- synonym_data |>
+      dplyr::inner_join(unique_chembl_pubchem,
+                        by = "pubchem_cid")
+
+    if(nrow(pubchem_alias_df) > 0){
+      pubchem_alias_df <- pubchem_alias_df |>
+        dplyr::select(-pubchem_cid)
+      antineopharma_synonyms_pubchem <-
+        antineopharma_synonyms_pubchem |>
+        dplyr::bind_rows(pubchem_alias_df)
+    }
+    rm(synonym_data)
+  }
+
+  # antineopharma_synonyms_pubchem <- antineopharma_synonyms_pubchem |>
+  #   dplyr::left_join(drug_index_map[['id2name']])
+
+
+  ## Only include drug aliases that are unambiguous
+  unambiguous_drug_aliases <- antineopharma_synonyms |>
+    dplyr::bind_rows(antineopharma_synonyms_pubchem) |>
+    dplyr::left_join(drug_index_map[['id2name']], by = "drug_id") |>
+    dplyr::filter(!(alias == "nab-paclitaxel" &
+                      drug_name == "Paclitaxel")) |>
+    dplyr::select(alias, drug_name) |>
+    dplyr::distinct() |>
+    dplyr::group_by(alias) |>
+    dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
+    dplyr::filter(n == 1) |>
+    dplyr::select(alias)
+
+  compound_synonyms <-
+    dplyr::bind_rows(antineopharma_synonyms, antineopharma_synonyms_pubchem) |>
+    dplyr::left_join(drug_index_map[['id2name']], by = "drug_id") |>
+
+    dplyr::distinct() |>
+    dplyr::inner_join(unambiguous_drug_aliases, by = "alias") |>
+    dplyr::distinct()  |>
+    dplyr::mutate(alias = dplyr::if_else(
+      alias == "nab-paclitaxel" & drug_name == "Paclitaxel",
+      "paclitaxel",
+      as.character(alias)
+    )) |>
+    dplyr::mutate(
+      alias = stringi::stri_enc_toascii(alias)
+    ) |>
+    dplyr::mutate(
+      drug_name =
+        stringi::stri_enc_toascii(drug_name)
+    ) |>
+    dplyr::arrange(drug_id) |>
+    dplyr::select(-c(molecule_chembl_id, drug_name)) |>
+    dplyr::distinct()
+
+
+}
