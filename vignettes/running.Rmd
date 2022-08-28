@@ -16,33 +16,24 @@ at your local computer/client.
 	`drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,
 	drug_target = c('BRAF'), drug_is_approved = T)`
 
-3. Get BRAF-targeted drugs, list records per indication and drug synonym
 
-	`drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,
-	drug_target = c('BRAF'))`
-
-4. Get BRAF-targeted drugs, Open Targets Platform only, list per drug only
+3. Get BRAF-targeted drugs, Open Targets Platform only, list per drug only
 
 	`drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,
 	drug_target = c('BRAF'), source_opentargets_only = T, output_resolution = "drug" )`
 	
-5. Get BRAF-targeted drugs, Open Targets Platform only, list per drug only, show key annotations only
 
-	`drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,
-	drug_target = c('BRAF'), source_opentargets_only = T, output_resolution = "drug")`
-	
-
-6. Get immune checkpoint inhibitors, list per drug-target entry
+4. Get immune checkpoint inhibitors, list per drug-target entry
 
    `drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, is_immune_checkpoint_inhibitor = T,
    output_resolution = "drug2target")`
    
-7. Get immune checkpoint inhibitors indicated for tumor subtypes within "Colon/Rectum", list per drug-target entry
+5. Get immune checkpoint inhibitors indicated for tumor subtypes within "Colon/Rectum", list per drug-target entry
 
    `drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, is_immune_checkpoint_inhibitor = T,
    output_resolution = "drug2target", drug_indication_main = "Colon/Rectum")`
    
-8. Get antimetabolites
+6. Get antimetabolites
 
    `drugs <- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, is_antimetabolite = T,
    output_resolution = "drug")`

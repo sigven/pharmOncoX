@@ -1,15 +1,21 @@
 #' Utility function to get on-label/off-label drugs (not complete)
 #'
+#' @param cache_dir Local cache directory
 #' @keywords internal
 #'
 #'
 
-get_targeted_drugs <- function(){
+get_on_off_label_drugs <- function(cache_dir = NA){
 
 
-  targeted_onco_inhibitors <- as.data.frame(
+  onco_drugs <- 
     get_onco_drugs(drug_is_targeted = T,
-                  source_opentargets_only = T) |>
+                   cache_dir = cache_dir,
+                  source_opentargets_only = T)
+    
+    
+  targeted_onco_inhibitors <- as.data.frame(
+    onco_drugs$records |>
       #dplyr::filter(!is.na(cancer_drug)) |>
       #dplyr::filter(cancer_drug == T) |>
       dplyr::filter(!is.na(.data$drug_max_ct_phase)) |>
@@ -50,17 +56,18 @@ get_targeted_drugs <- function(){
                       .data$primary_site,
                       .data$drug_link,
                       .data$nci_concept_definition) |>
-      dplyr::summarise(drug_clinical_id =
-                         paste(sort(unique(.data$drug_clinical_id)),
+      dplyr::summarise(
+        drug_clinical_id =
+          paste(sort(unique(.data$drug_clinical_id)),
+                collapse = "|"),
+        max_phase = max(.data$drug_max_phase_indication, na.rm = T),
+        max_all_phase = paste(sort(unique(.data$drug_max_phase_indication)),
+                              collapse = "|"),
+        disease_efo_label = paste(sort(unique(.data$disease_efo_label)),
+                                  collapse = "|"),
+        disease_efo_id = paste(sort(unique(.data$disease_efo_id)),
                                collapse = "|"),
-                       max_phase = max(.data$drug_max_phase_indication, na.rm = T),
-                       max_all_phase = paste(sort(unique(.data$drug_max_phase_indication)),
-                                             collapse = "|"),
-                       disease_efo_label = paste(sort(unique(.data$disease_efo_label)),
-                                                 collapse = "|"),
-                       disease_efo_id = paste(sort(unique(.data$disease_efo_id)),
-                                              collapse = "|"),
-                       .groups = "drop") |>
+        .groups = "drop") |>
       dplyr::ungroup() |>
       dplyr::mutate(num_clinical_id =
                       stringr::str_count(.data$drug_clinical_id, pattern = "|")) |>
@@ -123,19 +130,6 @@ get_targeted_drugs <- function(){
     dplyr::filter(.data$drug_primary_site == "Any") |>
     dplyr::distinct()
 
-  # ## remove salts
-  # tmp <- targeted_drugs_non_site_specific |>
-  #   dplyr::filter(stringr::str_detect(
-  #     .data$nci_concept_display_name,
-  #     " (Hydrochloride|Sulfate|Vedotin|Emtansine|Phosphate|Mesylate|Trevatide|Monohydrate|Succinate|Sodium|Dimethyl Sulfoxide|Acetate)$")) |>
-  #   dplyr::mutate(drug_no_salt = stringr::str_replace(
-  #     nci_concept_display_name,
-  #     " (Hydrochloride|Sulfate|Vedotin|Emtansine|Phosphate|Mesylate|Trevatide|Monohydrate|Succinate|Sodium|Dimethyl Sulfoxide|Acetate)$",
-  #     "")
-  #   ) |>
-  #   dplyr::select(nci_concept_display_name, drug_no_salt) |>
-  #   dplyr::distinct()
-
 
   unique_sites <- unique(targeted_onco_inhibitors$drug_primary_site)
 
@@ -167,24 +161,24 @@ get_targeted_drugs <- function(){
                       .data$drug_primary_site != "Any" &
                       .data$drug_max_phase_indication > 2) |>
       dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
-                       by = c("molecule_chembl_id","nci_concept_display_name","symbol")) |>
+                       by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
-                       by = c("molecule_chembl_id","nci_concept_display_name","symbol")) |>
+                       by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::distinct()
 
     other_any_phase <- targeted_drugs_non_site_specific |>
       dplyr::anti_join(targeted_drugs_per_site[[t]][['off_label']],
-                       by = c("molecule_chembl_id","nci_concept_display_name","symbol")) |>
+                       by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
-                       by = c("molecule_chembl_id","nci_concept_display_name","symbol")) |>
+                       by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
-                       by = c("molecule_chembl_id","nci_concept_display_name","symbol"))
+                       by = c("molecule_chembl_id","drug_name","symbol"))
 
     targeted_drugs_per_site[[t]][['other_any_phase']] <- other_any_phase |>
       dplyr::arrange(.data$symbol, .data$drug_max_phase_indication)
 
     lgr::lgr$info(paste0("Found n = ",
-                             length(unique(targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$nci_concept_display_name)),
+                             length(unique(targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$drug_name)),
                              " targeted drugs for indications with primary site: ",
                              t))
 
@@ -226,10 +220,7 @@ get_targeted_drugs <- function(){
       )
 
   }
-#
-#   }
-#   return(list('compounds' = targeted_compounds,
-#               'per_site' = targeted_drugs_per_site))
+  return(all_tt_records)
 
 }
 
