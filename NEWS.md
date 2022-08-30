@@ -1,3 +1,7 @@
+# Version 0.9.1 (August 30th 2022)
+
+* Added helper function to retrieve drug biomarkers
+
 # Version 0.9.0 (August 25th 2022)
 
 * Renamed package name (**pharmaOncoX**)

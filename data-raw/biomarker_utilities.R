@@ -158,14 +158,16 @@ expand_hgvs_terms <- function(var) {
   return(hits)
 }
 
-load_civic_biomarkers <- function(datestamp = '20211217'){
+load_civic_biomarkers <- function(datestamp = '20211217',
+                                  compound_synonyms = NULL){
 
 
   clinicalEvidenceSummary <- as.data.frame(
-    data.table::fread(paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
-                             datestamp,
-                             ".tsv"),
-                      select = c(1:41), fill = T)) |>
+    data.table::fread(
+      paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
+             datestamp,
+             ".tsv"),
+      select = c(1:41), fill = T)) |>
     dplyr::filter(source_type == "PubMed") |>
     dplyr::select(variant_id,
                   evidence_id,
@@ -175,11 +177,6 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
                   drugs,
                   citation_id,
                   evidence_statement,
-                  #chromosome,
-                  #start,
-                  #stop,
-                  #reference_bases,
-                  #variant_bases,
                   evidence_type,
                   evidence_level,
                   evidence_direction,
@@ -190,22 +187,18 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
                   evidence_description = evidence_statement,
                   evidence_url = evidence_civic_url,
                   cancer_type = disease) |>
-                  #chr_start = start,
-                  #chr_stop = stop,
-                  #refbase = reference_bases,
-                  #altbase = variant_bases) |>
-
   dplyr::mutate(disease_ontology_id = paste0(
     "DOID:", disease_ontology_id)
   ) |>
     dplyr::mutate(
       evidence_level =
-        dplyr::case_when(evidence_level == 'A' ~ 'A: Validated',
-                         evidence_level == 'B' ~ 'B: Clinical evidence',
-                         evidence_level == 'C' ~ 'C: Case study',
-                         evidence_level == 'D' ~ 'D: Preclinical evidence',
-                         evidence_level == 'E' ~ 'E: Indirect evidence',
-                         TRUE ~ as.character(evidence_level)
+        dplyr::case_when(
+          evidence_level == 'A' ~ 'A: Validated',
+          evidence_level == 'B' ~ 'B: Clinical evidence',
+          evidence_level == 'C' ~ 'C: Case study',
+          evidence_level == 'D' ~ 'D: Preclinical evidence',
+          evidence_level == 'E' ~ 'E: Indirect evidence',
+          TRUE ~ as.character(evidence_level)
         )
     ) |>
 
@@ -224,9 +217,16 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
                       nchar(drugs) > 0) |>
       tidyr::separate_rows(drugs, sep=",") |>
       dplyr::mutate(drugs = tolower(drugs)) |>
-      dplyr::left_join(oncoPharmaDB::compound_synonyms,
-                       by = c("drugs" = "alias")) |>
-      dplyr::filter(!is.na(nci_concept_display_name)) |>
+      dplyr::left_join(
+        dplyr::select(compound_synonyms,
+                      drugname_lc, 
+                      drug_name, 
+                      molecule_chembl_id),
+        by = c("drugs" = "drugname_lc")
+      ) |>
+      # dplyr::left_join(oncoPharmaDB::compound_synonyms,
+      #                  by = c("drugs" = "alias")) |>
+      dplyr::filter(!is.na(drug_name)) |>
       dplyr::select(evidence_id, molecule_chembl_id) |>
       dplyr::distinct() |>
       dplyr::group_by(evidence_id) |>
@@ -616,7 +616,7 @@ load_civic_biomarkers <- function(datestamp = '20211217'){
 }
 
 
-load_cgi_biomarkers <- function(){
+load_cgi_biomarkers <- function(compound_synonyms = NULL){
 
   cancer_type_abbreviations <-
     read.table(file = "data-raw/biomarkers/cgi/cancer_subtypes.tsv",sep = "\t", header = T,
@@ -884,9 +884,19 @@ load_cgi_biomarkers <- function(){
                       nchar(therapeutic_context) > 0) |>
       tidyr::separate_rows(therapeutic_context, sep=" \\+ ") |>
       dplyr::mutate(therapeutic_context = tolower(therapeutic_context)) |>
-      dplyr::left_join(oncoPharmaDB::compound_synonyms,
-                       by = c("therapeutic_context" = "alias")) |>
-      dplyr::filter(!is.na(nci_concept_display_name)) |>
+      dplyr::left_join(
+        dplyr::select(compound_synonyms,
+                      drugname_lc, 
+                      drug_name, 
+                      molecule_chembl_id),
+        by = c("therapeutic_context" = "drugname_lc")
+      ) |>
+      # dplyr::left_join(oncoPharmaDB::compound_synonyms,
+      #                  by = c("drugs" = "alias")) |>
+      dplyr::filter(!is.na(drug_name)) |>
+      # dplyr::left_join(oncoPharmaDB::compound_synonyms,
+      #                  by = c("therapeutic_context" = "alias")) |>
+      # dplyr::filter(!is.na(nci_concept_display_name)) |>
       dplyr::select(evidence_id, molecule_chembl_id) |>
       dplyr::distinct() |>
       dplyr::group_by(evidence_id) |>

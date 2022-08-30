@@ -145,6 +145,14 @@ drug_aliases <- expand_drug_aliases(
 drug_index_map[['id2alias']] <- drug_aliases
 drug_index_map$id2synonym <- NULL
 
+compound_synonyms <- drug_index_map[['id2alias']] |>
+  dplyr::mutate(drugname_lc = tolower(alias)) |>
+  dplyr::left_join(drug_index_map[['id2name']], by = "drug_id") |>
+  dplyr::left_join(
+    dplyr::select(drug_index_map[['id2basic']],
+                  drug_id, molecule_chembl_id),
+    by = "drug_id")
+
 rm(drug_df)
 
 
@@ -173,8 +181,10 @@ if(!file.exists(civic_clinical_evidence)){
 raw_biomarkers <- list()
 raw_biomarkers[['civic']] <-
   load_civic_biomarkers(
+    compound_synonyms = compound_synonyms,
     datestamp = package_datestamp)
-raw_biomarkers[['cgi']] <- load_cgi_biomarkers()
+raw_biomarkers[['cgi']] <- load_cgi_biomarkers(
+  compound_synonyms = compound_synonyms)
 raw_biomarkers[['mitelmandb']] <- load_mitelman_db()
 raw_biomarkers[['pmkb']] <- load_pmkb_biomarkers()
 custom_fusiondb <- load_custom_fusion_db() |>
@@ -360,14 +370,6 @@ rm(importance)
 rm(model)
 rm(fusion_candidate)
 rm(pearson)
-
-compound_synonyms <- drug_index_map[['id2alias']] |>
-  dplyr::mutate(drugname_lc = tolower(alias)) |>
-  dplyr::left_join(drug_index_map[['id2name']], by = "drug_id") |>
-  dplyr::left_join(
-    dplyr::select(drug_index_map[['id2basic']],
-                  drug_id, molecule_chembl_id),
-    by = "drug_id")
 
 biomarkers_invitro <- list()
 biomarkers_invitro[['metadata']] <- metadata$biomarkers[5,]

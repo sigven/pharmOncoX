@@ -224,6 +224,8 @@ get_on_off_label_drugs <- function(cache_dir = NA){
 
 }
 
+
+
 #' Function that retrieves pharmaOncoX data from Google Drive
 #'
 #' @param cache_dir Local directory for data download
@@ -352,6 +354,114 @@ get_drug_records <- function(cache_dir = NA,
 
   return(drug_data)
 
+}
+
+
+#' Function that retrieves pharmaOncoX data from Google Drive
+#'
+#' @param cache_dir Local directory for data download
+#' @param force_download Logical indicating if local cache should force downloaded
+#' (i.e. set to TRUE to re-download even if data exists in cache)
+#'
+#' @keywords internal
+#'
+#'
+get_biomarkers <- function(cache_dir = NA,
+                             force_download = F){
+  
+  
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+  
+  if(is.na(cache_dir)){
+    lgr::lgr$fatal(paste0("Argument cache_dir = '",
+                          cache_dir, "' is not defined"))
+    stop()
+  }
+  
+  if(!dir.exists(cache_dir)){
+    lgr::lgr$fatal(paste0("Argument cache_dir = '",
+                          cache_dir, "' does not exist"))
+    stop()
+  }
+  
+  
+  biomarker_datasets <- list()
+  file_maps <- c('biomarkers_curated')
+  
+  for(elem in file_maps){
+    
+    fname_local <- file.path(
+      cache_dir,
+      paste0(elem,"_v",
+             db_id_ref[db_id_ref$name == elem,]$pVersion,
+             '.rds')
+    )
+    
+    fname_gd <- googledrive::as_id(
+      db_id_ref[db_id_ref$name == elem,]$gid)
+    
+    md5checksum_package <-
+      db_id_ref[db_id_ref$name == elem,]$md5Checksum
+    
+    #dat <- NULL
+    if(file.exists(fname_local) & force_download == F){
+      biomarker_datasets[[elem]] <- readRDS(fname_local)
+      biomarker_datasets[[elem]][['fpath']] <- fname_local
+      if(!is.null(drug_datasets[[elem]][['records']]) & 
+         !is.null(biomarker_datasets[[elem]][['metadata']])){
+        lgr::lgr$info(paste0(
+          "Reading from cache_dir = '", cache_dir, "', argument force_download = F"))
+        lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
+        lgr::lgr$info(paste0(
+          "Retrieved n = ", nrow(biomarker_datasets[[elem]][['records']]), " records"))
+        
+      }
+      
+    }else{
+      
+      googledrive::drive_deauth()
+      
+      lgr::lgr$info("Downloading remote dataset from Google Drive to cache_dir")
+      dl <- googledrive::with_drive_quiet(
+        googledrive::drive_download(
+          fname_gd,
+          path = fname_local,
+          overwrite = TRUE)
+      )
+      
+      md5checksum_remote <- dl$drive_resource[[1]]$md5Checksum
+      md5checksum_local <- tools::md5sum(fname_local)
+      names(md5checksum_local) <- NULL
+      
+      if(md5checksum_remote == md5checksum_local){
+        biomarker_datasets[[elem]] <- readRDS(fname_local)
+        biomarker_datasets[[elem]]$fpath <- fname_local
+        if(!is.null(biomarker_datasets[[elem]][['records']]) &
+           !is.null(biomarker_datasets[[elem]][['metadata']])){
+          
+          lgr::lgr$info(paste0(
+            "Reading from cache_dir = ' (", cache_dir, "'), argument force_download = F"))
+          lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
+          lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
+          lgr::lgr$info(paste0(
+            "Retrieved ", nrow(biomarker_datasets[[elem]][['records']]), " records"))
+          
+        }
+      }else{
+        lgr::lgr$error(paste0("md5 checksum of local file (", md5checksum_local,
+                              ") is inconsistent with remote file (",
+                              md5checksum_remote,")"))
+        stop()
+      }
+      
+    }
+  }
+  
+  biomarker_data <- biomarker_datasets[['biomarkers_curated']]
+  
+  return(biomarker_data)
+  
 }
 
 

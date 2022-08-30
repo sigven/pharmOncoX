@@ -224,334 +224,6 @@ chembl_compound_properties <- function(chembl_ws_base_url = 'https://www.ebi.ac.
   return(all_molecule_properties)
 }
 
-## Retrieval of mechanism-of-action for ChEMBL molecular compounds
-#'
-#' Function that accepts a ChEMBL molecule identifer and uses the ChEMBL web service API to return
-#' its mechanism of action (including disease efficacy, trial phase etc)
-#'
-#' @param molecule_chembl_id ChEMBL molecule identifier
-#' @return a data frame with the following columns of chemical compound properties:
-#' \itemize{
-#'   \item molecule_chembl_id_salt
-#'   \item molecule_chembl_id = parent_chembl_id,
-#'   \item target_chembl_id
-#'   \item chembl_disease_efficacy
-#'   \item chembl_max_phase
-#'   \item chembl_mechanism_comment
-#'   \item chembl_moa
-#' }
-#' @examples
-#' ## Retrieve mechanism of action for IRINOTECAN (ChEMBL molecular compound ID = 'CHEMBL481')
-#' \dontrun{
-#' chembl_compound_moa(molecule_chembl_id = 'CHEMBL481')
-#' }
-#'
-
-#' chembl_compound_moa <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data', molecule_chembl_id = NA){
-#'
-#'   moa_all <- data.frame()
-#'
-#'   ## get salts
-#'   if(!is.na(molecule_chembl_id)){
-#'     molecule_chembl_id_salt <- NA
-#'     parent_chembl_id <- NA
-#'     salt_df <- chembl_compound_salts(molecule_chembl_id = molecule_chembl_id)
-#'     j <- 1
-#'     ## loop over salts to retrieve mechanism of action (phase, targets etc.)
-#'     while(j <= nrow(salt_df)){
-#'       molecule_chembl_id_salt <- salt_df[j,]$molecule_chembl_id
-#'       parent_chembl_id <- salt_df[j,]$parent_chembl_id
-#'       chembl_moa <- NULL
-#'       moa_url <- paste0(chembl_ws_base_url,'/mechanism?molecule_chembl_id=',molecule_chembl_id_salt)
-#'       if(!is.null(readUrl(moa_url))){
-#'         raw_xml_string <- rawToChar(httr::GET(moa_url)$content)
-#'         if(stringr::str_detect(raw_xml_string,"<mechanism>")){
-#'           doc <- XML::xmlParse(raw_xml_string)
-#'           mechanism_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/mechanisms/mechanism"), collectNames = T, stringsAsFactors = F)
-#'           if(nrow(mechanism_df) > 0){
-#'             mechanism_df <- dplyr::select(mechanism_df, disease_efficacy, max_phase, mechanism_comment, mechanism_of_action, molecule_chembl_id, target_chembl_id)
-#'             chembl_moa <- mechanism_df |>
-#'               dplyr::rename(chembl_disease_efficacy = disease_efficacy, chembl_max_phase = max_phase,
-#'                             chembl_mechanism_comment = mechanism_comment, chembl_moa = mechanism_of_action) |>
-#'               dplyr::select(molecule_chembl_id,target_chembl_id,chembl_disease_efficacy,chembl_max_phase,chembl_mechanism_comment,chembl_moa)
-#'             chembl_moa$molecule_chembl_id_salt <- molecule_chembl_id_salt
-#'             chembl_moa$molecule_chembl_id <- as.character(parent_chembl_id)
-#'             chembl_moa$chembl_disease_efficacy <- as.logical(dplyr::recode(chembl_moa$chembl_disease_efficacy, True = TRUE, False = FALSE))
-#'           }
-#'         }else{
-#'           chembl_moa <- data.frame(molecule_chembl_id_salt = molecule_chembl_id_salt,
-#'                                    molecule_chembl_id = as.character(parent_chembl_id),
-#'                                    target_chembl_id = as.character(NA),
-#'                                    chembl_disease_efficacy = as.logical(NA),
-#'                                    chembl_max_phase = as.character(NA),
-#'                                    chembl_mechanism_comment = as.character(NA),
-#'                                    chembl_moa = as.character(NA), stringsAsFactors = F)
-#'         }
-#'       }else{
-#'         chembl_moa <- data.frame(molecule_chembl_id_salt = molecule_chembl_id_salt,
-#'                                  molecule_chembl_id = as.character(parent_chembl_id),
-#'                                  target_chembl_id = as.character(NA),
-#'                                  chembl_disease_efficacy = as.logical(NA),
-#'                                  chembl_max_phase = as.character(NA),
-#'                                  chembl_mechanism_comment = as.character(NA),
-#'                                  chembl_moa = as.character(NA), stringsAsFactors = F)
-#'       }
-#'       if(!is.null(chembl_moa)){
-#'         moa_all <- rbind(moa_all, chembl_moa)
-#'       }
-#'       j <- j + 1
-#'     }
-#'     if(nrow(salt_df) == 0){
-#'       moa_all <- data.frame(molecule_chembl_id_salt = NA,
-#'                             molecule_chembl_id = as.character(molecule_chembl_id),
-#'                             target_chembl_id = as.character(NA),
-#'                             chembl_disease_efficacy = as.logical(NA),
-#'                             chembl_max_phase = as.character(NA),
-#'                             chembl_mechanism_comment = as.character(NA),
-#'                             chembl_moa = as.character(NA), stringsAsFactors = F)
-#'     }
-#'     else{
-#'       moa_all <- dplyr::filter(moa_all, !is.na(target_chembl_id))
-#'     }
-#'   }
-#'   return(moa_all)
-#' }
-#'
-#' ## Retrieval of compound salts for ChEMBL molecular compounds
-#' #'
-#' #' Function that accepts a ChEMBL molecule identifer and uses the ChEMBL web service API to return
-#' #' relationships between molecule parents and salts (https://www.ebi.ac.uk/chembl/ws)
-#' #'
-#' #' @param molecule_chembl_id ChEMBL molecule identifier
-#' #' @return a data frame with the following columns of chemical compound properties:
-#' #' \itemize{
-#' #'   \item is_parent - logical indicator if a salt is considered a parent compound
-#' #'   \item molecule_chembl_id - query compound identifier
-#' #'   \item parent_chembl_id - parent compound identifier (salt)
-#' #' }
-#' #'
-#' chembl_compound_salts <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data', molecule_chembl_id = NA){
-#'   salt_df <- data.frame()
-#'   if(!is.na(molecule_chembl_id)){
-#'     salt_url <- paste0(chembl_ws_base_url, '/molecule_form/', molecule_chembl_id)
-#'
-#'     if(!is.null(readUrl(salt_url))){
-#'       doc <- XML::xmlParse(rawToChar(httr::GET(salt_url)$content))
-#'       salt_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/molecule_forms/molecule_form"), collectNames = T, stringsAsFactors = F)
-#'     }else{
-#'       salt_df <- data.frame('is_parent' = NA, molecule_chembl_id = molecule_chembl_id, parent_chembl_id = NA, stringsAsFactors = F)
-#'     }
-#'   }
-#'   return(salt_df)
-#' }
-#'
-
-## Retrieval of drug target predictions for ChEMBL molecular compounds
-#'
-#' Function that accepts a ChEMBL molecule identifer and uses the ChEMBL web service API to return
-#' targets for which there is a predictied binding of a the molecular target (https://www.ebi.ac.uk/chembl/ws)
-#'
-#' @param molecule_chembl_id ChEMBL molecule identifier
-#' @param min_probability minimum probability of compound-target binding
-#' @return a data frame with the following columns of chemical compound properties:
-#' \itemize{
-#'   \item target_chembl_id
-#'   \item target_uniprot_acc
-#'   \item molecule_chembl_id_salt
-#'   \item molecule_chembl_id
-#'   \item target_uniprot_id
-#'   \item symbol
-#'   \item entrezgene
-#'   \item gene_name
-#'   \item target_compound_binding_probability
-#' }
-#' @examples
-#' ## Retrieve predicted targets for IRINOTECAN (ChEMBL molecular compound ID = 'CHEMBL481')
-#' \dontrun{
-#' chembl_compound_target_predictions(molecule_chembl_id = 'CHEMBL481', probability = 0.9)
-#' }
-#'
-
-# chembl_compound_target_predictions <- function(chembl_ws_base_url = 'https://www.ebi.ac.uk/chembl/api/data',
-#                                                min_probability = 0.9, molecule_chembl_id = NA){
-#
-#   target_predictions_all <- data.frame()
-#   ## get salts
-#   if(!is.na(molecule_chembl_id)){
-#     salt_df <- chembl_compound_salts(molecule_chembl_id = molecule_chembl_id)
-#     j <- 1
-#     while(j <= nrow(salt_df)){
-#       molecule_chembl_id_salt <- salt_df[j,]$molecule_chembl_id
-#       parent_chembl_id <- salt_df[j,]$parent_chembl_id
-#       chembl_target_predictions <- NULL
-#       target_pred_url <- paste0(chembl_ws_base_url, '/target_prediction?limit=500&probability__gt=',min_probability,'&target_tax_id__exact=9606&molecule_chembl_id=', molecule_chembl_id)
-#       if(!is.null(readUrl(target_pred_url))){
-#         doc <- XML::xmlParse(rawToChar(httr::GET(target_pred_url)$content))
-#         target_df <- XML::xmlToDataFrame(nodes = XML::getNodeSet(doc, "//response/target_predictions/target_prediction"), collectNames = T, stringsAsFactors = F)
-#         if(nrow(target_df) > 0){
-#           chembl_target_predictions <- dplyr::select(target_df, target_chembl_id, target_accession, probability) |>
-#             dplyr::rename(target_uniprot_acc = target_accession) |>
-#             dplyr::distinct()
-#           chembl_target_predictions$molecule_chembl_id_salt <- molecule_chembl_id_salt
-#           chembl_target_predictions$molecule_chembl_id <- parent_chembl_id
-#           chembl_target_predictions <- chembl_target_predictions |>
-#             #dplyr::left_join(dplyr::select(pharmaMine::all_protein_targets, target_uniprot_acc, target_uniprot_id, symbol, entrezgene, gene_name)) |>
-#             dplyr::mutate(target_compound_binding_probability = round(as.numeric(probability), digits = 6)) |>
-#             dplyr::arrange(desc(target_compound_binding_probability)) |>
-#             dplyr::select(-probability)
-#
-#
-#         }else{
-#           chembl_target_predictions <- data.frame(target_chembl_id = NA,
-#                                                   target_uniprot_acc = NA,
-#                                                   target_compound_binding_probability = NA,
-#                                                   molecule_chembl_id_salt = molecule_chembl_id_salt,
-#                                                   molecule_chembl_id = parent_chembl_id,
-#                                                   target_uniprot_id = NA,
-#                                                   symbol = NA,
-#                                                   entrezgene = NA,
-#                                                   gene_name = NA,
-#                                                   stringsAsFactors = F)
-#         }
-#       }
-#       if(!is.null(chembl_target_predictions)){
-#         target_predictions_all <- rbind(target_predictions_all, chembl_target_predictions)
-#       }
-#       j <- j + 1
-#     }
-#   }
-#   if(nrow(salt_df) == 0){
-#     target_predictions_all <- data.frame(target_chembl_id = NA,
-#                                          target_uniprot_acc = NA,
-#                                          target_compound_binding_probability = NA,
-#                                          molecule_chembl_id_salt = molecule_chembl_id_salt,
-#                                          molecule_chembl_id = parent_chembl_id,
-#                                          target_uniprot_id = NA,
-#                                          symbol = NA,
-#                                          entrezgene = NA,
-#                                          gene_name = NA,
-#                                          stringsAsFactors = F)
-#   }
-#   target_predictions_all <- target_predictions_all |> dplyr::distinct()
-#
-#   return(target_predictions_all)
-# }
-#
-
-#' chembl_compound_indications <- function(chembl_ws_base_url = "https://www.ebi.ac.uk/chembl/api/data/drug_indication?molecule_chembl_id=", molecule_chembl_id = NULL, min_maxphase = 3){
-#'
-#'   ## get drug indications (i.e. diseases, cancer types)
-#'   indications <- NULL
-#'   indication_url <- paste0(chembl_ws_base_url,molecule_chembl_id,"&limit=100")
-#'   doc <- XML::xmlParse(rawToChar(httr::GET(indication_url)$content))
-#'   efo_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/efo_id")
-#'   efo_term_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/efo_term")
-#'   phase_nodes <- XML::getNodeSet(doc, "//response/drug_indications/drug_indication/max_phase_for_ind")
-#'   efo_ids <- sapply(efo_nodes, function(el) XML::xmlValue(el, "efo_id"))
-#'   efo_terms <- sapply(efo_term_nodes, function(el) XML::xmlValue(el, "efo_term"))
-#'   max_phase_indications <- sapply(phase_nodes, function(el) XML::xmlValue(el, "max_phase_for_id"))
-#'   j <- 1
-#'   while(j <= length(max_phase_indications)){
-#'     if(max_phase_indications[j] == ""){
-#'       max_phase_indications[j] <- 0
-#'     }
-#'     j <- j + 1
-#'   }
-#'   if(length(efo_ids) == length(efo_terms) & length(efo_terms) == length(max_phase_indications)){
-#'     indications <- data.frame('efo_id' = efo_ids, 'efo_term' = efo_terms, 'max_phase' = max_phase_indications, stringsAsFactors = F)
-#'     indications$max_phase <- as.integer(indications$max_phase)
-#'     if(nrow(indications) == 0){
-#'       indications$efo_id <- as.character(indications$efo_id)
-#'       indications$efo_term <- as.character(indications$efo_term)
-#'     }
-#'
-#'     if(nrow(indications) > 0){
-#'       if(is.null(indications[nchar(indications$efo_id) == 0,])){
-#'         indications[nchar(indications$efo_id) == 0,] <- NA
-#'       }
-#'       indications <- dplyr::filter(indications, max_phase >= min_maxphase)
-#'       indications <- indications |> dplyr::distinct()
-#'       if(nrow(indications) > 0){
-#'         indications$molecule_chembl_id <- molecule_chembl_id
-#'       }
-#'     }
-#'   }
-#'   if(length(indications) ==  0){
-#'     indications <- data.frame('efo_id' = character(), 'efo_term' = character(), 'max_phase' = integer(), 'molecule_chembl_id' = character(), stringsAsFactors = F)
-#'   }
-#'
-#'   return(indications)
-#' }
-#'
-#' ## Retrieval of structurally similar compounds based on SMILES
-#' #'
-#' #' Function that accepts a SMILEs and queries PubChem for structurally similar compounds
-#' #'
-#' #' @param approach 'pubchem_pug' or 'chemminer'
-#' #' @param smiles query SMILES
-#' #' @param manimoto_threshold minimum similarity
-#' #' @param MaxRec maximum number of records
-#' #' @param MaxSec maximum number of
-#' #' @return a character vector of PubChem compound identifiers (CIDs)
-#' #'
-#'
-#' get_similar_compounds <- function(approach = 'pubchem_pug', smiles = NULL, manimoto_threshold = 100, MaxRec = 100, MaxSec = 10, mw = NULL){
-#'   cids <- integer()
-#'   smiles_set <- unlist(stringr::str_split(smiles,";"))
-#'   filtered_cids <- integer()
-#'
-#'   if(approach == 'pubchem_pug'){
-#'     for(i in 1:length(smiles_set)){
-#'       cids <- integer()
-#'       query_url <- paste0(PUBCHEM_PUG_URL,'compound/similarity/smiles/',smiles_set[i],'/JSON?Threshold=',manimoto_threshold,'&MaxRecords=',MaxRec,'&MaxSec=',MaxSec)
-#'       tcOut <- tryCatch(
-#'         {
-#'           #con1 <- query_url
-#'           async_query <- jsonlite::fromJSON(query_url)
-#'           Sys.sleep(10)
-#'           async_query_results <- jsonlite::fromJSON(paste0(PUBCHEM_PUG_URL,'compound/listkey/',async_query$Waiting$ListKey,'/cids/JSON'))
-#'           cids <- async_query_results$IdentifierList$CID
-#'           length(cids)
-#'         },
-#'         error = function(cond){
-#'           message(paste("URL does not seem to exist:", query_url))
-#'           return(NA)
-#'         },
-#'         warning = function(cond){
-#'           message(paste("URL caused a warning:", query_url))
-#'           return(NA)
-#'         }
-#'       )
-#'       if(!is.na(tcOut) && length(cids) > 0){
-#'         cids_subset <- match_cids_by_molecularweight(cids, mw)
-#'         if(length(cids_subset) > 0){
-#'           filtered_cids <- append(filtered_cids, cids_subset)
-#'         }
-#'       }
-#'     }
-#'   }
-#'   # if(approach == 'chemminer'){
-#'   #   ## ChemmineR as an alternative option
-#'   #   for(i in 1:length(smiles_set)){
-#'   #     try({
-#'   #       results <- ChemmineR::searchString(smiles_set[i])
-#'   #       num_results <- length(results)
-#'   #       if(num_results > MaxRec){
-#'   #         num_results <- MaxRec
-#'   #       }
-#'   #       for(m in 1:num_results){
-#'   #         cids <- append(cids, as.integer(unlist(datablock(results[m]))[paste0("CMP",m,".PUBCHEM_COMPOUND_CID")]))
-#'   #       }
-#'   #     })
-#'   #   }
-#'   #   if(length(cids) > 0){
-#'   #     filtered_cids <- match_cids_by_molecularweight(cids, mw)
-#'   #   }
-#'   # }
-#'   return(filtered_cids)
-#' }
-#'
-#'
 
 ### NCI DRUG DISPLAY LABELS
 
@@ -591,100 +263,6 @@ get_chembl_pubchem_compound_xref <- function(datestamp = '20220429',
 }
 
 
-#
-# get_chembl_compound_by_name <- function(name = NULL){
-#   df <- NULL
-#   if(!is.null(name)){
-#     query <-
-#       paste0("https://www.ebi.ac.uk/chembl/api/data/chembl_id_lookup/search?format=json&q=",
-#              tolower(stringr::str_replace_all(name," ","%20")))
-#     result <- jsonlite::fromJSON(query)
-#     if(length(result$chembl_id_lookups) > 0){
-#       if(nrow(result$chembl_id_lookups) >= 1){
-#         recs <- dplyr::filter(result$chembl_id_lookups,
-#                               entity_type == "COMPOUND")
-#         if(nrow(recs) == 1){
-#           df <- data.frame('name' = name,
-#                            'molecule_chembl_id' = recs$chembl_id,
-#                            stringsAsFactors = F)
-#           lgr::lgr$info(paste('Found',nrow(recs), 'records for',
-#                                   name,'-',sep=" "))
-#           return(df)
-#         }
-#       }
-#     }
-#   }
-#   return(df)
-# }
-
-### CHEMBL DRUG TARGETS
-
-# get_chembl_drug_targets <- function(datestamp = pharmamine_datestamp,
-#                                     chembl_release = chembl_db_release,
-#                                     path_data_raw = NULL){
-#
-#   uniprot_idmapping_url <-
-#     'ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping.dat.gz'
-#   uniprot_chembl_mapping_url <-
-#     "ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/chembl_uniprot_mapping.txt"
-#
-#   chembl_uniprot_mapping_fname <- file.path(path_data_raw, "chembl", paste0("chembl_uniprot_mapping",datestamp,".txt"))
-#   gene_info_fname <- file.path(path_data_raw, "Homo_sapiens.gene_info.gz")
-#   uniprot_id_mapping <- file.path(path_data_raw, "uniprot", "HUMAN_9606_idmapping.dat.gz")
-#
-#   if(!file.exists(chembl_uniprot_mapping_fname)){
-#     download.file(uniprot_chembl_mapping_url,
-#                   destfile = chembl_uniprot_mapping_fname)
-#   }
-#   chembl_drug_targets <- read.table(file = chembl_uniprot_mapping_fname, sep="\t",
-#                                     skip = 1, stringsAsFactors = F,quote = "")
-#   colnames(chembl_drug_targets) <- c('uniprot_acc','target_chembl_id','target_chembl_name','target_chembl_type')
-#   chembl_drug_targets <- dplyr::select(chembl_drug_targets, -target_chembl_name)
-#
-#   if(!file.exists(gene_info_fname)){
-#     download.file("ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz",
-#                   destfile = gene_info_fname, quiet=T)
-#   }
-#   gene_info_ncbi <- read.table(gzfile(gene_info_fname), sep="\t", stringsAsFactors = F,na.strings="-", skip=1, comment.char = "#", quote = "", fill=T)
-#   gene_info_ncbi <- gene_info_ncbi |> dplyr::filter(V1 == 9606)
-#   gene_info_ncbi <- dplyr::select(gene_info_ncbi, c(V2,V3,V9,V10))
-#   colnames(gene_info_ncbi) <- c('entrezgene','symbol','gene_name','gene_biotype')
-#   gene_info_ncbi$entrezgene <- as.character(gene_info_ncbi$entrezgene)
-#   if(nrow(gene_info_ncbi[!is.na(gene_info_ncbi$gene_biotype) & gene_info_ncbi$gene_biotype == 'protein-coding',])>0){
-#     gene_info_ncbi[!is.na(gene_info_ncbi$gene_biotype) & gene_info_ncbi$gene_biotype == 'protein-coding',]$gene_biotype <- 'protein_coding'
-#   }
-#
-#   if(!file.exists(uniprot_id_mapping)){
-#     download.file(uniprot_idmapping_url, destfile = uniprot_id_mapping)
-#   }
-#
-#   idmapping <- read.table(gzfile(uniprot_id_mapping),sep="\t",
-#                           header = F,quote = "", stringsAsFactors = F)
-#   idmapping_up_kb <- dplyr::filter(idmapping, V2 == 'UniProtKB-ID' | V2 == 'GeneID')
-#   colnames(idmapping_up_kb) <- c('uniprot_acc','type','name')
-#
-#   idmapping_up_id <- dplyr::filter(idmapping_up_kb, type == 'UniProtKB-ID')
-#   idmapping_up_id <- dplyr::rename(idmapping_up_id, uniprot_id = name) |> dplyr::select(uniprot_acc, uniprot_id) |> dplyr::distinct()
-#   idmapping_geneid <- dplyr::filter(idmapping_up_kb, type == 'GeneID')
-#   idmapping_geneid <- dplyr::rename(idmapping_geneid, entrezgene = name) |> dplyr::select(uniprot_acc, entrezgene) |> dplyr::distinct()
-#
-#   uniprot_acc_mapping <- dplyr::inner_join(idmapping_up_id, idmapping_geneid)
-#   uniprot_acc_mapping <- dplyr::left_join(uniprot_acc_mapping, gene_info_ncbi)
-#   uniprot_acc_mapping <- uniprot_acc_mapping |> dplyr::filter(!is.na(symbol) | !is.na(uniprot_id))
-#
-#   rm(idmapping_up_id)
-#   rm(idmapping_geneid)
-#
-#   chembl_drug_targets <- dplyr::left_join(chembl_drug_targets, uniprot_acc_mapping)
-#   chembl_drug_targets <- dplyr::filter(chembl_drug_targets, !is.na(uniprot_id)) |>
-#     dplyr::distinct() |>
-#     dplyr::rename(target_uniprot_acc = uniprot_acc, target_uniprot_id = uniprot_id)
-#
-#   rm(uniprot_acc_mapping)
-#   chembl_drug_targets$chembl_db_version <- chembl_release
-#   return(chembl_drug_targets)
-# }
-#
 
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
@@ -783,7 +361,7 @@ get_opentargets_cancer_drugs <-
                        by = c("drug_name","molecule_chembl_id"))) |>
     dplyr::mutate(drug_name_lc = tolower(drug_name))
 
-  targeted_cancer_compounds <- as.data.frame(
+  targeted_compounds <- as.data.frame(
     targeted_compounds |>
       dplyr::distinct() |>
       dplyr::group_by_at(dplyr::vars(-c(drug_clinical_id))) |>
@@ -796,28 +374,35 @@ get_opentargets_cancer_drugs <-
           collapse = ","),
         .groups = "drop") |>
       dplyr::ungroup() |>
-      dplyr::filter(cancer_drug == T &
-                      !is.na(target_symbol) &
+      dplyr::filter(!is.na(target_symbol) &
                       !is.na(target_ensembl_gene_id)) |>
       dplyr::mutate(drug_name_lc = tolower(drug_name))
   )
-
+  
+  
   ## adjust max ct phase
   drugs_with_max_phase_adj <- as.data.frame(
-    targeted_cancer_compounds |>
-    dplyr::filter(!is.na(drug_max_ct_phase) & !is.na(drug_max_phase_indication)) |>
+    targeted_compounds |>
+    dplyr::filter(!is.na(drug_max_ct_phase) & 
+                    !is.na(drug_max_phase_indication)) |>
     dplyr::group_by(drug_name, molecule_chembl_id) |>
     dplyr::summarise(drug_max_ct_phase = max(drug_max_phase_indication),
                      .groups = "drop")
   )
 
-  targeted_cancer_compounds <- as.data.frame(targeted_cancer_compounds |>
+  targeted_compounds <- as.data.frame(targeted_compounds |>
     dplyr::select(-drug_max_ct_phase) |>
-    dplyr::left_join(drugs_with_max_phase_adj, by = c("drug_name","molecule_chembl_id"))
+    dplyr::left_join(drugs_with_max_phase_adj, 
+                     by = c("drug_name","molecule_chembl_id"))
   )
-
-
+  
+  targeted_cancer_compounds <- targeted_compounds |>
+    dplyr::filter(cancer_drug == T)
+  targeted_noncancer_compounds <- targeted_compounds |>
+    dplyr::filter(cancer_drug == F)
+  
   return(list('targeted' = targeted_cancer_compounds,
+              'targeted_noncancer' <- targeted_noncancer_compounds,
               'untargeted' = untargeted_cancer_compounds))
 
 }
