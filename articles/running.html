@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">pharmaOncoX</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,16 +104,8 @@
 <p><code>drugs &lt;- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,  drug_target = c('BRAF'), drug_is_approved = T)</code></p>
 </li>
 <li>
-<p>Get BRAF-targeted drugs, list records per indication and drug synonym</p>
-<p><code>drugs &lt;- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,  drug_target = c('BRAF'))</code></p>
-</li>
-<li>
 <p>Get BRAF-targeted drugs, Open Targets Platform only, list per drug only</p>
 <p><code>drugs &lt;- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,  drug_target = c('BRAF'), source_opentargets_only = T, output_resolution = "drug" )</code></p>
-</li>
-<li>
-<p>Get BRAF-targeted drugs, Open Targets Platform only, list per drug only, show key annotations only</p>
-<p><code>drugs &lt;- pharmaOncoX::get_onco_drugs(cache_dir = LOCAL_CACHE_DIR, drug_is_targeted = T,  drug_target = c('BRAF'), source_opentargets_only = T, output_resolution = "drug")</code></p>
 </li>
 <li>
 <p>Get immune checkpoint inhibitors, list per drug-target entry</p>

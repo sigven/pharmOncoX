@@ -28,13 +28,16 @@
     <loc>https://sigven.github.io/pharmaOncoX/news/index.html</loc>
   </url>
   <url>
+    <loc>https://sigven.github.io/pharmaOncoX/reference/get_biomarkers.html</loc>
+  </url>
+  <url>
     <loc>https://sigven.github.io/pharmaOncoX/reference/get_drug_records.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/pharmaOncoX/reference/get_onco_drugs.html</loc>
+    <loc>https://sigven.github.io/pharmaOncoX/reference/get_on_off_label_drugs.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/pharmaOncoX/reference/get_targeted_drugs.html</loc>
+    <loc>https://sigven.github.io/pharmaOncoX/reference/get_onco_drugs.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/pharmaOncoX/reference/index.html</loc>
