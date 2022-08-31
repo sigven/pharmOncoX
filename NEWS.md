@@ -1,3 +1,7 @@
+# Version 0.9.2 (August 31st 2022)
+
+* Removed drug aliases that coincide with english words
+
 # Version 0.9.1 (August 30th 2022)
 
 * Added helper function to retrieve drug biomarkers

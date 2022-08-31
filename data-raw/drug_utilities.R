@@ -446,7 +446,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
                                              overwrite = overwrite)
 
     drug2chembl <-
-      read.table(file = file.path(path_data_raw,"dgidb","dgidb.202101.tsv"),
+      read.table(file = file.path(path_data_raw,"dgidb","dgidb.202202.tsv"),
                  header=T, quote="", comment.char="", sep="\t",
                  stringsAsFactors = F) |>
       dplyr::filter(nchar(drug_name) > 0) |>
@@ -931,7 +931,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
                     nci_drug_name,
                     nci_concept_synonym_all) |>
       dplyr::filter(!is.na(molecule_chembl_id)) |>
-      dplyr::mutate(nci_drug_name_lc = tolower(nci_drug_name)) |>
+      #dplyr::mutate(nci_drug_name_lc = tolower(nci_drug_name)) |>
       dplyr::distinct()
 
     ## NCI anticancer drugs (non-targeted) - lacking compound identifier (CHEMBL)
@@ -942,7 +942,21 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
                     nci_cd_name,
                     nci_drug_name,
                     nci_concept_synonym_all) |>
-      dplyr::mutate(nci_drug_name_lc = tolower(nci_drug_name)) |>
+      dplyr::filter(!stringr::str_detect(
+        nci_drug_name,
+        "(material|medication|medicine|medicinal|medical|^was |^agent |no therapy|-line therapy)"
+      )) |>
+      dplyr::filter(!stringr::str_detect(
+        tolower(nci_cd_name),
+        "(material|medication|medicine|medicinal|medical|^was |^agent |no therapy|-line therapy)"
+      )) |>
+      dplyr::mutate(num_words = stringr::str_count(
+        nci_drug_name, " ") + 1) |>
+      dplyr::filter(
+        !(num_words == 2 & 
+            stringr::str_detect(nci_drug_name, " agent")
+        )) |>
+      dplyr::select(-num_words) |>
       dplyr::distinct()
 
     saveRDS(nci_drugs, file = file.path(
@@ -1975,18 +1989,18 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
     dplyr::left_join(nci_antineo_all[['with_chembl_id']],
                      by = c("molecule_chembl_id")) |>
     dplyr::filter(!is.na(nci_drug_name)) |>
-    dplyr::select(-c(nci_drug_name_lc, drug_name_lc))
+    dplyr::select(-c(drug_name_lc, nci_drug_name))
 
   ## X-ref Open Targets and NCI by drug name
   ot_nci_matched[['targeted_by_name']] <- ot_drugs$targeted |>
     dplyr::left_join(
       dplyr::select(nci_antineo_all[['with_chembl_id']],
                     -molecule_chembl_id),
-                     by = c("drug_name_lc" = "nci_drug_name_lc")) |>
+                     by = c("drug_name_lc" = "nci_drug_name")) |>
     dplyr::anti_join(
       ot_nci_matched[['targeted_by_id']]) |>
-    dplyr::filter(!is.na(nci_drug_name)) |>
-    dplyr::select(-drug_name_lc)
+    dplyr::filter(!is.na(drug_name_lc)) |>
+    dplyr::select(-c(drug_name_lc))
 
 
   ## X-ref Open Targeets (no target) by molecule identifier
@@ -1994,17 +2008,17 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
     dplyr::left_join(nci_antineo_all[['with_chembl_id']],
                      by = c("molecule_chembl_id")) |>
     dplyr::filter(!is.na(nci_drug_name)) |>
-    dplyr::select(-c(nci_drug_name_lc, drug_name_lc))
+    dplyr::select(-c(drug_name_lc, nci_drug_name))
 
   ## X-ref Open Targeets (no target) by drug name
   ot_nci_matched[['untargeted_by_name']] <- ot_drugs$untargeted |>
     dplyr::left_join(
       dplyr::select(nci_antineo_all[['with_chembl_id']],
                     -molecule_chembl_id),
-      by = c("drug_name_lc" = "nci_drug_name_lc")) |>
+      by = c("drug_name_lc" = "nci_drug_name")) |>
     dplyr::anti_join(
       ot_nci_matched[['untargeted_by_id']]) |>
-    dplyr::filter(!is.na(nci_drug_name)) |>
+    dplyr::filter(!is.na(drug_name_lc)) |>
     dplyr::select(-drug_name_lc)
 
 
@@ -2015,7 +2029,7 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
     dplyr::anti_join(ot_nci_matched_all) |>
     dplyr::left_join(
       nci_antineo_all[['no_chembl_id']],
-      by = c("drug_name_lc" = "nci_drug_name_lc")) |>
+      by = c("drug_name_lc" = "nci_drug_name")) |>
     dplyr::select(-drug_name_lc)
 
   ot_drugs_all <- ot_nci_matched_all |>
@@ -2041,12 +2055,12 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
   nci_missing_1 <- nci_antineo_all$no_chembl_id |>
     dplyr::anti_join(ot_drugs_all,
                      by = "nci_cd_name") |>
-    dplyr::select(-nci_drug_name_lc)
+    dplyr::select(-nci_drug_name)
 
   nci_missing_2 <- nci_antineo_all$with_chembl_id |>
     dplyr::anti_join(ot_drugs_all,
                      by = "molecule_chembl_id") |>
-    dplyr::select(-nci_drug_name_lc)
+    dplyr::select(-nci_drug_name)
 
   nci_missing <- dplyr::bind_rows(
     nci_missing_1,
@@ -2563,7 +2577,7 @@ assign_drug_category <- function(drug_df = NULL,
 
 clean_final_drug_list <- function(drug_df = NULL){
 
-  oncopharmadb <- drug_df |>
+  pharmaoncox <- drug_df |>
     #dplyr::filter(nci_cd_name != "Lapatinib Ditosylate") |>
     dplyr::filter(nci_cd_name != "Abivertinib Maleate") |>
     dplyr::mutate(nci_cd_name = dplyr::if_else(
@@ -2601,7 +2615,7 @@ clean_final_drug_list <- function(drug_df = NULL){
 
 
   drug_action_types <- as.data.frame(
-    oncopharmadb |>
+    pharmaoncox |>
       dplyr::select(nci_cd_name, drug_action_type) |>
       dplyr::distinct() |>
       dplyr::group_by(nci_cd_name) |>
@@ -2610,8 +2624,8 @@ clean_final_drug_list <- function(drug_df = NULL){
       ))
   )
 
-  oncopharmadb$drug_action_type <- NULL
-  oncopharmadb <- oncopharmadb |>
+  pharmaoncox$drug_action_type <- NULL
+  pharmaoncox <- pharmaoncox |>
     dplyr::left_join(drug_action_types,
                      by = "nci_cd_name") |>
     dplyr::select(drug_name,
@@ -2625,34 +2639,33 @@ clean_final_drug_list <- function(drug_df = NULL){
 
 
   drug_max_ct_phase <- as.data.frame(
-    oncopharmadb |>
+    pharmaoncox |>
       dplyr::select(nci_cd_name, drug_max_ct_phase) |>
       dplyr::group_by(nci_cd_name) |>
       dplyr::summarise(drug_max_ct_phase = max(drug_max_ct_phase))
   )
 
-  oncopharmadb$drug_max_ct_phase <- NULL
+  pharmaoncox$drug_max_ct_phase <- NULL
 
   #tmp2 <- tmp |>
-  oncopharmadb <- oncopharmadb |>
+  pharmaoncox <- pharmaoncox |>
     dplyr::left_join(drug_max_ct_phase,
                      by = "nci_cd_name") |>
     #dplyr::filter(!is.na(cancer_drug)) |>
     dplyr::select(-c(drug_moa, cancer_drug)) |>
 
-    dplyr::rename(nci_concept_synonym = nci_drug_name) |>
+    #dplyr::rename(nci_concept_synonym = nci_drug_name) |>
     dplyr::mutate(nci_concept_synonym2 = dplyr::if_else(
       is.na(nci_concept_synonym_all) & !is.na(drug_synonyms),
       as.character(tolower(drug_synonyms)),
       as.character(tolower(nci_concept_synonym_all))
     )) |>
     dplyr::mutate(nci_concept_synonym_all2 = nci_concept_synonym_all) |>
-    dplyr::rename(nci_concept_synonym_old = nci_concept_synonym) |>
+    #dplyr::rename(nci_concept_synonym_old = nci_concept_synonym) |>
     tidyr::separate_rows(nci_concept_synonym2,
                          sep="\\|") |>
     dplyr::rename(nci_concept_synonym = nci_concept_synonym2) |>
-    dplyr::select(-c(nci_concept_synonym_old,
-                     nci_concept_synonym_all2,
+    dplyr::select(-c(nci_concept_synonym_all2,
                      drug_synonyms,
                      drug_tradenames,
                      drug_description)) |>
@@ -2688,11 +2701,11 @@ clean_final_drug_list <- function(drug_df = NULL){
   ## Simplify records with only "cancer" indications, mapping them to a unique
   ## EFO/CUI cross-ref, avoiding similar records with "neoplasm", "carcinoma" etc.
 
-  oncopharmaDB_cancer_no_indication <- oncopharmadb |>
+  pharmaoncox_cancer_no_indication <- pharmaoncox |>
     dplyr::filter(is.na(disease_efo_id))
 
-  oncopharmaDB_cancer_NOS <- as.data.frame(
-    oncopharmadb |>
+  pharmaoncox_cancer_NOS <- as.data.frame(
+    pharmaoncox |>
       dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id)) |>
       dplyr::mutate(disease_efo_id = "EFO:0000311",
                     disease_efo_label = "cancer",
@@ -2707,13 +2720,13 @@ clean_final_drug_list <- function(drug_df = NULL){
       dplyr::distinct()
   )
 
-  oncopharmaDB_cancer_specific <- oncopharmadb |>
+  pharmaoncox_cancer_specific <- pharmaoncox |>
     dplyr::filter(!is.na(primary_site))
 
 
-  oncopharmadb <- oncopharmaDB_cancer_no_indication |>
-    dplyr::bind_rows(oncopharmaDB_cancer_specific) |>
-    dplyr::bind_rows(oncopharmaDB_cancer_NOS) |>
+  pharmaoncox <- pharmaoncox_cancer_no_indication |>
+    dplyr::bind_rows(pharmaoncox_cancer_specific) |>
+    dplyr::bind_rows(pharmaoncox_cancer_NOS) |>
     dplyr::arrange(nci_cd_name) |>
     dplyr::mutate(nci_cd_name = dplyr::if_else(
       stringr::str_detect(nci_cd_name,";-"),
@@ -2723,12 +2736,12 @@ clean_final_drug_list <- function(drug_df = NULL){
     dplyr::filter(!is.na(nci_cd_name))
 
 
-  oncopharmadb$drug_name <- NULL
-  oncopharmadb$drug_name <- oncopharmadb$nci_cd_name
-  oncopharmadb$nci_cd_name <- NULL
-  oncopharmadb$nci_concept_synonym <- NULL
+  pharmaoncox$drug_name <- NULL
+  pharmaoncox$drug_name <- pharmaoncox$nci_cd_name
+  pharmaoncox$nci_cd_name <- NULL
+  pharmaoncox$nci_concept_synonym <- NULL
 
-  blackbox_warnings <- as.data.frame(oncopharmadb |>
+  blackbox_warnings <- as.data.frame(pharmaoncox |>
     dplyr::select(drug_name, drug_blackbox_warning) |>
     dplyr::distinct() |>
       dplyr::group_by(drug_name) |>
@@ -2736,7 +2749,7 @@ clean_final_drug_list <- function(drug_df = NULL){
       unique(drug_blackbox_warning), collapse=","))
   )
 
-  nci_t_map <- as.data.frame(oncopharmadb |>
+  nci_t_map <- as.data.frame(pharmaoncox |>
     dplyr::select(drug_name, nci_t, nci_concept_definition) |>
     dplyr::distinct() |>
     dplyr::group_by(drug_name) |>
@@ -2749,29 +2762,29 @@ clean_final_drug_list <- function(drug_df = NULL){
     ), .groups = "drop"
   )
 
-  oncopharmadb$nci_t <- NULL
-  oncopharmadb$nci_concept_definition <- NULL
-  oncopharmadb$drug_blackbox_warning <- NULL
-  oncopharmadb2 <- oncopharmadb |>
+  pharmaoncox$nci_t <- NULL
+  pharmaoncox$nci_concept_definition <- NULL
+  pharmaoncox$drug_blackbox_warning <- NULL
+  pharmaoncox2 <- pharmaoncox |>
     dplyr::left_join(nci_t_map) |>
     dplyr::left_join(blackbox_warnings) |>
     dplyr::distinct()
 
   drug_maps <- list()
-  drug_maps[['id2name']] <- oncopharmadb2 |>
+  drug_maps[['id2name']] <- pharmaoncox2 |>
     dplyr::select(drug_name) |>
     dplyr::distinct() |>
     dplyr::mutate(drug_id = dplyr::row_number())
 
-  if(nrow(drug_maps[['id2name']]) != length(unique(oncopharmadb2$drug_name))){
+  if(nrow(drug_maps[['id2name']]) != length(unique(pharmaoncox2$drug_name))){
     lgr::lgr$fatal("Ambiguous drug names")
     return(0)
   }
 
-  oncopharmadb2 <- oncopharmadb2 |>
+  pharmaoncox2 <- pharmaoncox2 |>
     dplyr::left_join(drug_maps[['id2name']], by = "drug_name")
 
-  drug_maps[['id2target']] <- oncopharmadb2 |>
+  drug_maps[['id2target']] <- pharmaoncox2 |>
     dplyr::select(drug_id,
                   target_symbol,
                   target_entrezgene,
@@ -2780,7 +2793,7 @@ clean_final_drug_list <- function(drug_df = NULL){
                   target_type) |>
     dplyr::distinct()
 
-  drug_maps[['id2indication']] <- oncopharmadb2 |>
+  drug_maps[['id2indication']] <- pharmaoncox2 |>
     dplyr::select(drug_id,
                   drug_max_phase_indication,
                   drug_approved_indication,
@@ -2795,12 +2808,12 @@ clean_final_drug_list <- function(drug_df = NULL){
                   primary_site) |>
     dplyr::distinct()
 
-  drug_maps[['id2synonym']] <- oncopharmadb2 |>
+  drug_maps[['id2synonym']] <- pharmaoncox2 |>
     dplyr::select(drug_id,
                   nci_concept_synonym_all) |>
     dplyr::distinct()
 
-  drug_maps[['id2basic']] <- oncopharmadb2 |>
+  drug_maps[['id2basic']] <- pharmaoncox2 |>
     dplyr::select(drug_id,
                   molecule_chembl_id,
                   drug_type,
@@ -2957,7 +2970,6 @@ expand_drug_aliases <- function(drug_index_map = NULL,
   compound_synonyms <-
     dplyr::bind_rows(antineopharma_synonyms, antineopharma_synonyms_pubchem) |>
     dplyr::left_join(drug_index_map[['id2name']], by = "drug_id") |>
-
     dplyr::distinct() |>
     dplyr::inner_join(unambiguous_drug_aliases, by = "alias") |>
     dplyr::distinct()  |>
@@ -2975,7 +2987,37 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     ) |>
     dplyr::arrange(drug_id) |>
     dplyr::select(-c(molecule_chembl_id, drug_name)) |>
+    dplyr::distinct() |>
+    dplyr::mutate(
+      alias_lc = tolower(alias)) |> 
+    
+    ## remove aliases that co-incide with ordinary
+    ## english words
+    dplyr::left_join(
+      words::words, by = c("alias_lc" = "word")) |> 
+    dplyr::filter(
+      is.na(word_length) |
+      (!is.na(word_length) &
+        (word_length <= 6 |
+           
+           ## do not rule out english words that 
+           (word_length > 6 & 
+          !stringr::str_detect(
+            alias_lc,"(one|i(n|l)(e|s)?|ol|id(e)?|oid|trel|opa|phen|tal|rapy|lite(s)?|tomy|ase|ole|pam|fan|fen|yl|ane|ose|ium|(ph|z)ene|yde|lan|tam|fam|xal|strogen|gen|nal|xan|ene|gon|ram|glycan|prim|vir|yte(s)?|ate(s)?)$")))
+       )
+      ) |>
+    dplyr::filter(alias_lc != "medium" & 
+                    alias_lc != "serum" &
+                    alias_lc != "bypass" &
+                    alias_lc != "molecule" &
+                    alias_lc != "feces" &
+                    alias_lc != "fiber" &
+                    alias_lc != "transplantation" &
+                    alias_lc != "hydrochloride") |>
+    dplyr::select(-c(word_length,alias_lc)) |>
     dplyr::distinct()
+  
+  return(compound_synonyms)
 
 
 }

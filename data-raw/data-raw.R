@@ -95,7 +95,7 @@ if(!file.exists(antineo_agents_local)){
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -208,62 +208,6 @@ biomarkers_curated[['metadata']] <- metadata$biomarkers[1:4,]
 rm(biomarkers_all)
 rm(civic_clinical_evidence)
 rm(civic_variant_summary)
-
-# compound_biomarkers[['version']] <- list()
-# compound_biomarkers[['version']][['civic']] <- package_datestamp
-# compound_biomarkers[['version']][['cgi']] <- '20180117'
-# compound_biomarkers[['version']][['pmkb']] <- '20200405'
-# compound_biomarkers[['version']][['mitelman']] <- '20220606'
-# compound_biomarkers[['version']][['prism_depmap']] <- '19Q4_21Q4'
-
-# targets <- list()
-# targets[['druggable']] <- as.data.frame(
-#   drug_index_map$id2name |>
-#   dplyr::left_join(drug_index_map$id2basic) |>
-#   dplyr::left_join(drug_index_map$id2target) |>
-#   dplyr::filter(is_salt == F & is_adc == F) |>
-#   dplyr::filter(!is.na(target_symbol)) |>
-#   dplyr::select(target_symbol,
-#                 target_entrezgene,
-#                 target_genename,
-#                 drug_name,
-#                 molecule_chembl_id) |>
-#   dplyr::rename(symbol = target_symbol,
-#                 entrezgene = target_entrezgene,
-#                 genename = target_genename) |>
-#   dplyr::group_by(symbol, genename, entrezgene) |>
-#   dplyr::summarise(drug_name = paste(
-#     sort(unique(drug_name)), collapse="|"),
-#     molecule_chembl_id = paste(
-#       sort(unique(molecule_chembl_id)), collapse="|"),
-#     .groups = "drop") |>
-#   dplyr::distinct()
-# )
-#
-# targets[['actionable']] <- as.data.frame(
-#   biomarkers_all |>
-#     dplyr::filter(biomarker_source_db == "civic" |
-#                     biomarker_source_db == "cgi" |
-#                     biomarker_source_db == "pmkb") |>
-#     dplyr::mutate(source_db = toupper(biomarker_source_db)) |>
-#     dplyr::group_by(symbol, source_db) |>
-#     dplyr::summarise(
-#       phenotypes = paste(
-#         sort(unique(cancer_type)), collapse="|"),
-#       clinical_significance = paste(
-#         sort(unique(clinical_significance)), collapse="|"),
-#       .groups = "drop") |>
-#     dplyr::select(symbol, phenotypes,
-#                   clinical_significance, source_db) |>
-#     dplyr::left_join(dplyr::select(
-#       gene_info, symbol,
-#       genename, target_entrezgene), by = "symbol") |>
-#     dplyr::rename(entrezgene = target_entrezgene) |>
-#     dplyr::select(symbol,
-#                   genename, entrezgene,
-#                   dplyr::everything()) |>
-#     dplyr::distinct()
-# )
 
 ccle_drugs <- readr::read_csv(
   file="data-raw/biomarkers/ccle_depmap/primary-screen-replicate-treatment-info.csv.gz",
