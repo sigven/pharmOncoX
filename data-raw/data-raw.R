@@ -404,35 +404,6 @@ for(elem in c('biomarkers_curated',
     dplyr::bind_rows(google_rec_df)
   
 }
-# 
-# db_id_ref <- dplyr::bind_rows(
-#   dplyr::select(as.data.frame(gd_records$biomarkers_curated), name, id),
-#   dplyr::select(as.data.frame(gd_records$biomarkers_invitro), name, id),
-#   dplyr::select(as.data.frame(gd_records$drug_map_name), name, id),
-#   dplyr::select(as.data.frame(gd_records$drug_map_target), name, id),
-#   dplyr::select(as.data.frame(gd_records$drug_map_indication), name, id),
-#   dplyr::select(as.data.frame(gd_records$drug_map_basic), name, id),
-#   dplyr::select(as.data.frame(gd_records$drug_map_alias), name, id)) |>
-#   dplyr::rename(gid = id,
-#                 filename = name) |>
-#    dplyr::mutate(name =
-#      stringr::str_replace(filename,"_v\\S+$",""),
-#      ) |>
-#   dplyr::mutate(date = Sys.Date(),
-#                 pVersion = version_minor_bumped)
-# db_id_ref$md5Checksum <- NA
-# 
-# for(elem in c('biomarkers_curated',
-#               'biomarkers_invitro',
-#               'drug_map_name',
-#               'drug_map_target',
-#               'drug_map_indication',
-#               'drug_map_basic',
-#               'drug_map_alias')){
-# 
-#   db_id_ref[db_id_ref$name == elem,]$md5Checksum <-
-#     gd_records[[elem]]$drive_resource[[1]]$md5Checksum
-# }
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
 
