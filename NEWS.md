@@ -1,4 +1,4 @@
-# Version 0.9.2 (August 31st 2022)
+# Version 0.9.3 (September 1st 2022)
 
 * Removed drug aliases that coincide with english words
 

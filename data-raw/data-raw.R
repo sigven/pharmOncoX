@@ -341,6 +341,8 @@ version_minor_bumped <- paste0(
   ".0")
 
 gd_records <- list()
+db_id_ref <- data.frame()
+
 db <- list()
 db[['biomarkers_curated']] <- biomarkers_curated
 db[['biomarkers_invitro']] <- biomarkers_invitro
@@ -365,47 +367,72 @@ for(elem in c('biomarkers_curated',
               'drug_map_basic',
               'drug_map_alias')){
 
-  if(elem != "biomarkers_curated" & elem != "biomarkers_invitro"){
+  if(elem != "biomarkers_curated" & 
+     elem != "biomarkers_invitro"){
     db[[elem]][['metadata']] <- metadata$compounds
   }
-  saveRDS(db[[elem]],
-          file=paste0("data-raw/gd_local/",elem,"_v", version_minor_bumped,".rds"))
+  
+  local_rds_fpath <- file.path(
+    "data-raw", "gd_local", 
+    paste0(elem,"_v", version_minor_bumped, ".rds"))
+  
+  saveRDS(
+    db[[elem]],
+          file = local_rds_fpath)
 
   (gd_records[[elem]] <- googledrive::drive_upload(
-    paste0("data-raw/gd_local/", elem, "_v", version_minor_bumped,".rds"),
+    local_rds_fpath,
     paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
   ))
-
+  
+  google_rec_df <-
+    dplyr::select(
+      as.data.frame(gd_records[[elem]]), name, id) |>
+    dplyr::rename(
+      gid = id,
+      filename = name) |>
+    dplyr::mutate(
+      name =
+        stringr::str_replace(filename,"_v\\S+$",""),
+      date = as.character(Sys.Date()),
+      pVersion = version_minor_bumped) |>
+    dplyr::mutate(
+      md5Checksum =
+        gd_records[[elem]]$drive_resource[[1]]$md5Checksum)
+  
+  db_id_ref <- db_id_ref |>
+    dplyr::bind_rows(google_rec_df)
+  
 }
-
-db_id_ref <- dplyr::bind_rows(
-  dplyr::select(as.data.frame(gd_records$biomarkers_curated), name, id),
-  dplyr::select(as.data.frame(gd_records$biomarkers_invitro), name, id),
-  dplyr::select(as.data.frame(gd_records$drug_map_name), name, id),
-  dplyr::select(as.data.frame(gd_records$drug_map_target), name, id),
-  dplyr::select(as.data.frame(gd_records$drug_map_indication), name, id),
-  dplyr::select(as.data.frame(gd_records$drug_map_basic), name, id),
-  dplyr::select(as.data.frame(gd_records$drug_map_alias), name, id)) |>
-  dplyr::rename(gid = id,
-                filename = name) |>
-   dplyr::mutate(name =
-     stringr::str_replace(filename,"_v\\S+$",""),
-     ) |>
-  dplyr::mutate(date = Sys.Date(),
-                pVersion = version_minor_bumped)
-db_id_ref$md5Checksum <- NA
-
-for(elem in c('biomarkers_curated',
-              'biomarkers_invitro',
-              'drug_map_name',
-              'drug_map_target',
-              'drug_map_indication',
-              'drug_map_basic',
-              'drug_map_alias')){
-
-  db_id_ref[db_id_ref$name == elem,]$md5Checksum <-
-    gd_records[[elem]]$drive_resource[[1]]$md5Checksum
-}
+# 
+# db_id_ref <- dplyr::bind_rows(
+#   dplyr::select(as.data.frame(gd_records$biomarkers_curated), name, id),
+#   dplyr::select(as.data.frame(gd_records$biomarkers_invitro), name, id),
+#   dplyr::select(as.data.frame(gd_records$drug_map_name), name, id),
+#   dplyr::select(as.data.frame(gd_records$drug_map_target), name, id),
+#   dplyr::select(as.data.frame(gd_records$drug_map_indication), name, id),
+#   dplyr::select(as.data.frame(gd_records$drug_map_basic), name, id),
+#   dplyr::select(as.data.frame(gd_records$drug_map_alias), name, id)) |>
+#   dplyr::rename(gid = id,
+#                 filename = name) |>
+#    dplyr::mutate(name =
+#      stringr::str_replace(filename,"_v\\S+$",""),
+#      ) |>
+#   dplyr::mutate(date = Sys.Date(),
+#                 pVersion = version_minor_bumped)
+# db_id_ref$md5Checksum <- NA
+# 
+# for(elem in c('biomarkers_curated',
+#               'biomarkers_invitro',
+#               'drug_map_name',
+#               'drug_map_target',
+#               'drug_map_indication',
+#               'drug_map_basic',
+#               'drug_map_alias')){
+# 
+#   db_id_ref[db_id_ref$name == elem,]$md5Checksum <-
+#     gd_records[[elem]]$drive_resource[[1]]$md5Checksum
+# }
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
 

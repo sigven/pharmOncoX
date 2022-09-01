@@ -773,7 +773,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
           dplyr::select(nci_cd_name,
                         molecule_chembl_id)
 
-        lgr::lgr$info("Found ", nrow(hits), " ChEMBL identifiers")
+        lgr::lgr$info(paste0("Found ", nrow(hits), " ChEMBL identifiers"))
 
         nci_compounds_chembl_match <- nci_compounds_chembl_match |>
           dplyr::bind_rows(hits)
@@ -950,11 +950,14 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
         tolower(nci_cd_name),
         "(material|medication|medicine|medicinal|medical|^was |^agent |no therapy|-line therapy)"
       )) |>
+      
+      ## remove general drug terms ("XX Agent" etc)
       dplyr::mutate(num_words = stringr::str_count(
-        nci_drug_name, " ") + 1) |>
+        nci_cd_name, " ") + 1) |>
       dplyr::filter(
-        !(num_words == 2 & 
-            stringr::str_detect(nci_drug_name, " agent")
+        !(num_words <= 4 & 
+            stringr::str_detect(tolower(nci_cd_name), " agent") &
+            !stringr::str_detect(nci_cd_name, "[0-9]{1,}")
         )) |>
       dplyr::select(-num_words) |>
       dplyr::distinct()
@@ -1020,169 +1023,6 @@ get_compound_properties <- function(molecule_chembl_id = NULL,
 
 }
 
-# get_uniprot_ensembl_map <-
-#   function(path_data_raw = NULL,
-#            uniprot_release = "2021_03") {
-#
-#   ## get NCBI gene info (gene symbols, names, and entrez gene identifiers)
-#   gene_info <- get_gene_info_ncbi(path_data_raw = path_data_raw,
-#                                   update = F) |>
-#     dplyr::rename(target_ensembl_gene_id = ensembl_gene_id)
-#
-#   ## read uniprot ID mapping
-#   idmapping <- read.table(gzfile(paste0(path_data_raw, '/uniprot/',
-#                                         uniprot_release, '/HUMAN_9606_idmapping.dat.gz')),
-#                           sep = "\t", header = F, quote = "", stringsAsFactors = F) |>
-#     dplyr::filter(V2 == 'ChEMBL' | V2 == 'UniProtKB-ID' |
-#                     V2 == 'Ensembl' | V2 == 'GeneID' |
-#                     V2 == 'Gene_Name') |>
-#     magrittr::set_colnames(c('acc', 'type', 'name')) |>
-#     dplyr::mutate(acc = stringr::str_replace(acc, "-[0-9]{1,}", ""))
-#
-#   mappings <- list()
-#   for (m in c('ChEMBL', 'UniProtKB-ID', 'GeneID', 'Ensembl', 'Gene_Name')) {
-#     mappings[[m]] <- dplyr::filter(idmapping, type == m) |>
-#       dplyr::select(acc, name) |>
-#       dplyr::distinct()
-#
-#     if(m == 'ChEMBL') {
-#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(target_chembl_id = name)
-#     }
-#     if(m == 'Ensembl') {
-#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(target_ensembl_gene_id = name)
-#     }
-#     if(m == 'GeneID') {
-#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(entrezgene = name)
-#     }
-#     if(m == 'UniProtKB-ID') {
-#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(uniprot_id = name)
-#     }
-#     if(m == 'Gene_Name') {
-#       mappings[[m]] <- mappings[[m]] |> dplyr::rename(symbol = name)
-#     }
-#   }
-#
-#   mappings[['Ensembl']] <- mappings[['Ensembl']] |>
-#     dplyr::left_join(mappings[['GeneID']], by = "acc") |>
-#     dplyr::left_join(mappings[['UniProtKB-ID']], by = "acc") |>
-#     dplyr::left_join(mappings[['ChEMBL']], by = "acc") |>
-#     dplyr::left_join(mappings[['Gene_Name']], by = "acc") |>
-#     dplyr::select(-acc) |>
-#     dplyr::distinct() |>
-#     dplyr::mutate(entrezgene = as.integer(entrezgene)) |>
-#     dplyr::inner_join(dplyr::select(gene_info, entrezgene, symbol, target_ensembl_gene_id),
-#                       by = c("target_ensembl_gene_id", "entrezgene", "symbol"))
-#   df <- mappings[['Ensembl']]
-#   return(df)
-# }
-#
-#
-# get_gene_info_ncbi <- function(path_data_raw = NULL,
-#                                update = T){
-#
-#   invisible(assertthat::assert_that(
-#     update == T | update == F,
-#     msg = "'update' is not of type logical (TRUE/FALSE)"))
-#   invisible(assertthat::assert_that(
-#     dir.exists(path_data_raw),
-#     msg = paste0("Directory '",path_data_raw,"' does not exist")))
-#
-#   lgr::lgr$info("Retrieving gene_info from NCBI/Entrez")
-#   gene_info_fname <- file.path(path_data_raw,
-#                                "gene_info",
-#                                "Homo_sapiens.gene_info.gz")
-#   if(update == F){
-#     invisible(assertthat::assert_that(
-#       file.exists(gene_info_fname),
-#       msg = paste0("File ",gene_info_fname,
-#                    " does not exist")))
-#   }
-#
-#   if(!file.exists(gene_info_fname) | update == T){
-#     remote_url <- "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz"
-#     if(RCurl::url.exists(remote_url)){
-#       download.file(remote_url, destfile = gene_info_fname, quiet=T)
-#     }else{
-#       lgr::lgr$info(paste0("Cannot update gene_info - download not available: ",
-#                                remote_url))
-#     }
-#   }
-#   gene_info <- read.table(
-#     gzfile(gene_info_fname),
-#     sep = "\t", stringsAsFactors = F,na.strings = "-",
-#     skip = 1, comment.char = "#", quote = "", fill = T) |>
-#     dplyr::filter(V1 == 9606) |>
-#     dplyr::select(c(V2, V3, V5, V9, V6, V10, V11)) |>
-#     dplyr::rename(entrezgene = V2, synonyms = V5,
-#                   symbol = V3, name = V9,
-#                   gene_biotype = V10, symbol_entrez = V11) |>
-#     dplyr::mutate(ensembl_gene_id = stringr::str_replace(
-#       stringr::str_match(V6,"Ensembl:ENSG[0-9]{1,}"), "Ensembl:", "")) |>
-#     dplyr::mutate(hgnc_id = stringr::str_replace(
-#       stringr::str_match(V6,"HGNC:HGNC:[0-9]{1,}"), "HGNC:HGNC:", "")) |>
-#     dplyr::select(-V6) |>
-#     dplyr::mutate(symbol_entrez = dplyr::if_else(
-#       is.na(symbol_entrez) | symbol_entrez == "-",
-#       symbol, as.character(symbol_entrez))) |>
-#     dplyr::mutate(gene_biotype = dplyr::if_else(
-#       gene_biotype ==  "protin-coding",
-#       "protein_coding", as.character(gene_biotype))) |>
-#     dplyr::filter(nchar(symbol_entrez) > 0)
-#
-#   ### for genes annotated with the same ensembl gene ids, ignore this annotation (set to NA)
-#   ensgene_id_count <- as.data.frame(
-#     dplyr::filter(gene_info, !is.na(ensembl_gene_id)) |>
-#       dplyr::group_by(ensembl_gene_id) |>
-#       dplyr::summarise(n = dplyr::n(), .groups = "drop")
-#   )
-#
-#   gene_info <- gene_info |>
-#     dplyr::left_join(ensgene_id_count,by=c("ensembl_gene_id")) |>
-#     dplyr::mutate(ensembl_gene_id = dplyr::if_else(
-#       !is.na(n) & n > 1,
-#       as.character(NA),
-#       as.character(ensembl_gene_id))) |>
-#     dplyr::select(-n) |>
-#     ## TEC
-#     dplyr::filter(entrezgene != 100124696) |>
-#     ## HBD
-#     dplyr::filter(entrezgene != 100187828) |>
-#     ## MMD2
-#     dplyr::filter(entrezgene != 100505381) |>
-#     ## MEMO1
-#     dplyr::filter(entrezgene != 7795)
-#
-#
-#   return(gene_info)
-#
-# }
-
-
-# dm_data_dir <-
-#   "/Users/sigven/project_data/package__oncoPharmaDB/oncoPharmaDB/data-raw/dailymed/prescription"
-
-# test_drugs <-
-#   c(paste0(dm_data_dir,"/2021/1843c04f-c7f4-44a3-a8be-7b346e015616.xml") #olaparib
-    # paste0(dm_data_dir,"/2020/9b009bb2-02c2-d844-e053-2a95a90a242c.xml"),#mitoxantrone
-    # paste0(dm_data_dir,"/2021/2fbaadf6-c86c-48bb-bbba-803377841733.xml"), #ipilimumab
-    # paste0(dm_data_dir,"/2021/226c861d-4f85-487e-a69d-e2a070ca65e0.xml"), #encorafenib
-    # paste0(dm_data_dir,"/2021/bd6b1fd2-24b4-4204-ba3d-fd90a6fbc457.xml"), #nivolumab
-    # paste0(dm_data_dir,"/2021/37fc5f22-5832-4293-8b7f-d316e0166c1e.xml"), #lenvatinib
-    # paste0(dm_data_dir,"/2021/9ab5f41c-5fee-47a5-ab6d-12852c3eeff3.xml"), #sunitinib
-    # paste0(dm_data_dir,"/2020/98f607d6-12a5-41e9-9003-dbfb500b3c11.xml"), #pazopanib
-    # paste0(dm_data_dir,"/2021//5294834e-e905-4b80-9d4a-120005ef29f7.xml"), #crizotinib
-    # paste0(dm_data_dir,"/2021/68805c84-fc83-4bc6-9311-2fec065cc3b8.xml"), #trastuzumab
-    # paste0(dm_data_dir,"/2021/ab6f3cb3-34a8-4492-a5d7-fb6b055a2d6b.xml") #erlotinib
- # )
-
-
-# all_drug_indications <- data.frame()
-# for(f in test_drugs){
-#   drug_indications <- get_drug_indications_dm(xml_fname = f,
-#                                               cancer_drug_names = cancer_drug_names)
-#   all_drug_indications <-
-#     dplyr::bind_rows(all_drug_indications, drug_indications)
-# }
 
 # get_dailymed_drug_indications <- function(update = F,
 #                                           path_data_raw = NULL){
@@ -2067,11 +1907,7 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
     nci_missing_2) |>
     dplyr::distinct() |>
     dplyr::mutate(opentargets = FALSE)
-    # dplyr::mutate(nci_version = nci_db_release,
-    #               chembl_version = chembl_db_release,
-    #               drug_name = toupper(nci_cd_name),
-    #               opentargets_version = NA)
-
+  
   all_cancer_drugs <- ot_drugs_all |>
     dplyr::bind_rows(nci_missing) |>
     dplyr::distinct()
@@ -2997,21 +2833,22 @@ expand_drug_aliases <- function(drug_index_map = NULL,
       words::words, by = c("alias_lc" = "word")) |> 
     dplyr::filter(
       is.na(word_length) |
-      (!is.na(word_length) &
-        (word_length <= 6 |
-           
-           ## do not rule out english words that 
-           (word_length > 6 & 
-          !stringr::str_detect(
-            alias_lc,"(one|i(n|l)(e|s)?|ol|id(e)?|oid|trel|opa|phen|tal|rapy|lite(s)?|tomy|ase|ole|pam|fan|fen|yl|ane|ose|ium|(ph|z)ene|yde|lan|tam|fam|xal|strogen|gen|nal|xan|ene|gon|ram|glycan|prim|vir|yte(s)?|ate(s)?)$")))
-       )
-      ) |>
+        (!is.na(word_length) &
+           word_length > 6 & 
+           !stringr::str_detect(
+             alias_lc,"(one|i(n|l)(e|s)?|ol|id(e)?|oid|trel|opa|phen|xel|tal|rapy|lite(s)?|tomy|ase|ole|pam|fan|fen|yl|ane|ose|ium|(ph|z)ene|yde|lan|tam|fam|xal|strogen|gen|nal|xan|ene|gon|ram|glycan|prim|vir|yte(s)?|ate(s)?)$"
+           )
+        )
+  ) |>
     dplyr::filter(alias_lc != "medium" & 
                     alias_lc != "serum" &
                     alias_lc != "bypass" &
                     alias_lc != "molecule" &
                     alias_lc != "feces" &
                     alias_lc != "fiber" &
+                    alias_lc != "start" &
+                    alias_lc != "other" &
+                    alias_lc != "freeze" &
                     alias_lc != "transplantation" &
                     alias_lc != "hydrochloride") |>
     dplyr::select(-c(word_length,alias_lc)) |>

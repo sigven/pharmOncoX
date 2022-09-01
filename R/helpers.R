@@ -408,7 +408,7 @@ get_biomarkers <- function(cache_dir = NA,
     if(file.exists(fname_local) & force_download == F){
       biomarker_datasets[[elem]] <- readRDS(fname_local)
       biomarker_datasets[[elem]][['fpath']] <- fname_local
-      if(!is.null(drug_datasets[[elem]][['records']]) & 
+      if(!is.null(biomarker_datasets[[elem]][['records']]) & 
          !is.null(biomarker_datasets[[elem]][['metadata']])){
         lgr::lgr$info(paste0(
           "Reading from cache_dir = '", cache_dir, "', argument force_download = F"))
