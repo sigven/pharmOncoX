@@ -738,7 +738,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     lgr::lgr$info("Mapping ChEMBL identifiers for NCI compounds")
     i <- 1
     for(f in pubchem_synonym_files){
-      lgr::lgr$info("Mapping iteration..", i)
+      lgr::lgr$info(paste0("Mapping iteration..", i))
       synonym_data <- as.data.frame(readr::read_tsv(
         f, col_names = c('pubchem_cid','alias'),
         col_types = "dc",
@@ -1956,11 +1956,11 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
 
   salt_forms <- all_drugs |>
     dplyr::filter(stringr::str_detect(
-      tolower(nci_cd_name), " (maleate|tosylate|dimaleate|succinate|meglumine|hydrobromide|sulfate|ditosylate|fumarate|dimesylate|lactate|potassium|dihydrochloride|anhydrous|hydrochloride|chloride|acetate|disodium|hydrochloride monohydrate|sodium|phosphate|dimeglumine|diphosphate|camsylate|s-malate|citrate|mesylate|acetate|calcium)$")) |>
+      tolower(nci_cd_name), " (maleate|tosylate|dimaleate|succinate|meglumine|hydrobromide|sulfate|ditosylate|fumarate|dimesylate|lactate|potassium|dihydrochloride|anhydrous|hydrochloride|chloride|acetate|disodium|hydrochloride monohydrate|sodium|phosphate|dimeglumine|diphosphate|camsylate|s-malate|citrate|mesylate|acetate|calcium|sodium phosphate)$")) |>
     dplyr::filter(!is.na(opentargets_version)) |>
     dplyr::mutate(tradename = stringr::str_replace(
       nci_cd_name,
-      " ((M|m)aleate|(A|a)nhydrous|(T|t)osylate|(D|d)imesylate|(D|d)imeglumine|(S|s)uccinate|(M|m)eglumine|(H|h)ydrobromide|(S|s)ulfate|(F|f)umarate|(D|d)imaleate|(D|d)itosylate|(L|l)actate|(P|p)otassium|(H|h)ydrochloride (M|m)onohydrate|(D|d)ihydrochloride|(H|h)ydrochloride|(S|s)-malate|(D|d)isodium|(C|c)amsylate|(C|c)hloride|(A|a)cetate|(S|s)odium|(P|p)hosphate|(D|d)iphosphate|(C|c)itrate|(M|m)esylate|(A|a)cetate|(C|c)alcium)$", "")) |>
+      " ((M|m)aleate|(A|a)nhydrous|(T|t)osylate|(D|d)imesylate|(D|d)imeglumine|(S|s)uccinate|(M|m)eglumine|(H|h)ydrobromide|(S|s)ulfate|(F|f)umarate|(D|d)imaleate|(D|d)itosylate|(L|l)actate|(P|p)otassium|(H|h)ydrochloride (M|m)onohydrate|(D|d)ihydrochloride|(H|h)ydrochloride|(S|s)-malate|(D|d)isodium|(C|c)amsylate|(C|c)hloride|(A|a)cetate|(S|s)odium (P|p)hosphate|(S|s)odium|(P|p)hosphate|(D|d)iphosphate|(C|c)itrate|(M|m)esylate|(A|a)cetate|(C|c)alcium)$", "")) |>
     dplyr::select(tradename, nci_cd_name) |>
     dplyr::distinct() |>
     dplyr::mutate(is_salt = T) |>
@@ -2210,13 +2210,17 @@ assign_drug_category <- function(drug_df = NULL,
       TRUE,FALSE)
     ) |>
     dplyr::mutate(alkylating_agent = dplyr::if_else(
-      is.na(drug_moa) &
+      (is.na(drug_moa) | 
+         (!is.na(drug_moa) & stringr::str_detect(drug_moa,"DNA"))) &
         !stringr::str_detect(nci_cd_name,
                              "antiangiogenic") &
         !is.na(nci_concept_definition) &
-        stringr::str_detect(
+        (stringr::str_detect(
           tolower(nci_concept_definition),
-          "alkylating agent|alkylating activities"),TRUE,FALSE)
+          "(alkylates dna|alkylation of dna|alkylating (agent|metabolite)|alkylating-like|alkylates and cross-links dna|alkylating( and antimetabolite)? activit(y|ies))") |
+           (stringr::str_detect(nci_cd_name,"(mustine|platin)$") &
+              !stringr::str_detect(nci_cd_name,"/"))),
+      TRUE,FALSE)
     ) |>
     dplyr::mutate(parp_inhibitor = dplyr::if_else(
       !is.na(target_symbol) &
@@ -2415,6 +2419,22 @@ clean_final_drug_list <- function(drug_df = NULL){
 
   pharmaoncox <- drug_df |>
     #dplyr::filter(nci_cd_name != "Lapatinib Ditosylate") |>
+    dplyr::filter(
+      !stringr::str_detect(
+        nci_cd_name,
+        "Sustained-release| Bead(s)?| Compound|Vector|Pegylated")
+    ) |>
+    dplyr::filter(
+      !stringr::str_detect(
+        tolower(nci_concept_definition),
+        "a( (synthetic|diagnostic|targeted))?( radio(immuno)conjugate)")
+    ) |>
+    dplyr::filter(
+      !stringr::str_detect(
+        nci_cd_name,
+        "^(Carbon C|Fluorine F|Gallium Ga|Indium In|Iodine I|Lutetium Lu|Technetium Tc|Yttrium Y)"
+      )
+    ) |>
     dplyr::filter(nci_cd_name != "Abivertinib Maleate") |>
     dplyr::mutate(nci_cd_name = dplyr::if_else(
       is.na(nci_cd_name),
@@ -2426,16 +2446,6 @@ clean_final_drug_list <- function(drug_df = NULL){
       "Cediranib",
       as.character(nci_cd_name)
     )) |>
-    # dplyr::mutate(nci_cd_name = dplyr::if_else(
-    #   nci_cd_name == "Abivertinib Maleate",
-    #   "Avitinib Maleate",
-    #   as.character(nci_cd_name)
-    # )) |>
-    # dplyr::mutate(drug_name = dplyr::if_else(
-    #   nci_cd_name == "Avitinib Maleate",
-    #   "AVITINIB MALEATE",
-    #   as.character(drug_name)
-    # )) |>
     dplyr::mutate(is_salt = dplyr::if_else(
       nci_cd_name == "Avitinib Maleate",
       as.logical(NA),
@@ -2857,4 +2867,34 @@ expand_drug_aliases <- function(drug_index_map = NULL,
   return(compound_synonyms)
 
 
+}
+
+
+get_mesh_drug_categories <- function(path_data_raw = NULL){
+  
+  mesh_drug_data <- whatamesh::read_mesh_file(
+    file.path(path_data_raw,"data-raw",
+              "mesh","d2022.bin")
+  )
+  i <- 1
+  
+  all_drugs <- data.frame()
+  while(i <= nrow(mesh_drug_data)){
+    drugname <- mesh_drug_data[i,]$MH
+    if(!is.null(mesh_drug_data[i,]$PA)){
+      drug_category <- paste(unlist(mesh_drug_data[i,]$PA),
+                             collapse=";")
+      
+      df <- data.frame(
+        'drugname' = drugname,
+        'category' = drug_category,
+        stringsAsFactors = F
+      )
+      
+      all_drugs <- all_drugs |>
+        dplyr::bind_rows(df)
+    }
+    i <- i + 1
+  }
+  
 }

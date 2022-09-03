@@ -1,3 +1,9 @@
+# Version 0.9.4 (September 3rd 2022)
+
+* Updated NCI Thesaurus (22.08e)
+* Improved classification of alkylating agents
+* Excluded several radio(immuno)conjugate entries
+
 # Version 0.9.3 (September 1st 2022)
 
 * Removed drug aliases that coincide with english words
