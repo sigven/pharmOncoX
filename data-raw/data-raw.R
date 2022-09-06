@@ -95,7 +95,7 @@ if(!file.exists(antineo_agents_local)){
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -114,6 +114,7 @@ ot_drugs <-
 ##
 ot_nci_drugs <- merge_nci_open_targets(
   ot_drugs = ot_drugs,
+  path_data_raw = path_data_raw,
   nci_antineo_all = nci_antineo_all)
 
 
@@ -384,7 +385,7 @@ for(elem in c('biomarkers_curated',
     local_rds_fpath,
     paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
   ))
-  
+
   google_rec_df <-
     dplyr::select(
       as.data.frame(gd_records[[elem]]), name, id) |>
@@ -399,7 +400,7 @@ for(elem in c('biomarkers_curated',
     dplyr::mutate(
       md5Checksum =
         gd_records[[elem]]$drive_resource[[1]]$md5Checksum)
-  
+
   db_id_ref <- db_id_ref |>
     dplyr::bind_rows(google_rec_df)
   

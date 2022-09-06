@@ -218,10 +218,10 @@ get_onco_drugs <- function(
 
   arg_counter <- 7
   if(!is.null(drug_action_type)){
-    arg_validation_messages[[arg_counter]] <-
-      assertthat::validate_that(
-        drug_is_targeted == T,
-        msg = "ERROR: Argument 'drug_is_targeted' must be set to TRUE when 'drug_action_type' is non-NULL")
+    # arg_validation_messages[[arg_counter]] <-
+    #   assertthat::validate_that(
+    #     drug_is_targeted == T,
+    #     msg = "ERROR: Argument 'drug_is_targeted' must be set to TRUE when 'drug_action_type' is non-NULL")
 
     arg_counter <- arg_counter + 1
     arg_validation_messages[[arg_counter]] <-

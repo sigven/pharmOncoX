@@ -1820,6 +1820,7 @@ get_compound_properties <- function(molecule_chembl_id = NULL,
 
 
 merge_nci_open_targets <- function(ot_drugs = NULL,
+                                   path_data_raw = NULL,
                                  nci_antineo_all = NULL){
 
   ot_nci_matched <- list()
@@ -1954,13 +1955,27 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
     name2chembl_ambiguous_curated
   )
 
+  
+  salt_patterns <- 
+      readr::read_tsv(
+      file.path(path_data_raw, "salts.tsv"),
+      show_col_types = F, col_names = F)
+  
+  salt_patterns_regex <- paste0(
+    "( (",
+    paste(salt_patterns$X1, collapse="|"),
+    "))$")
+  
   salt_forms <- all_drugs |>
-    dplyr::filter(stringr::str_detect(
-      tolower(nci_cd_name), " (maleate|tosylate|dimaleate|succinate|meglumine|hydrobromide|sulfate|ditosylate|fumarate|dimesylate|lactate|potassium|dihydrochloride|anhydrous|hydrochloride|chloride|acetate|disodium|hydrochloride monohydrate|sodium|phosphate|dimeglumine|diphosphate|camsylate|s-malate|citrate|mesylate|acetate|calcium|sodium phosphate)$")) |>
+    dplyr::filter(
+      stringr::str_detect(
+        tolower(nci_cd_name), 
+        salt_patterns_regex)) |>
     dplyr::filter(!is.na(opentargets_version)) |>
     dplyr::mutate(tradename = stringr::str_replace(
       nci_cd_name,
-      " ((M|m)aleate|(A|a)nhydrous|(T|t)osylate|(D|d)imesylate|(D|d)imeglumine|(S|s)uccinate|(M|m)eglumine|(H|h)ydrobromide|(S|s)ulfate|(F|f)umarate|(D|d)imaleate|(D|d)itosylate|(L|l)actate|(P|p)otassium|(H|h)ydrochloride (M|m)onohydrate|(D|d)ihydrochloride|(H|h)ydrochloride|(S|s)-malate|(D|d)isodium|(C|c)amsylate|(C|c)hloride|(A|a)cetate|(S|s)odium (P|p)hosphate|(S|s)odium|(P|p)hosphate|(D|d)iphosphate|(C|c)itrate|(M|m)esylate|(A|a)cetate|(C|c)alcium)$", "")) |>
+      salt_patterns_regex,
+      "")) |>
     dplyr::select(tradename, nci_cd_name) |>
     dplyr::distinct() |>
     dplyr::mutate(is_salt = T) |>
@@ -2218,8 +2233,9 @@ assign_drug_category <- function(drug_df = NULL,
         (stringr::str_detect(
           tolower(nci_concept_definition),
           "(alkylates dna|alkylation of dna|alkylating (agent|metabolite)|alkylating-like|alkylates and cross-links dna|alkylating( and antimetabolite)? activit(y|ies))") |
-           (stringr::str_detect(nci_cd_name,"(mustine|platin)$") &
-              !stringr::str_detect(nci_cd_name,"/"))),
+           (!is.na(nci_cd_name) & 
+              stringr::str_detect(tolower(nci_cd_name),"(mustine|platin)$") &
+              !stringr::str_detect(tolower(nci_cd_name),"/"))),
       TRUE,FALSE)
     ) |>
     dplyr::mutate(parp_inhibitor = dplyr::if_else(
@@ -2612,8 +2628,8 @@ clean_final_drug_list <- function(drug_df = NULL){
   pharmaoncox$nci_concept_definition <- NULL
   pharmaoncox$drug_blackbox_warning <- NULL
   pharmaoncox2 <- pharmaoncox |>
-    dplyr::left_join(nci_t_map) |>
-    dplyr::left_join(blackbox_warnings) |>
+    dplyr::left_join(nci_t_map, by = "drug_name") |>
+    dplyr::left_join(blackbox_warnings, by = "drug_name") |>
     dplyr::distinct()
 
   drug_maps <- list()
