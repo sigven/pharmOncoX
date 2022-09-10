@@ -22,7 +22,7 @@ records - a data frame with drug records
     
     <a class="navbar-brand me-2" href="../index.html">pharmaOncoX</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,6 +93,7 @@ based on various criteria set by the user.</p>
 <span>  drug_approved_later_than <span class="op">=</span> <span class="fl">1939</span>,</span>
 <span>  drug_minimum_phase_any_indication <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  output_resolution <span class="op">=</span> <span class="st">"drug2target2indication"</span>,</span>
+<span>  inhibitor_only <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_alkylating_agent <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_angiogenesis_inhibitor <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_anthracycline <span class="op">=</span> <span class="cn">F</span>,</span>
@@ -175,6 +176,10 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
 
 <dt>output_resolution</dt>
 <dd><p>dictate output record resolution ('drug','drug2target','drug2target2indication')</p></dd>
+
+
+<dt>inhibitor_only</dt>
+<dd><p>logical indicating to return only drugs with inhibitory mechanism-of-action</p></dd>
 
 
 <dt>is_alkylating_agent</dt>
