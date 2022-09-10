@@ -19,6 +19,7 @@ get_onco_drugs(
   drug_approved_later_than = 1939,
   drug_minimum_phase_any_indication = 0,
   output_resolution = "drug2target2indication",
+  inhibitor_only = F,
   is_alkylating_agent = F,
   is_angiogenesis_inhibitor = F,
   is_anthracycline = F,
@@ -72,6 +73,8 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
 \item{drug_minimum_phase_any_indication}{only include drug records that are in a clinical phase (any indication) greater or equal than this phase}
 
 \item{output_resolution}{dictate output record resolution ('drug','drug2target','drug2target2indication')}
+
+\item{inhibitor_only}{logical indicating to return only drugs with inhibitory mechanism-of-action}
 
 \item{is_alkylating_agent}{logical indicating if only this drug class is wanted}
 

@@ -30,6 +30,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
                     .data$target_genename,
                     .data$molecule_chembl_id,
                     .data$drug_max_phase_indication,
+                    .data$drug_approved_indication,
                     .data$drug_clinical_id,
                     .data$disease_efo_id,
                     .data$disease_efo_label,
@@ -63,6 +64,9 @@ get_on_off_label_drugs <- function(cache_dir = NA){
         max_phase = max(.data$drug_max_phase_indication, na.rm = T),
         max_all_phase = paste(sort(unique(.data$drug_max_phase_indication)),
                               collapse = "|"),
+        approved_indication = 
+          paste(sort(unique(.data$drug_approved_indication)),
+                collapse = "|"),
         disease_efo_label = paste(sort(unique(.data$disease_efo_label)),
                                   collapse = "|"),
         disease_efo_id = paste(sort(unique(.data$disease_efo_id)),
@@ -119,6 +123,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
                     .data$drug_link,
                     .data$max_phase,
                     .data$max_all_phase,
+                    .data$approved_indication,
                     .data$drug_indication_label) |>
       dplyr::rename(drug_primary_site = .data$primary_site,
                     drug_max_phase_indication = .data$max_phase,

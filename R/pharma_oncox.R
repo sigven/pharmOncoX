@@ -29,6 +29,7 @@
 #' @param drug_approved_later_than only include records for drugs approved later than this date (year)
 #' @param drug_minimum_phase_any_indication only include drug records that are in a clinical phase (any indication) greater or equal than this phase
 #' @param output_resolution dictate output record resolution ('drug','drug2target','drug2target2indication')
+#' @param inhibitor_only logical indicating to return only drugs with inhibitory mechanism-of-action 
 #' @param is_alkylating_agent logical indicating if only this drug class is wanted
 #' @param is_angiogenesis_inhibitor logical indicating if only this drug class is wanted
 #' @param is_anthracycline logical indicating if only this drug class is wanted
@@ -120,6 +121,7 @@ get_onco_drugs <- function(
     drug_approved_later_than = 1939,
     drug_minimum_phase_any_indication = 0,
     output_resolution = "drug2target2indication",
+    inhibitor_only = F,
     is_alkylating_agent = F,
     is_angiogenesis_inhibitor = F,
     is_anthracycline = F,
@@ -426,6 +428,13 @@ get_onco_drugs <- function(
     if(nrow(drug_records) > 0){
       drug_records <- drug_records |>
         dplyr::filter(.data$opentargets == T)
+    }
+  }
+  
+  if(inhibitor_only == T){
+    if(nrow(drug_records) > 0){
+      drug_records <- drug_records |>
+        dplyr::filter(.data$inhibition_moa == T)
     }
   }
 
@@ -835,10 +844,11 @@ get_onco_drugs <- function(
       drug_records <- as.data.frame(
         drug_records |>
           dplyr::group_by(
-            dplyr::across(-c(.data$disease_efo_label,
-                                           .data$primary_site,
-                                           .data$drug_clinical_id,
-                                           .data$drug_max_phase_indication))) |>
+            dplyr::across(
+              -c(.data$disease_efo_label,
+                 .data$primary_site,
+                 .data$drug_clinical_id,
+                 .data$drug_max_phase_indication))) |>
           dplyr::summarise(
             drug_clinical_id = paste(
               unique(sort(.data$drug_clinical_id)), collapse="|"),

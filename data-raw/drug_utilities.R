@@ -273,10 +273,11 @@ get_opentargets_cancer_drugs <-
     dplyr::filter(main_term == T) |>
     dplyr::select(cui, cui_name) |>
     dplyr::distinct() |>
-    dplyr::inner_join(dplyr::select(oncoPhenoMap::oncotree_expanded_full,
-                                    efo_id, cui,
-                                    cui_name, primary_site),
-                      by = c("cui", "cui_name")) |>
+    dplyr::inner_join(
+      dplyr::select(oncoPhenoMap::oncotree_expanded_full,
+                    efo_id, cui,
+                    cui_name, primary_site),
+      by = c("cui", "cui_name")) |>
     dplyr::rename(disease_efo_id = efo_id) |>
     dplyr::filter(!is.na(disease_efo_id)) |>
     dplyr::distinct()
@@ -2041,6 +2042,11 @@ map_custom_nci_targets <- function(gene_info = NULL,
                                    path_data_raw = NULL,
                                    drug_df = NULL){
 
+  
+  drug_df$target_entrezgene <- as.numeric(
+    drug_df$target_entrezgene
+  )
+  
   drug_target_patterns <-
     read.table(file = file.path(
       path_data_raw,
@@ -2149,6 +2155,12 @@ map_custom_nci_targets <- function(gene_info = NULL,
     dplyr::distinct()
 
 
+  ot_nci_drugs$target_entrezgene <- 
+    as.integer(ot_nci_drugs$target_entrezgene)
+  
+  custom_nci_targeted_drugs$target_entrezgene <-
+    as.integer(custom_nci_targeted_drugs$target_entrezgene)
+  
   ot_nci_drugs_curated <-
     dplyr::anti_join(ot_nci_drugs, custom_nci_targeted_drugs,
                      by = "nci_cd_name") |>
@@ -2630,7 +2642,36 @@ clean_final_drug_list <- function(drug_df = NULL){
   pharmaoncox2 <- pharmaoncox |>
     dplyr::left_join(nci_t_map, by = "drug_name") |>
     dplyr::left_join(blackbox_warnings, by = "drug_name") |>
-    dplyr::distinct()
+    dplyr::distinct() |>
+    dplyr::mutate(drug_action_type = dplyr::if_else(
+      drug_action_type == "NA" &
+        stringr::str_detect(tolower(drug_name),
+                            "ib |ib$") &
+        stringr::str_detect(tolower(nci_concept_definition),
+                            "inhibitor"),
+      "INHIBITOR",
+      as.character(drug_action_type)
+    )) |>
+    dplyr::mutate(drug_type = dplyr::if_else(
+      drug_action_type == "NA" &
+        stringr::str_detect(tolower(drug_name),
+                            "ib |ib$") &
+        stringr::str_detect(tolower(nci_concept_definition),
+                            "inhibitor"),
+      "Small molecule",
+      as.character(drug_type)
+    )) |>
+    
+    dplyr::mutate(inhibition_moa = dplyr::if_else(
+      !stringr::str_detect(
+        drug_action_type,
+        "^(POSITIVE|NEGATIVE|AGONIST|HYDROLYTIC|CHELATING|PARTIAL|NA|STABILISER|MODULATOR|SEQUESTERING|OXIDATIVE|ACTIVATOR|RNA|VACCINE|DEGRADER|OTHER)") &
+      (is.na(drug_type) | (drug_type != "Protein" & drug_type != "Gene" & drug_type != "Cell")) &
+      (is.na(target_type) | target_type != "protein_protein_interaction"),
+      as.logical(TRUE),
+      as.logical(FALSE),
+      as.logical(FALSE)
+    ))
 
   drug_maps <- list()
   drug_maps[['id2name']] <- pharmaoncox2 |>
@@ -2680,6 +2721,7 @@ clean_final_drug_list <- function(drug_df = NULL){
                   molecule_chembl_id,
                   drug_type,
                   drug_action_type,
+                  inhibition_moa,
                   is_salt,
                   is_adc,
                   drug_blackbox_warning,

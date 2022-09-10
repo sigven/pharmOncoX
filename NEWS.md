@@ -1,3 +1,9 @@
+# Version 0.9.6 (September 10th 2022)
+
+* Added logical argument `inhibitor_only` to `get_onco_drugs` to retrieve only drugs with an
+inhibitory role with respect to mechanism-of-action
+* Fixed minor bug in parsing of approved indications for drugs from Open Targets Platform
+
 # Version 0.9.5 (September 7th 2022)
 
 * Updated NCI Thesaurus (22.08e)
