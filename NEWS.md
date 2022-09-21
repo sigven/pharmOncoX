@@ -1,3 +1,9 @@
+# Version 0.9.7 (September 21st 2022)
+
+* Upgraded [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap) to v0.4.0
+* Upgraded [sigven/geneOncoX](https://github.com/sigven/geneOncoX)
+* Updated biomarkers (CIViC database)
+
 # Version 0.9.6 (September 10th 2022)
 
 * Added logical argument `inhibitor_only` to `get_onco_drugs` to retrieve only drugs with an

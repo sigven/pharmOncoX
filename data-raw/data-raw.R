@@ -95,7 +95,7 @@ if(!file.exists(antineo_agents_local)){
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -384,6 +384,7 @@ for(elem in c('biomarkers_curated',
   (gd_records[[elem]] <- googledrive::drive_upload(
     local_rds_fpath,
     paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
+    #paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
   ))
 
   google_rec_df <-
