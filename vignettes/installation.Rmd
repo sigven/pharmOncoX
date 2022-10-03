@@ -8,4 +8,4 @@ vignette: >
 ---
 
 * `install.packages("devtools")`
-* `devtools::install_github("sigven/pharmaOncoX", ref = '0.9.7')`
+* `devtools::install_github("sigven/pharmaOncoX", ref = '0.9.8')`
