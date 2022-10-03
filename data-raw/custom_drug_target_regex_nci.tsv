@@ -1,4 +1,17 @@
 pattern	symbol
+TAFIa Inhibitor DS-1040b	CPB2
+Sirexatamab	DKK1
+Tinlorafenib	BRAF
+Xiliertinib	EGFR
+Benralizumab	IL5RA
+Brensocatib	CTSC
+Briakinumab	IL12A
+Briakinumab	IL23A
+ARQ751|LY2503029	AKT1
+ARQ751|LY2503029	AKT2
+ARQ751|LY2503029	AKT3
+SDF-1 Receptor Antagonist PTX-9908	CXCR4
+Sovilnesib	KIF18A
 Anti-ALK-1	ALK
 Darovasertib	PRKCA
 Darovasertib	PRKCB

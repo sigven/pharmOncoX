@@ -148,80 +148,106 @@ get_on_off_label_drugs <- function(cache_dir = NA){
     targeted_drugs_per_site[[t]][['on_label']] <- list()
     targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- data.frame()
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- data.frame()
-
+    
     #if(t != "Any"){
-    targeted_drugs_per_site[[t]][['on_label']][['late_phase']]  <- targeted_onco_inhibitors |>
+    targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- 
+      targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
                       .data$drug_max_phase_indication > 2) |>
       dplyr::distinct()
     #}
-
-    targeted_drugs_per_site[[t]][['on_label']][['early_phase']]  <- targeted_onco_inhibitors |>
+    
+    targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- 
+      targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
                       .data$drug_max_phase_indication <= 2) |>
       dplyr::distinct()
-
-    targeted_drugs_per_site[[t]][['off_label']]  <- targeted_onco_inhibitors |>
-      dplyr::filter(.data$drug_primary_site != t &
-                      .data$drug_primary_site != "Any" &
-                      .data$drug_max_phase_indication > 2) |>
-      dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
-                       by = c("molecule_chembl_id","drug_name","symbol")) |>
-      dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
-                       by = c("molecule_chembl_id","drug_name","symbol")) |>
+    
+    targeted_drugs_per_site[[t]][['off_label']]  <- 
+      targeted_onco_inhibitors |>
+      dplyr::filter(
+        .data$drug_primary_site != t &
+          .data$drug_primary_site != "Any" &
+          .data$drug_max_phase_indication > 2) |>
+      dplyr::anti_join(
+        targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
+        by = c("molecule_chembl_id","drug_name","symbol")) |>
+      dplyr::anti_join(
+        targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
+        by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::distinct()
-
-    other_any_phase <- targeted_drugs_non_site_specific |>
-      dplyr::anti_join(targeted_drugs_per_site[[t]][['off_label']],
-                       by = c("molecule_chembl_id","drug_name","symbol")) |>
-      dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
-                       by = c("molecule_chembl_id","drug_name","symbol")) |>
-      dplyr::anti_join(targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
-                       by = c("molecule_chembl_id","drug_name","symbol"))
-
+    
+    other_any_phase <- 
+      targeted_drugs_non_site_specific |>
+      dplyr::anti_join(
+        targeted_drugs_per_site[[t]][['off_label']],
+        by = c("molecule_chembl_id","drug_name","symbol")) |>
+      dplyr::anti_join(
+        targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
+        by = c("molecule_chembl_id","drug_name","symbol")) |>
+      dplyr::anti_join(
+        targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
+        by = c("molecule_chembl_id","drug_name","symbol"))
+    
     targeted_drugs_per_site[[t]][['other_any_phase']] <- other_any_phase |>
       dplyr::arrange(.data$symbol, .data$drug_max_phase_indication)
-
-    lgr::lgr$info(paste0("Found n = ",
-                             length(unique(targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$drug_name)),
-                             " targeted drugs for indications with primary site: ",
-                             t))
-
+    
+    lgr::lgr$info(
+      paste0("Found n = ",
+             length(unique(targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$drug_name)),
+             " targeted drugs for indications with primary site: ",
+             t))
+    
+    tmp <- list()
     ## On label - late phase
-    tmp1 <- targeted_drugs_per_site[[t]][['on_label']][['late_phase']] |>
-      dplyr::mutate(off_label = FALSE,
-                    query_site = t,
-                    drug_clinical_phase = "late") |>
+    tmp[['on_label_lp']] <- 
+      targeted_drugs_per_site[[t]][['on_label']][['late_phase']] |>
+      dplyr::mutate(
+        off_label = FALSE,
+        drug_label = "ON_LABEL",
+        query_site = t,
+        drug_clinical_phase = "late") |>
       dplyr::select(.data$query_site, dplyr::everything())
-
+    
     ## On label early phase
-    tmp2 <- targeted_drugs_per_site[[t]][['on_label']][['early_phase']] |>
-      dplyr::mutate(off_label = FALSE,
-                    query_site = t,
-                    drug_clinical_phase = "early") |>
+    tmp[['on_label_ep']] <- 
+      targeted_drugs_per_site[[t]][['on_label']][['early_phase']] |>
+      dplyr::mutate(
+        off_label = FALSE,
+        drug_label = "ON_LABEL",
+        query_site = t,
+        drug_clinical_phase = "early") |>
       dplyr::select(.data$query_site, dplyr::everything())
-
+    
     ## Off label (late phase)
-    tmp3 <- targeted_drugs_per_site[[t]][['off_label']] |>
-      dplyr::mutate(off_label = TRUE,
-                    query_site = t,
-                    drug_clinical_phase = "late") |>
+    tmp[['off_label']] <- 
+      targeted_drugs_per_site[[t]][['off_label']] |>
+      dplyr::mutate(
+        off_label = TRUE,
+        drug_label = "OFF_LABEL",
+        query_site = t,
+        drug_clinical_phase = "late") |>
       dplyr::select(.data$query_site, dplyr::everything())
-
+    
     ## Other drugs
-    tmp4 <- other_any_phase |>
-      dplyr::mutate(drug_label = "OTHER",
-                    query_site = t,
-                    drug_clinical_phase = dplyr::if_else(
-                      .data$drug_max_phase_indication <= 2,
-                      "early",
-                      "late"
-                    )) |>
+    tmp[['other']] <- 
+      other_any_phase |>
+      dplyr::mutate(
+        drug_label = "OTHER",
+        query_site = t,
+        drug_clinical_phase = dplyr::if_else(
+          .data$drug_max_phase_indication <= 2,
+          "early",
+          "late"
+        )) |>
       dplyr::select(.data$query_site, dplyr::everything())
-
+    
     all_tt_records <- all_tt_records |>
       dplyr::bind_rows(
-        tmp1, tmp2, tmp3, tmp4
+        tmp[['on_label_lp']],
+        tmp[['on_label_ep']],
+        tmp[['off_label']],
+        tmp[['other']]
       )
 
   }
@@ -283,21 +309,33 @@ get_drug_records <- function(cache_dir = NA,
     md5checksum_package <-
       db_id_ref[db_id_ref$name == elem,]$md5Checksum
 
+    if(length(fname_local) > 1){
+      fname_local <- fname_local[-1]
+      lgr::lgr$warn(
+        paste0(
+          "Multiple data repos entries for ", elem,
+          " - using latest entry")
+        
+      )
+    }
+    
     #dat <- NULL
-    if(file.exists(fname_local) & force_download == F){
+    if(file.exists(fname_local) && force_download == F){
       drug_datasets[[elem]] <- readRDS(fname_local)
       drug_datasets[[elem]][['fpath']] <- fname_local
-      if(!is.null(drug_datasets[[elem]][['records']]) & !is.null(drug_datasets[[elem]][['metadata']])){
+      if(!is.null(drug_datasets[[elem]][['records']])){
         lgr::lgr$info(paste0(
-          "Reading from cache_dir = '", cache_dir, "', argument force_download = F"))
-        lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
+          "Reading from cache_dir = '", 
+          cache_dir, "', argument force_download = F"))
+        lgr::lgr$info(
+          paste0("Object '", 
+                 elem,"' sucessfully loaded"))
         lgr::lgr$info(paste0(
-          "Retrieved n = ", nrow(drug_datasets[[elem]][['records']]), " records"))
-
+          "Retrieved n = ", 
+          nrow(drug_datasets[[elem]][['records']]), " records"))
       }
-
     }else{
-
+      
       googledrive::drive_deauth()
 
       lgr::lgr$info("Downloading remote dataset from Google Drive to cache_dir")

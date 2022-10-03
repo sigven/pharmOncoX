@@ -2,7 +2,7 @@ Package: pharmaOncoX
 Type: Package
 Title: Annotated targeted and non-targeted anticancer drugs
 Version: 0.9.7
-Date: 2022-09-21
+Date: 2022-10-03
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -12,9 +12,9 @@ Authors@R:
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
 Description: This data package collects aticancer drug information from multiple resources,
     including Open Targets Platform/ChEMBL, NCI Thesaurus, and PubChem. The main dataset
-    contains a list of all anticancer drugs per indication/tumor type (where this is provided),
-    which can be queried with a range of parameters (minimum clinical phase, approval
-    status, targets, drug category etc.)
+    contains a list of all anticancer drugs per indication/tumor type (where this is provided).
+    which can be queried with a range of parameters, including clinical development phase, approval
+    status, drug targets, mechanism-of-action/drug category etc.
 License: MIT + file LICENSE
 URL: https://github.com/sigven/pharmaOncoX
 BugReports: https://github.com/sigven/pharmaOncoX/issues
@@ -27,10 +27,13 @@ Imports: dplyr,
          googledrive,
          rlang,
          assertthat
+Suggests: 
+    testthat (>= 3.0.0),
+    rmarkdown,
+    knitr
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
-Suggests: 
-    testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3

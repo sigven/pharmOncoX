@@ -1,20 +1,43 @@
 
-expand_hgvs_terms <- function(var) {
+get_amino_acid_dictionary <- function(){
+  aa_df <- 
+    data.frame('one_letter' = names(Biostrings::AMINO_ACID_CODE), 
+               'three_letter' = Biostrings::AMINO_ACID_CODE, 
+               'three_letter_uc' = toupper(Biostrings::AMINO_ACID_CODE),
+               stringsAsFactors = F) |>
+    dplyr::filter(one_letter != "B" &
+                    one_letter != "J" &
+                    one_letter != "O" &
+                    one_letter != "U" &
+                    one_letter != "X" &
+                    one_letter != "Z")
+  
+  rownames(aa_df) <- NULL
+  return(aa_df)
+  
+  
+}
+
+
+expand_hgvs_terms <- function(var, aa_dict) {
   hits <- c()
+  
   if(stringr::str_detect(toupper(var),"([A-Z]{3}[0-9]{1,}(([A-Z]{3}){0,1})([0-9]{1,})?)") &
      !stringr::str_detect(toupper(var),"(DEL|INS|DUP)|=|-|\\*")){
     aa <- stringr::str_to_title(strsplit(var, "[0-9]{1,}")[[1]])
     codon <- stringr::str_match(var, "[0-9]{1,}")[[1]]
 
-    #cat(var,' - ', aa, ' - ', codon, '\n')
+    
     if(length(aa) == 1){
       alt1 <- paste0(aa[1],codon)
       alt2 <- paste0('p.', alt1)
       if(aa[1] != "Ter"){
-        aa1 <- seqinr::a(aa[1])
-        if(!is.na(aa1)){
-          alt3 <- paste0(seqinr::a(aa[1]), codon)
-          hits <- c(alt1, alt2, alt3)
+        if(aa[1] %in% aa_dict$three_letter){
+          aa1 <- seqinr::a(aa[1])
+          if(!is.na(aa1)){
+            alt3 <- paste0(seqinr::a(aa[1]), codon)
+            hits <- c(alt1, alt2, alt3)
+          }
         }
       }else{
         alt3 <- paste0("X", codon)
@@ -29,8 +52,13 @@ expand_hgvs_terms <- function(var) {
         alt2 <- stringr::str_replace(
           stringr::str_replace(paste0('p.', alt1),"(FS|Fs)$","fs"),
           "ter","Ter")
-        if(aa[1] != "Ter" & aa[2] != "Ter" & aa[2] != "Fs" &
-           nchar(aa[1]) == 3 & nchar(aa[2]) == 3){
+        if(aa[1] != "Ter" & 
+           aa[2] != "Ter" & 
+           aa[2] != "Fs" &
+           nchar(aa[1]) == 3 & 
+           nchar(aa[2]) == 3 &
+           aa[1] %in% aa_dict$three_letter &
+           aa[2] %in% aa_dict$three_letter){
           alt3 <- paste0(seqinr::a(aa[1]), codon, seqinr::a(aa[2]))
           alt4 <- paste0('p.', alt3)
           hits <- c(alt1, alt2, alt3, alt4)
@@ -42,14 +70,18 @@ expand_hgvs_terms <- function(var) {
             hits <- c(alt1, alt2, alt3, alt4)
           }else{
             if(aa[2] == "Ter"){
-              alt3 <- paste0(seqinr::a(aa[1]), codon, "X")
-              alt4 <- paste0('p.', alt3)
-              hits <- c(alt1, alt2, alt3, alt4)
+              if(aa[1] %in% aa_dict$three_letter){
+                alt3 <- paste0(seqinr::a(aa[1]), codon, "X")
+                alt4 <- paste0('p.', alt3)
+                hits <- c(alt1, alt2, alt3, alt4)
+              }
             }
             if(aa[2] == "Fs"){
-              alt3 <- paste0(seqinr::a(aa[1]), codon, "fs")
-              alt4 <- paste0('p.', alt3)
-              hits <- c(alt1, alt2, alt3, alt4)
+              if(aa[1] %in% aa_dict$three_letter){
+                alt3 <- paste0(seqinr::a(aa[1]), codon, "fs")
+                alt4 <- paste0('p.', alt3)
+                hits <- c(alt1, alt2, alt3, alt4)
+              }
             }
 
           }
@@ -65,7 +97,7 @@ expand_hgvs_terms <- function(var) {
     if(length(aa) == 1){
       alt1 <- paste0(aa[1],codon)
       alt2 <- paste0('p.', alt1)
-      if(aa[1] != "X"){
+      if(aa[1] != "X" & aa[1] %in% aa_dict$one_letter){
         alt3 <- paste0(seqinr::aaa(aa[1]), codon)
         hits <- c(alt1, alt2, alt3)
       }else{
@@ -76,19 +108,22 @@ expand_hgvs_terms <- function(var) {
       if(length(aa) == 2){
         alt1 <- paste0(aa[1],codon, aa[2])
         alt2 <- paste0('p.', alt1)
-        if(aa[1] != "X" & aa[2] != "X" & nchar(aa[1]) == 1 & nchar(aa[2]) == 1){
+        if(aa[1] != "X" & 
+           aa[2] != "X" & 
+           aa[1] %in% aa_dict$one_letter &
+           aa[2] %in% aa_dict$one_letter){
           alt3 <- paste0(seqinr::aaa(aa[1]),
                          codon, seqinr::aaa(aa[2]))
           alt4 <- paste0('p.', alt3)
           hits <- c(alt1, alt2, alt3, alt4)
         }else{
-          if(aa[1] == "X"){
+          if(aa[1] == "X" & aa[2] %in% aa_dict$one_letter){
             alt3 <- paste0("Ter",
                            codon, seqinr::aaa(aa[2]))
             alt4 <- paste0('p.', alt3)
             hits <- c(alt1, alt2, alt3, alt4)
           }else{
-            if(aa[2] == "X"){
+            if(aa[2] == "X" & aa[1] %in% aa_dict$one_letter){
               alt3 <- paste0(seqinr::aaa(aa[1]),
                              codon, "Ter")
               alt4 <- paste0('p.', alt3)
@@ -138,7 +173,8 @@ expand_hgvs_terms <- function(var) {
   if(length(hits) == 0 & var != ""){
     if(!(stringr::str_detect(var,"^(c|rs|p|[0-9])")) &
        stringr::str_detect(var, "[0-9]{1,}") &
-       !stringr::str_detect(var,"EXON|;|MUTATION|Mutation|-|NM_|NP_|DELETERIOUS|Deletion|INTRON|DELETION|DUPLICATION")){
+       !stringr::str_detect(
+         var,"EXON|;|MUTATION|Mutation|-|NM_|NP_|DELETERIOUS|Deletion|INTRON|DELETION|DUPLICATION")){
 
       if(stringr::str_detect(var,"FS$|DUP|DELINS|FS\\*")){
         var <- stringr::str_replace(var, "FS","fs")
@@ -162,6 +198,8 @@ load_civic_biomarkers <- function(datestamp = '20211217',
                                   compound_synonyms = NULL){
 
 
+  aa_dict <- get_amino_acid_dictionary()
+  
   clinicalEvidenceSummary <- as.data.frame(
     data.table::fread(
       paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
@@ -477,7 +515,8 @@ load_civic_biomarkers <- function(datestamp = '20211217',
     if(stringr::str_detect(alteration_type,"MUT")){
 
       for(e in variant_entries){
-        clean_aliases <- expand_hgvs_terms(e)
+        #cat(e,'\n')
+        clean_aliases <- expand_hgvs_terms(e, aa_dict = aa_dict)
         for(c in clean_aliases){
           all_aliases <- unique(c(all_aliases, c))
         }
@@ -548,16 +587,37 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       )
     )
 
-  for(aa in c("PRO","ILE","HIS","GLY","GLU","LEU","THR",
-              "TYR","SER","ASN","ASP","LYS","PHE")){
-    aa_three_lc <- stringr::str_to_title(aa)
-    if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
-      expanded_variant_set[!is.na(expanded_variant_set$variant) & stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
-        stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & stringr::str_detect(expanded_variant_set$variant,aa),]$variant,
+  
+  aa_dict <- get_amino_acid_dictionary()
+  
+  for(i in 1:nrow(aa_dict)){
+    aa <- aa_dict[i,"three_letter_uc"]
+    aa_three_lc <- aa_dict[i, "three_letter"]
+    
+    if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
+      expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                             stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
+        stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                                                    stringr::str_detect(expanded_variant_set$variant, aa),]$variant,
                              aa,
                              aa_three_lc)
     }
   }
+  
+  # for(aa in c("PRO","ILE","HIS","GLY","GLU","LEU","THR",
+  #             "TYR","SER","ASN","ASP","LYS","PHE","ARG","GLN")){
+  #   aa_three_lc <- stringr::str_to_title(aa)
+  #   if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+  #                                stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
+  #     expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+  #                            stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
+  #       stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+  #                                                   stringr::str_detect(expanded_variant_set$variant,aa),]$variant,
+  #                            aa,
+  #                            aa_three_lc)
+  #   }
+  # }
 
   variant_set_other <- variantSummary |>
     dplyr::filter(!stringr::str_detect(alteration_type,"MUT")) |>
@@ -618,6 +678,8 @@ load_civic_biomarkers <- function(datestamp = '20211217',
 
 load_cgi_biomarkers <- function(compound_synonyms = NULL){
 
+  aa_dict <- get_amino_acid_dictionary()
+  
   cancer_type_abbreviations <-
     read.table(file = "data-raw/biomarkers/cgi/cancer_subtypes.tsv",sep = "\t", header = T,
                stringsAsFactors = F, quote = "", na.strings = "",fill = T) |>
@@ -807,7 +869,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL){
   for(i in 1:nrow(all_mut_entries)){
 
     alt <- all_mut_entries[i,"alteration"]
-    terms <- expand_hgvs_terms(alt)
+    terms <- expand_hgvs_terms(alt, aa_dict = aa_dict)
     for(t in terms){
       df <- data.frame('evidence_id' = all_mut_entries[i,"evidence_id"],
                        'alteration' = t,
@@ -992,6 +1054,8 @@ map_biomarker_phenotypes <- function(biomarkers_all){
 load_pmkb_biomarkers <- function(){
 
 
+  aa_dict <- get_amino_acid_dictionary()
+  
   pmkb_biomarkers <- as.data.frame(
     readr::read_delim(file="data-raw/biomarkers/pmkb/PMKB_Interpretations_Complete_20211220-0312.csv",
                     show_col_types = F, delim = ",")
@@ -1223,7 +1287,7 @@ load_pmkb_biomarkers <- function(){
       all_aliases <- c()
 
       for(e in variant_entries){
-        clean_aliases <- expand_hgvs_terms(e)
+        clean_aliases <- expand_hgvs_terms(e, aa_dict = aa_dict)
         for(c in clean_aliases){
           all_aliases <- unique(c(all_aliases, c))
         }
@@ -1293,13 +1357,20 @@ load_pmkb_biomarkers <- function(){
         as.character(variant)
       )
     )
-
-  for(aa in c("PRO","ILE","HIS","GLY","GLU","LEU","THR",
-              "TYR","SER","ASN","ASP","LYS","PHE")){
-    aa_three_lc <- stringr::str_to_title(aa)
-    if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
-      expanded_variant_set[!is.na(expanded_variant_set$variant) & stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
-        stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & stringr::str_detect(expanded_variant_set$variant,aa),]$variant,
+  
+  
+  aa_dict <- get_amino_acid_dictionary()
+  
+  for(i in 1:nrow(aa_dict)){
+    aa <- aa_dict[i,"three_letter_uc"]
+    aa_three_lc <- aa_dict[i, "three_letter"]
+  
+    if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
+      expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                             stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
+        stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                                                    stringr::str_detect(expanded_variant_set$variant, aa),]$variant,
                              aa,
                              aa_three_lc)
     }

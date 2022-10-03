@@ -1,3 +1,10 @@
+# Version 0.9.8 (October 3rd 2022)
+
+* Fixed bug in v0.9.7, duplicate data record entries (Google Drive, `db_id_ref` in `R/sysdata.rda`)
+* Updated NCI Thesaurus (2022.09d)
+* Updated Open Targets Platform (2022.09)
+* Updated biomarkers (CIViC)
+
 # Version 0.9.7 (September 21st 2022)
 
 * Upgraded [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap) to v0.4.0

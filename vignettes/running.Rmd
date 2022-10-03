@@ -1,7 +1,14 @@
 ---
-title: "Running"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+title: Running
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Running}
+  %\usepackage[UTF-8]{inputenc}
 ---
+
+
+
 
 In the commands below, `LOCAL_CACHE_DIR` is simply a placeholder for an actual directory
 at your local computer/client.

@@ -1,6 +1,6 @@
 #' Datasets of compound biomarkers - omics properties that are linked to drug response
 #'
-#' @format \bold{curated} - A data frame with 288,922 rows and 26 columns:
+#' @format \bold{curated} - A data frame with 288,910 rows and 26 columns:
 #' \itemize{
 #'   \item \emph{evidence_id} - evidence identifier
 #'   \item \emph{evidence_url} - evidence URL
@@ -31,7 +31,7 @@
 #' }
 #'
 #'
-#' @format \bold{invitro_screen} - A data frame with 25,763 rows and 8 columns:
+#' @format \bold{invitro_screen} - A data frame with 23,814 rows and 8 columns:
 #' \itemize{
 #'   \item \emph{compound_id} - compound identifier (PRISM)
 #'   \item \emph{model} - type of omics drug prediction model (DepMap/PRISM)
@@ -50,35 +50,3 @@
 #' @source \url{https://mitelmandatabase.isb-cgc.org/}
 #' @source \url{https://depmap.org/portal/}
 #"compound_biomarkers"
-
-#' Dataset of therapeutic and actionable targets in cancer
-#'
-#' A list of two data frames:
-#'  - druggable: data frame that indicates all drugs/compounds pr. target
-#'  - actionable: data frame with actionable genes in cancer (biomarkers ,
-#'                 for therapies, prognosis etc. (harvested from various sources)
-#'
-#' @format \bold{druggable} - A data frame with 1,094 rows and 6 columns:
-#' \itemize{
-#'   \item \emph{symbol} - Gene symbol
-#'   \item \emph{ensembl_gene_id} - Ensembl gene identifier
-#'   \item \emph{genename} - Gene description
-#'   \item \emph{entrezgene} - Gene identifier (Entrez)
-#'   \item \emph{nci_concept_display_name} - Primary compound name (separated by '|')
-#'   \item \emph{molecule_chembl_id} - ChEMBL compound identifier (separated by '|')
-#' }
-#'
-#'
-#' @format \bold{actionable} - A data frame with 623 rows and 7 columns:
-#' \itemize{
-#'   \item \emph{symbol} - Gene symbol
-#'   \item \emph{ensembl_gene_id} - Ensembl gene identifier
-#'   \item \emph{genename} - Gene description
-#'   \item \emph{entrezgene} - Gene identifier (Entrez)
-#'   \item \emph{phenotypes} - List of associated phenotypes for actionable gene
-#'   \item \emph{clinical_significance} - Clinical significance of biomarker (prognosis, drug sensitivity etc)
-#'   \item \emph{source_db} - Underlying source database for actionability evidence
-#' }
-#'
-#'
-#"targets"
