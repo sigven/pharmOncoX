@@ -1,7 +1,7 @@
 Package: pharmaOncoX
 Type: Package
 Title: Annotated targeted and non-targeted anticancer drugs
-Version: 1.0.0
+Version: 0.9.8
 Date: 2022-11-27
 Authors@R: 
     c(person(given = "Sigve",
@@ -26,7 +26,8 @@ Imports: dplyr,
          tidyr,
          googledrive,
          rlang,
-         assertthat
+         assertthat,
+         DT
 Suggests: 
     testthat (>= 3.0.0),
     rmarkdown,
