@@ -13,10 +13,7 @@
     <loc>https://sigven.github.io/pharmaOncoX/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/pharmaOncoX/articles/installation.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmaOncoX/articles/running.html</loc>
+    <loc>https://sigven.github.io/pharmaOncoX/articles/pharmaOncoX.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/pharmaOncoX/authors.html</loc>
@@ -34,10 +31,10 @@
     <loc>https://sigven.github.io/pharmaOncoX/reference/get_drug_records.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/pharmaOncoX/reference/get_on_off_label_drugs.html</loc>
+    <loc>https://sigven.github.io/pharmaOncoX/reference/get_drugs.html</loc>
   </url>
   <url>
-    <loc>https://sigven.github.io/pharmaOncoX/reference/get_onco_drugs.html</loc>
+    <loc>https://sigven.github.io/pharmaOncoX/reference/get_on_off_label_drugs.html</loc>
   </url>
   <url>
     <loc>https://sigven.github.io/pharmaOncoX/reference/index.html</loc>
