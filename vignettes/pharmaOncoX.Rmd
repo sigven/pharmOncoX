@@ -47,8 +47,7 @@ remotes::install_github('sigven/pharmaOncoX')
 library(pharmaOncoX)
 
 ## load the data
-#download_dir <- tempdir()
-cache_dir <- "~/Desktop"
+cache_dir <- tempdir()
 
 drugs <- get_drugs(
   cache_dir = cache_dir,
