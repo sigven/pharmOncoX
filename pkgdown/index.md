@@ -25,17 +25,17 @@ Furthermore, we provide anti-cancer drugs in **pharmaOncoX** with the following 
 * Topoisomerase inhibitors
 * Tubulin inhibitors
 
-Currently (as of September 21st 2022), `pharmaOncoX` is built upon the following 
+Currently (as of November 27th 2022), `pharmaOncoX` is built upon the following 
 releases of external databases:
 
- - Open Targets Platform (2022.06)
+ - Open Targets Platform (2022.11)
  - ChEMBL (v31)
- - NCI Thesaurus (22.08e)
+ - NCI Thesaurus (22.10e)
 
 ### Getting started
 
-* [Installation instructions](articles/installation.html)
-* [Usage examples](articles/running.html)
+* [Installation instructions](articles/pharmaOncoX.html#installation)
+* [Usage examples](articles/pharmaOncoX.html#retrieval-of-drugs---examples)
 
 ### Contact
 

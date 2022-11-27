@@ -1,5 +1,5 @@
 
-get_amino_acid_dictionary <- function(){
+get_amino_acid_dictionary <- function() {
   aa_df <- 
     data.frame('one_letter' = names(Biostrings::AMINO_ACID_CODE), 
                'three_letter' = Biostrings::AMINO_ACID_CODE, 
@@ -22,19 +22,19 @@ get_amino_acid_dictionary <- function(){
 expand_hgvs_terms <- function(var, aa_dict) {
   hits <- c()
   
-  if(stringr::str_detect(toupper(var),"([A-Z]{3}[0-9]{1,}(([A-Z]{3}){0,1})([0-9]{1,})?)") &
-     !stringr::str_detect(toupper(var),"(DEL|INS|DUP)|=|-|\\*")){
+  if (stringr::str_detect(toupper(var),"([A-Z]{3}[0-9]{1,}(([A-Z]{3}) {0,1})([0-9]{1,})?)") &
+     !stringr::str_detect(toupper(var),"(DEL|INS|DUP)|=|-|\\*")) {
     aa <- stringr::str_to_title(strsplit(var, "[0-9]{1,}")[[1]])
     codon <- stringr::str_match(var, "[0-9]{1,}")[[1]]
 
     
-    if(length(aa) == 1){
+    if (length(aa) == 1) {
       alt1 <- paste0(aa[1],codon)
       alt2 <- paste0('p.', alt1)
-      if(aa[1] != "Ter"){
-        if(aa[1] %in% aa_dict$three_letter){
+      if (aa[1] != "Ter") {
+        if (aa[1] %in% aa_dict$three_letter) {
           aa1 <- seqinr::a(aa[1])
-          if(!is.na(aa1)){
+          if (!is.na(aa1)) {
             alt3 <- paste0(seqinr::a(aa[1]), codon)
             hits <- c(alt1, alt2, alt3)
           }
@@ -45,39 +45,39 @@ expand_hgvs_terms <- function(var, aa_dict) {
 
       }
     }else{
-      if(length(aa) == 2){
+      if (length(aa) == 2) {
         alt1 <- stringr::str_replace(
           stringr::str_replace(paste0(aa[1],codon, aa[2]),"(FS|Fs)$","fs"),
           "ter","Ter")
         alt2 <- stringr::str_replace(
           stringr::str_replace(paste0('p.', alt1),"(FS|Fs)$","fs"),
           "ter","Ter")
-        if(aa[1] != "Ter" & 
+        if (aa[1] != "Ter" & 
            aa[2] != "Ter" & 
            aa[2] != "Fs" &
            nchar(aa[1]) == 3 & 
            nchar(aa[2]) == 3 &
            aa[1] %in% aa_dict$three_letter &
-           aa[2] %in% aa_dict$three_letter){
+           aa[2] %in% aa_dict$three_letter) {
           alt3 <- paste0(seqinr::a(aa[1]), codon, seqinr::a(aa[2]))
           alt4 <- paste0('p.', alt3)
           hits <- c(alt1, alt2, alt3, alt4)
         }
         else{
-          if(aa[1] == "Ter"){
+          if (aa[1] == "Ter") {
             alt3 <- paste0("X", codon, seqinr::a(aa[2]))
             alt4 <- paste0('p.', alt3)
             hits <- c(alt1, alt2, alt3, alt4)
           }else{
-            if(aa[2] == "Ter"){
-              if(aa[1] %in% aa_dict$three_letter){
+            if (aa[2] == "Ter") {
+              if (aa[1] %in% aa_dict$three_letter) {
                 alt3 <- paste0(seqinr::a(aa[1]), codon, "X")
                 alt4 <- paste0('p.', alt3)
                 hits <- c(alt1, alt2, alt3, alt4)
               }
             }
-            if(aa[2] == "Fs"){
-              if(aa[1] %in% aa_dict$three_letter){
+            if (aa[2] == "Fs") {
+              if (aa[1] %in% aa_dict$three_letter) {
                 alt3 <- paste0(seqinr::a(aa[1]), codon, "fs")
                 alt4 <- paste0('p.', alt3)
                 hits <- c(alt1, alt2, alt3, alt4)
@@ -89,15 +89,15 @@ expand_hgvs_terms <- function(var, aa_dict) {
       }
     }
   }
-  if(stringr::str_detect(var,"^([A-Z]{1}[0-9]{1,}[A-Z]{0,1})$") &
-     !stringr::str_detect(var, "FS|DUP|DEL|INS|fs|dup|del|ins|\\*")){
+  if (stringr::str_detect(var,"^([A-Z]{1}[0-9]{1,}[A-Z]{0,1})$") &
+     !stringr::str_detect(var, "FS|DUP|DEL|INS|fs|dup|del|ins|\\*")) {
     aa <- stringr::str_to_title(strsplit(var, "[0-9]{1,}")[[1]])
     codon <- stringr::str_match(var, "[0-9]{1,}")[[1]]
 
-    if(length(aa) == 1){
+    if (length(aa) == 1) {
       alt1 <- paste0(aa[1],codon)
       alt2 <- paste0('p.', alt1)
-      if(aa[1] != "X" & aa[1] %in% aa_dict$one_letter){
+      if (aa[1] != "X" & aa[1] %in% aa_dict$one_letter) {
         alt3 <- paste0(seqinr::aaa(aa[1]), codon)
         hits <- c(alt1, alt2, alt3)
       }else{
@@ -105,25 +105,25 @@ expand_hgvs_terms <- function(var, aa_dict) {
         hits <- c(alt1, alt2, alt3)
       }
     }else{
-      if(length(aa) == 2){
+      if (length(aa) == 2) {
         alt1 <- paste0(aa[1],codon, aa[2])
         alt2 <- paste0('p.', alt1)
-        if(aa[1] != "X" & 
+        if (aa[1] != "X" & 
            aa[2] != "X" & 
            aa[1] %in% aa_dict$one_letter &
-           aa[2] %in% aa_dict$one_letter){
+           aa[2] %in% aa_dict$one_letter) {
           alt3 <- paste0(seqinr::aaa(aa[1]),
                          codon, seqinr::aaa(aa[2]))
           alt4 <- paste0('p.', alt3)
           hits <- c(alt1, alt2, alt3, alt4)
         }else{
-          if(aa[1] == "X" & aa[2] %in% aa_dict$one_letter){
+          if (aa[1] == "X" & aa[2] %in% aa_dict$one_letter) {
             alt3 <- paste0("Ter",
                            codon, seqinr::aaa(aa[2]))
             alt4 <- paste0('p.', alt3)
             hits <- c(alt1, alt2, alt3, alt4)
           }else{
-            if(aa[2] == "X" & aa[1] %in% aa_dict$one_letter){
+            if (aa[2] == "X" & aa[1] %in% aa_dict$one_letter) {
               alt3 <- paste0(seqinr::aaa(aa[1]),
                              codon, "Ter")
               alt4 <- paste0('p.', alt3)
@@ -136,47 +136,47 @@ expand_hgvs_terms <- function(var, aa_dict) {
       }
     }
   }
-  if(stringr::str_detect(var,"^C\\.")){
+  if (stringr::str_detect(var,"^C\\.")) {
     var <- stringr::str_replace(var,"^C\\.","c.")
     #hits <- res
   }
-  if(stringr::str_detect(var,"^P\\.")){
+  if (stringr::str_detect(var,"^P\\.")) {
     var <- stringr::str_replace(var,"^P\\.","p.")
     #hits <- res
   }
-  if(stringr::str_detect(var,"FS$")){
+  if (stringr::str_detect(var,"FS$")) {
     var <- stringr::str_replace(var,"FS$","fs")
   }
-  if(stringr::str_detect(var,";") & stringr::str_detect(var,"\\(")){
+  if (stringr::str_detect(var,";") & stringr::str_detect(var,"\\(")) {
     var <- tolower(var)
   }
-  if(stringr::str_detect(var,"^([A-Z]{1}[0-9]{1,}[A-Z]{1})$")){
+  if (stringr::str_detect(var,"^([A-Z]{1}[0-9]{1,}[A-Z]{1})$")) {
     res1 <- paste0('p.', var)
     res2 <- stringr::str_match(var,"^([A-Z]{1}[0-9]{1,})")[[1]]
     hits <- c(hits,res1,res2)
   }
-  if(stringr::str_detect(var,"FS$")){
+  if (stringr::str_detect(var,"FS$")) {
     res <- stringr::str_replace(var,"FS$","fs")
     hits <- res
   }
-  if(stringr::str_detect(var,"(DEL|Del|INS|Ins|Dup|DUP)") &
-     !stringr::str_detect(var, "INSERTION|DUPLICATION|NM_|NP_|DELETERIOUS|DELETION|MUTATION|Mutation|Deletion|")){
+  if (stringr::str_detect(var,"(DEL|Del|INS|Ins|Dup|DUP)") &
+     !stringr::str_detect(var, "INSERTION|DUPLICATION|NM_|NP_|DELETERIOUS|DELETION|MUTATION|Mutation|Deletion|")) {
     var <- stringr::str_replace(var,"(DEL|Del)","del")
     var <- stringr::str_replace(var,"(INS|Ins)","ins")
     var <- stringr::str_replace(var,"(DUP|Dup)","dup")
-    if(!(stringr::str_detect(var,"^(c|p|rs|;|[0-9])"))){
+    if (!(stringr::str_detect(var,"^(c|p|rs|;|[0-9])"))) {
       res2 <- paste0('p.', var)
       hits <- c(var, res2)
     }
   }
 
-  if(length(hits) == 0 & var != ""){
-    if(!(stringr::str_detect(var,"^(c|rs|p|[0-9])")) &
+  if (length(hits) == 0 & var != "") {
+    if (!(stringr::str_detect(var,"^(c|rs|p|[0-9])")) &
        stringr::str_detect(var, "[0-9]{1,}") &
        !stringr::str_detect(
-         var,"EXON|;|MUTATION|Mutation|-|NM_|NP_|DELETERIOUS|Deletion|INTRON|DELETION|DUPLICATION")){
+         var,"EXON|;|MUTATION|Mutation|-|NM_|NP_|DELETERIOUS|Deletion|INTRON|DELETION|DUPLICATION")) {
 
-      if(stringr::str_detect(var,"FS$|DUP|DELINS|FS\\*")){
+      if (stringr::str_detect(var,"FS$|DUP|DELINS|FS\\*")) {
         var <- stringr::str_replace(var, "FS","fs")
         var <- stringr::str_replace(var, "DUP","dup")
         var <- stringr::str_replace(var, "DELINS","delins")
@@ -195,7 +195,7 @@ expand_hgvs_terms <- function(var, aa_dict) {
 }
 
 load_civic_biomarkers <- function(datestamp = '20211217',
-                                  compound_synonyms = NULL){
+                                  compound_synonyms = NULL) {
 
 
   aa_dict <- get_amino_acid_dictionary()
@@ -253,7 +253,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       dplyr::select(evidence_id, drugs) |>
       dplyr::filter(!is.na(drugs) &
                       nchar(drugs) > 0) |>
-      tidyr::separate_rows(drugs, sep=",") |>
+      tidyr::separate_rows(drugs, sep = ",") |>
       dplyr::mutate(drugs = tolower(drugs)) |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
@@ -269,7 +269,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       dplyr::distinct() |>
       dplyr::group_by(evidence_id) |>
       dplyr::summarise(molecule_chembl_id = paste(
-        unique(sort(molecule_chembl_id)), collapse="|"),
+        unique(sort(molecule_chembl_id)), collapse = "|"),
         .groups = "drop"
       ) |>
       dplyr::ungroup() |>
@@ -364,7 +364,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
                     alteration_type,
                     gene,
                     variant_aliases) |>
-      tidyr::separate_rows(variant_aliases, sep=",") |>
+      tidyr::separate_rows(variant_aliases, sep = ",") |>
 
       dplyr::mutate(
         variant =
@@ -496,12 +496,13 @@ load_civic_biomarkers <- function(datestamp = '20211217',
           tolower(variant_aliases),
           as.character(variant_aliases)
         )
-      )
+      ) |>
+      dplyr::distinct()
   )
 
   expanded_variant_set <- data.frame()
 
-  for(i in unique(variantSummary$variant_id)){
+  for (i in unique(variantSummary$variant_id)) {
     vrows <- variantSummary[variantSummary$variant_id == i,]
 
     variant_entries <- unique(c(vrows$variant,
@@ -512,18 +513,18 @@ load_civic_biomarkers <- function(datestamp = '20211217',
 
     all_aliases <- c()
 
-    if(stringr::str_detect(alteration_type,"MUT")){
+    if (stringr::str_detect(alteration_type,"MUT")) {
 
-      for(e in variant_entries){
+      for (e in variant_entries) {
         #cat(e,'\n')
         clean_aliases <- expand_hgvs_terms(e, aa_dict = aa_dict)
-        for(c in clean_aliases){
+        for (c in clean_aliases) {
           all_aliases <- unique(c(all_aliases, c))
         }
       }
 
 
-      for(variant_alias in all_aliases){
+      for (variant_alias in all_aliases) {
         df <- data.frame(
           'variant_id' = i,
           'symbol' = gene,
@@ -590,12 +591,12 @@ load_civic_biomarkers <- function(datestamp = '20211217',
   
   aa_dict <- get_amino_acid_dictionary()
   
-  for(i in 1:nrow(aa_dict)){
+  for (i in 1:nrow(aa_dict)) {
     aa <- aa_dict[i,"three_letter_uc"]
     aa_three_lc <- aa_dict[i, "three_letter"]
     
-    if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
+    if (nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0) {
       expanded_variant_set[!is.na(expanded_variant_set$variant) & 
                              stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
         stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
@@ -605,11 +606,11 @@ load_civic_biomarkers <- function(datestamp = '20211217',
     }
   }
   
-  # for(aa in c("PRO","ILE","HIS","GLY","GLU","LEU","THR",
-  #             "TYR","SER","ASN","ASP","LYS","PHE","ARG","GLN")){
+  # for (aa in c("PRO","ILE","HIS","GLY","GLU","LEU","THR",
+  #             "TYR","SER","ASN","ASP","LYS","PHE","ARG","GLN")) {
   #   aa_three_lc <- stringr::str_to_title(aa)
-  #   if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-  #                                stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
+  #   if (nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+  #                                stringr::str_detect(expanded_variant_set$variant,aa),]) > 0) {
   #     expanded_variant_set[!is.na(expanded_variant_set$variant) & 
   #                            stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
   #       stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
@@ -676,7 +677,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
 }
 
 
-load_cgi_biomarkers <- function(compound_synonyms = NULL){
+load_cgi_biomarkers <- function(compound_synonyms = NULL) {
 
   aa_dict <- get_amino_acid_dictionary()
   
@@ -737,7 +738,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL){
           TRUE ~ as.character(alteration_type)
         )) |>
 
-      tidyr::separate_rows(primary_tumor_acronym, sep=";") |>
+      tidyr::separate_rows(primary_tumor_acronym, sep = ";") |>
       dplyr::filter(!stringr::str_detect(association,"Toxicity")) |>
       dplyr::filter(!stringr::str_detect(source, "^ENA|ASCO|AACR|ESMO|http")) |>
       dplyr::filter(primary_tumor_acronym != 'SM' &
@@ -748,7 +749,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL){
       dplyr::left_join(cancer_type_abbreviations,
                        by = c("primary_tumor_acronym" = "cgi_abbreviation")) |>
       dplyr::distinct() |>
-      tidyr::separate(individual_mutation, c('symbol','alteration'),sep=":") |>
+      tidyr::separate(individual_mutation, c('symbol','alteration'), sep = ":") |>
       dplyr::mutate(symbol = dplyr::if_else(is.na(symbol) & !is.na(gene),
                                             gene,
                                             as.character(symbol))) |>
@@ -866,11 +867,11 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL){
   )
 
   all_mut_entries_expanded <- data.frame()
-  for(i in 1:nrow(all_mut_entries)){
+  for (i in 1:nrow(all_mut_entries)) {
 
     alt <- all_mut_entries[i,"alteration"]
     terms <- expand_hgvs_terms(alt, aa_dict = aa_dict)
-    for(t in terms){
+    for (t in terms) {
       df <- data.frame('evidence_id' = all_mut_entries[i,"evidence_id"],
                        'alteration' = t,
                        stringsAsFactors = F)
@@ -944,7 +945,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL){
       dplyr::select(evidence_id, therapeutic_context) |>
       dplyr::filter(!is.na(therapeutic_context) &
                       nchar(therapeutic_context) > 0) |>
-      tidyr::separate_rows(therapeutic_context, sep=" \\+ ") |>
+      tidyr::separate_rows(therapeutic_context, sep = " \\+ ") |>
       dplyr::mutate(therapeutic_context = tolower(therapeutic_context)) |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
@@ -1000,8 +1001,15 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL){
   return(biomarkers_all)
 }
 
-map_biomarker_phenotypes <- function(biomarkers_all){
+map_biomarker_phenotypes <- function(biomarkers_all,
+                                     cache_dir = NA) {
 
+  cancer_pheno_map <- 
+    phenoOncoX::get_terms(cache_dir = cache_dir)
+  
+  cancer_aux_pheno_maps <- 
+    phenoOncoX::get_aux_maps(cache_dir = cache_dir)
+  
   omap <- oncoPhenoMap::oncotree_expanded_full |>
     dplyr::select(do_id, efo_id, efo_name, do_name,
                   cui, cui_name, primary_site) |>
@@ -1051,7 +1059,7 @@ map_biomarker_phenotypes <- function(biomarkers_all){
 }
 
 
-load_pmkb_biomarkers <- function(){
+load_pmkb_biomarkers <- function() {
 
 
   aa_dict <- get_amino_acid_dictionary()
@@ -1064,11 +1072,11 @@ load_pmkb_biomarkers <- function(){
     dplyr::mutate(gene = dplyr::if_else(
       gene == "SEPT14", "SEPTIN14", as.character(gene)
     )) |>
-    tidyr::separate_rows(variant_s, sep="\\|") |>
+    tidyr::separate_rows(variant_s, sep = "\\|") |>
     dplyr::mutate(variant_s = dplyr::if_else(
       is.na(variant_s),"Undefined",as.character(variant_s)
     )) |>
-    tidyr::separate_rows(variant_s, sep=", ") |>
+    tidyr::separate_rows(variant_s, sep = ", ") |>
     dplyr::filter(!stringr::str_detect(variant_s,"[0-9]{1,}( any)?$")) |>
     dplyr::mutate(variant_s = dplyr::if_else(
       is.na(variant_s),"Undefined",as.character(variant_s)
@@ -1152,7 +1160,7 @@ load_pmkb_biomarkers <- function(){
     dplyr::filter(stringr::str_detect(variant," codon\\(s\\)")) |>
     dplyr::left_join(codon_mapping, by = "variant") |>
     dplyr::filter(!is.na(variant2)) |>
-    dplyr::mutate(variant2 = paste(gene, variant2, sep=" ")) |>
+    dplyr::mutate(variant2 = paste(gene, variant2, sep = " ")) |>
     dplyr::mutate(variant = variant2) |>
     dplyr::select(-variant2)
 
@@ -1160,7 +1168,7 @@ load_pmkb_biomarkers <- function(){
     dplyr::filter(pmkb_biomarkers, alteration_type != "CODON") |>
     dplyr::bind_rows(codon_hits) |>
     #tidyr::separate_rows(tissue, sep="\\|") |>
-    tidyr::separate_rows(cancer_type, sep="\\|") |>
+    tidyr::separate_rows(cancer_type, sep = "\\|") |>
     dplyr::mutate(evidence_level = dplyr::case_when(
       tier == 1 ~ "A",
       tier == 2 ~ "C",
@@ -1173,10 +1181,21 @@ load_pmkb_biomarkers <- function(){
                   variant_origin = "Somatic")
 
 
-  umls_aliases <- oncoPhenoMap::oncotree_expanded_full |>
+  
+  cancer_terms <- phenoOncoX::get_terms(
+    cache_dir = path_data_raw
+  )
+  
+  ontology_maps <- phenoOncoX::get_aux_maps(
+    cache_dir = path_data_raw
+  )
+  
+  umls_concept <- ontology_maps$records$umls$concept
+  
+  umls_aliases <- cancer_terms$records |>
     dplyr::select(cui) |>
     dplyr::distinct() |>
-    dplyr::left_join(oncoPhenoMap::auxiliary_maps$umls$concept, by = "cui") |>
+    dplyr::left_join(umls_concept, by = "cui") |>
     dplyr::select(cui, cui_name) |>
     dplyr::mutate(cui_name_lc = tolower(cui_name)) |>
     dplyr::select(cui_name_lc, cui) |>
@@ -1192,7 +1211,7 @@ load_pmkb_biomarkers <- function(){
     #dplyr::select(-cancer_type2) |>
     dplyr::distinct() |>
     dplyr::left_join(dplyr::select(
-      oncoPhenoMap::oncotree_expanded_full,
+      cancer_terms$records,
       cui, cui_name, efo_id, efo_name, do_name,
       do_id, primary_site, do_cancer_slim),
       by = "cui") |>
@@ -1205,7 +1224,7 @@ load_pmkb_biomarkers <- function(){
                     cancer_type == "Carcinoma" |
                     cancer_type == "Squamous Cell Carcinoma" |
                     cancer_type == "Basal Cell Carcinoma") |>
-    tidyr::separate_rows(tissue, sep="\\|") |>
+    tidyr::separate_rows(tissue, sep = "\\|") |>
     dplyr::mutate(tissue = stringr::str_trim(tissue)) |>
     #dplyr::select(cancer_type, tissue) |>
     dplyr::mutate(cancer_type2 = dplyr::case_when(
@@ -1214,7 +1233,6 @@ load_pmkb_biomarkers <- function(){
       tissue == "Pancreas" ~ "Pancreatic adenocarcinoma",
       tissue == "Lung" ~ "Lung cancer",
       tissue == "Larynx" | tissue == "Oral Cavity" ~ "Head and neck cancer",
-      # tissue == "Oral Cavity"˙~ "Head and neck cancer",
       tissue == "Stomach" ~ "Stomach cancer",
       tissue == "Prostate" ~ "Prostate cancer",
       tissue == "Bladder" ~ "Bladder cancer",
@@ -1240,7 +1258,7 @@ load_pmkb_biomarkers <- function(){
     #dplyr::select(-cancer_type2) |>
     dplyr::distinct() |>
     dplyr::left_join(dplyr::select(
-      oncoPhenoMap::oncotree_expanded_full,
+      cancer_terms$records,
       cui, cui_name, efo_id, efo_name, do_name,
       do_id, primary_site, do_cancer_slim),
       by = "cui") |>
@@ -1273,7 +1291,7 @@ load_pmkb_biomarkers <- function(){
 
   expanded_variant_set <- data.frame()
 
-  for(i in unique(variantSummary$evidence_id)){
+  for (i in unique(variantSummary$evidence_id)) {
     vrows <- variantSummary[variantSummary$evidence_id == i,]
 
     variant_entries <- unique(vrows$variant)
@@ -1282,19 +1300,19 @@ load_pmkb_biomarkers <- function(){
     alteration_type <- unique(vrows$alteration_type)
 
 
-    if(stringr::str_detect(alteration_type,"MUT|CODON")){
+    if (stringr::str_detect(alteration_type,"MUT|CODON")) {
 
       all_aliases <- c()
 
-      for(e in variant_entries){
+      for (e in variant_entries) {
         clean_aliases <- expand_hgvs_terms(e, aa_dict = aa_dict)
-        for(c in clean_aliases){
+        for (c in clean_aliases) {
           all_aliases <- unique(c(all_aliases, c))
         }
       }
 
 
-      for(variant_alias in all_aliases){
+      for (variant_alias in all_aliases) {
         df <- data.frame(
           'variant' = variant_alias,
           'evidence_id' = i,
@@ -1361,12 +1379,12 @@ load_pmkb_biomarkers <- function(){
   
   aa_dict <- get_amino_acid_dictionary()
   
-  for(i in 1:nrow(aa_dict)){
+  for (i in 1:nrow(aa_dict)) {
     aa <- aa_dict[i,"three_letter_uc"]
     aa_three_lc <- aa_dict[i, "three_letter"]
   
-    if(nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0){
+    if (nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
+                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0) {
       expanded_variant_set[!is.na(expanded_variant_set$variant) & 
                              stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
         stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
@@ -1454,10 +1472,10 @@ load_pmkb_biomarkers <- function(){
 }
 
 
-load_custom_fusion_db <- function(){
+load_custom_fusion_db <- function() {
 
   other_translocations <- as.data.frame(read.table(
-    file="data-raw/biomarkers/translocation_patterns.tsv", header = T,
+    file = "data-raw/biomarkers/translocation_patterns.tsv", header = T,
     sep = "\t", stringsAsFactors = F) |>
       dplyr::select(ngram_pattern, biomarker) |>
       dplyr::rename(alias = ngram_pattern,
@@ -1465,20 +1483,20 @@ load_custom_fusion_db <- function(){
       dplyr::mutate(biomarker_entity = T,
                     symbol = variant,
                     alias = toupper(alias)) |>
-      tidyr::separate_rows(alias, sep="\\|") |>
+      tidyr::separate_rows(alias, sep = "\\|") |>
       dplyr::mutate(biomarker_source_db = "fusion_customdb") |>
       dplyr::distinct()
   )
 
   other_translocations_lc <- as.data.frame(read.table(
-    file="data-raw/biomarkers/translocation_patterns.tsv", header = T,
+    file = "data-raw/biomarkers/translocation_patterns.tsv", header = T,
     sep = "\t", stringsAsFactors = F) |>
       dplyr::select(ngram_pattern, biomarker) |>
       dplyr::rename(alias = ngram_pattern,
                     variant = biomarker) |>
       dplyr::mutate(biomarker_entity = T,
                     symbol = variant) |>
-      tidyr::separate_rows(alias, sep="\\|") |>
+      tidyr::separate_rows(alias, sep = "\\|") |>
       dplyr::mutate(biomarker_source_db = "fusion_customdb") |>
       dplyr::distinct()
   )
@@ -1493,7 +1511,7 @@ load_custom_fusion_db <- function(){
 
 }
 
-load_mitelman_db <- function(){
+load_mitelman_db <- function() {
 
 
   phenotypes_morph <- read.table(
@@ -1525,7 +1543,7 @@ load_mitelman_db <- function(){
     dplyr::rename(karyotype = KaryShort) |>
     dplyr::select(MolClin, RefNo, InvNo, Morph, Topo,
                   variant, karyotype) |>
-    tidyr::separate_rows(variant, sep=",") |>
+    tidyr::separate_rows(variant, sep = ",") |>
     dplyr::left_join(pmid_data, by = "RefNo") |>
     dplyr::left_join(morph, by = "Morph") |>
     dplyr::filter(stringr::str_detect(variant,"::")) |>
@@ -1559,20 +1577,20 @@ load_mitelman_db <- function(){
     paste(
       stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
       stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
-      sep="-"
+      sep = "-"
     ),
     paste(
       stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
       stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
-      sep="/"
+      sep = "/"
     ),
     paste(
       stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
       stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
-      sep="-"
+      sep = "-"
     ),
     mbca_data$karyotype,
-    sep="@@@"
+    sep = "@@@"
   )
 
   bcr_abl_custom <-
@@ -1593,7 +1611,7 @@ load_mitelman_db <- function(){
     mbca_data |>
       dplyr::select(alias, variant_id, cancer_type,
                     evidence_id, citation_id) |>
-      tidyr::separate_rows(alias, sep="@@@") |>
+      tidyr::separate_rows(alias, sep = "@@@") |>
       dplyr::rename(variant = alias) |>
       dplyr::filter(
         !stringr::str_detect(
@@ -1628,7 +1646,13 @@ load_mitelman_db <- function(){
   mitelman_db$symbol <- stringr::str_split_fixed(
     mitelman_db$variant_id, " - ", 2)[,1]
 
-  umls_aliases <- oncoPhenoMap::auxiliary_maps$umls$concept |>
+  ontology_maps <- phenoOncoX::get_aux_maps(
+    cache_dir = path_data_raw
+  )
+  
+  umls_concept <- ontology_maps$records$umls$concept
+  
+  umls_aliases <- umls_concept |>
     dplyr::select(cui, cui_name) |>
     dplyr::mutate(cui_name = tolower(cui_name)) |>
     dplyr::distinct()
@@ -1671,11 +1695,11 @@ load_mitelman_db <- function(){
 
   mitelman <-
     mitelman_db_final |>
-    dplyr::left_join(oncoPhenoMap::auxiliary_maps$do, by = "cui") |>
+    dplyr::left_join(ontology_maps$records$do, by = "cui") |>
     dplyr::select(-do_cancer_slim) |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
-    dplyr::left_join(oncoPhenoMap::auxiliary_maps$efo$efo2xref, by = "cui") |>
+    dplyr::left_join(ontology_maps$records$efo$efo2xref, by = "cui") |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
     dplyr::rename(disease_ontology_id = do_id) |>

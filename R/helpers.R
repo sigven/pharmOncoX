@@ -5,19 +5,17 @@
 #'
 #'
 
-get_on_off_label_drugs <- function(cache_dir = NA){
+get_on_off_label_drugs <- function(cache_dir = NA) {
 
 
   onco_drugs <- 
-    get_onco_drugs(drug_is_targeted = T,
+    get_drugs(drug_is_targeted = T,
                    cache_dir = cache_dir,
                   source_opentargets_only = T)
     
     
   targeted_onco_inhibitors <- as.data.frame(
     onco_drugs$records |>
-      #dplyr::filter(!is.na(cancer_drug)) |>
-      #dplyr::filter(cancer_drug == T) |>
       dplyr::filter(!is.na(.data$drug_max_ct_phase)) |>
       dplyr::filter(.data$drug_max_ct_phase >= 1) |>
       dplyr::filter(!is.na(.data$molecule_chembl_id)) |>
@@ -26,19 +24,19 @@ get_on_off_label_drugs <- function(cache_dir = NA){
           paste0("<a href='https://www.targetvalidation.org/summary?drug=",
                  .data$molecule_chembl_id, "' target=\"_blank\">",
                  .data$drug_name, "</a>")) |>
-      dplyr::select(.data$target_symbol,
-                    .data$target_genename,
-                    .data$molecule_chembl_id,
-                    .data$drug_max_phase_indication,
-                    .data$drug_approved_indication,
-                    .data$drug_clinical_id,
-                    .data$disease_efo_id,
-                    .data$disease_efo_label,
-                    .data$primary_site,
-                    .data$drug_action_type,
-                    .data$nci_concept_definition,
-                    .data$drug_name,
-                    .data$drug_link) |>
+      dplyr::select(c("target_symbol",
+                    "target_genename",
+                    "molecule_chembl_id",
+                    "drug_max_phase_indication",
+                    "drug_approved_indication",
+                    "drug_clinical_id",
+                    "disease_efo_id",
+                    "disease_efo_label",
+                    "primary_site",
+                    "drug_action_type",
+                    "nci_concept_definition",
+                    "drug_name",
+                    "drug_link")) |>
       dplyr::mutate(drug_max_phase_indication = dplyr::if_else(
         is.na(.data$drug_max_phase_indication) |
           .data$drug_max_phase_indication == "",
@@ -73,8 +71,9 @@ get_on_off_label_drugs <- function(cache_dir = NA){
                                collapse = "|"),
         .groups = "drop") |>
       dplyr::ungroup() |>
-      dplyr::mutate(num_clinical_id =
-                      stringr::str_count(.data$drug_clinical_id, pattern = "|")) |>
+      dplyr::mutate(
+        num_clinical_id =
+          stringr::str_count(.data$drug_clinical_id, pattern = "|")) |>
       dplyr::rename(drug_indication_label =
                       .data$disease_efo_label,
                     drug_indication_id =
@@ -112,19 +111,19 @@ get_on_off_label_drugs <- function(cache_dir = NA){
               )),
             as.logical(TRUE),
             as.logical(FALSE))) |>
-      dplyr::select(-.data$genename) |>
+      dplyr::select(-"genename") |>
       dplyr::distinct() |>
       dplyr::filter(.data$moa_inhibition == T) |>
-      dplyr::select(.data$primary_site,
-                    .data$molecule_chembl_id,
-                    .data$symbol,
-                    .data$drug_name,
-                    .data$drug_action_type,
-                    .data$drug_link,
-                    .data$max_phase,
-                    .data$max_all_phase,
-                    .data$approved_indication,
-                    .data$drug_indication_label) |>
+      dplyr::select(c("primary_site",
+                    "molecule_chembl_id",
+                    "symbol",
+                    "drug_name",
+                    "drug_action_type",
+                    "drug_link",
+                    "max_phase",
+                    "max_all_phase",
+                    "approved_indication",
+                    "drug_indication_label")) |>
       dplyr::rename(drug_primary_site = .data$primary_site,
                     drug_max_phase_indication = .data$max_phase,
                     drug_max_phase_indication_all = .data$max_all_phase)
@@ -140,8 +139,8 @@ get_on_off_label_drugs <- function(cache_dir = NA){
 
   all_tt_records <- data.frame()
 
-  for(t in unique(targeted_onco_inhibitors$drug_primary_site)){
-    #if(!is.na(t)){
+  for (t in unique(targeted_onco_inhibitors$drug_primary_site)) {
+    #if (!is.na(t)) {
     targeted_drugs_per_site[[t]] <- list()
     targeted_drugs_per_site[[t]][['off_label']] <- data.frame()
     targeted_drugs_per_site[[t]][['other_any_phase']] <- data.frame()
@@ -149,7 +148,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
     targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- data.frame()
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- data.frame()
     
-    #if(t != "Any"){
+    #if (t != "Any") {
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
@@ -193,10 +192,12 @@ get_on_off_label_drugs <- function(cache_dir = NA){
       dplyr::arrange(.data$symbol, .data$drug_max_phase_indication)
     
     lgr::lgr$info(
-      paste0("Found n = ",
-             length(unique(targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$drug_name)),
-             " targeted drugs for indications with primary site: ",
-             t))
+      paste0(
+        "Found n = ",
+        length(unique(
+          targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$drug_name)),
+        " targeted drugs for indications with primary site: ",
+        t))
     
     tmp <- list()
     ## On label - late phase
@@ -207,7 +208,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
         drug_label = "ON_LABEL",
         query_site = t,
         drug_clinical_phase = "late") |>
-      dplyr::select(.data$query_site, dplyr::everything())
+      dplyr::select("query_site", dplyr::everything())
     
     ## On label early phase
     tmp[['on_label_ep']] <- 
@@ -217,7 +218,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
         drug_label = "ON_LABEL",
         query_site = t,
         drug_clinical_phase = "early") |>
-      dplyr::select(.data$query_site, dplyr::everything())
+      dplyr::select("query_site", dplyr::everything())
     
     ## Off label (late phase)
     tmp[['off_label']] <- 
@@ -227,7 +228,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
         drug_label = "OFF_LABEL",
         query_site = t,
         drug_clinical_phase = "late") |>
-      dplyr::select(.data$query_site, dplyr::everything())
+      dplyr::select("query_site", dplyr::everything())
     
     ## Other drugs
     tmp[['other']] <- 
@@ -240,7 +241,7 @@ get_on_off_label_drugs <- function(cache_dir = NA){
           "early",
           "late"
         )) |>
-      dplyr::select(.data$query_site, dplyr::everything())
+      dplyr::select("query_site", dplyr::everything())
     
     all_tt_records <- all_tt_records |>
       dplyr::bind_rows(
@@ -268,19 +269,19 @@ get_on_off_label_drugs <- function(cache_dir = NA){
 #'
 get_drug_records <- function(cache_dir = NA,
                              force_download = F
-                             ){
+                             ) {
 
 
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
-  if(is.na(cache_dir)){
+  if (is.na(cache_dir)) {
     lgr::lgr$fatal(paste0("Argument cache_dir = '",
                           cache_dir, "' is not defined"))
     stop()
   }
 
-  if(!dir.exists(cache_dir)){
+  if (!dir.exists(cache_dir)) {
     lgr::lgr$fatal(paste0("Argument cache_dir = '",
                           cache_dir, "' does not exist"))
     stop()
@@ -294,7 +295,7 @@ get_drug_records <- function(cache_dir = NA,
                  'drug_map_target',
                  'drug_map_indication')
 
-  for(elem in file_maps){
+  for (elem in file_maps) {
 
     fname_local <- file.path(
       cache_dir,
@@ -309,7 +310,7 @@ get_drug_records <- function(cache_dir = NA,
     md5checksum_package <-
       db_id_ref[db_id_ref$name == elem,]$md5Checksum
 
-    if(length(fname_local) > 1){
+    if (length(fname_local) > 1) {
       fname_local <- fname_local[-1]
       lgr::lgr$warn(
         paste0(
@@ -320,10 +321,10 @@ get_drug_records <- function(cache_dir = NA,
     }
     
     #dat <- NULL
-    if(file.exists(fname_local) && force_download == F){
+    if (file.exists(fname_local) && force_download == F) {
       drug_datasets[[elem]] <- readRDS(fname_local)
       drug_datasets[[elem]][['fpath']] <- fname_local
-      if(!is.null(drug_datasets[[elem]][['records']])){
+      if (!is.null(drug_datasets[[elem]][['records']])) {
         lgr::lgr$info(paste0(
           "Reading from cache_dir = '", 
           cache_dir, "', argument force_download = F"))
@@ -338,7 +339,8 @@ get_drug_records <- function(cache_dir = NA,
       
       googledrive::drive_deauth()
 
-      lgr::lgr$info("Downloading remote dataset from Google Drive to cache_dir")
+      lgr::lgr$info(
+        "Downloading remote dataset from Google Drive to cache_dir")
       dl <- googledrive::with_drive_quiet(
         googledrive::drive_download(
           fname_gd,
@@ -350,14 +352,15 @@ get_drug_records <- function(cache_dir = NA,
       md5checksum_local <- tools::md5sum(fname_local)
       names(md5checksum_local) <- NULL
 
-      if(md5checksum_remote == md5checksum_local){
+      if (md5checksum_remote == md5checksum_local) {
         drug_datasets[[elem]] <- readRDS(fname_local)
         drug_datasets[[elem]]$fpath <- fname_local
-        if(!is.null(drug_datasets[[elem]][['records']]) &
-           !is.null(drug_datasets[[elem]][['metadata']])){
+        if (!is.null(drug_datasets[[elem]][['records']]) &
+           !is.null(drug_datasets[[elem]][['metadata']])) {
 
           lgr::lgr$info(paste0(
-            "Reading from cache_dir = ' (", cache_dir, "'), argument force_download = F"))
+            "Reading from cache_dir = ' (", 
+            cache_dir, "'), argument force_download = F"))
           lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
           lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
           lgr::lgr$info(paste0(
@@ -365,12 +368,13 @@ get_drug_records <- function(cache_dir = NA,
 
         }
       }else{
-        lgr::lgr$error(paste0("md5 checksum of local file (", md5checksum_local,
-                              ") is inconsistent with remote file (",
-                              md5checksum_remote,")"))
+        lgr::lgr$error(
+          paste0("md5 checksum of local file (", md5checksum_local,
+                 ") is inconsistent with remote file (",
+                 md5checksum_remote,")"))
         stop()
       }
-
+      
     }
   }
 
@@ -378,9 +382,10 @@ get_drug_records <- function(cache_dir = NA,
 
   drug_aliases_collapsed <- as.data.frame(
     drug_datasets[['drug_map_alias']][['records']] |>
-    dplyr::group_by(.data$drug_id) |>
-    dplyr::summarise(drug_alias = paste(sort(unique(.data$alias)), collapse="|"),
-                     .groups = "drop")
+      dplyr::group_by(.data$drug_id) |>
+      dplyr::summarise(
+        drug_alias = paste(sort(unique(.data$alias)), collapse = "|"),
+        .groups = "drop")
   )
 
 
@@ -410,19 +415,19 @@ get_drug_records <- function(cache_dir = NA,
 #'
 #'
 get_biomarkers <- function(cache_dir = NA,
-                             force_download = F){
+                             force_download = F) {
   
   
   lgr::lgr$appenders$console$set_layout(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
   
-  if(is.na(cache_dir)){
+  if (is.na(cache_dir)) {
     lgr::lgr$fatal(paste0("Argument cache_dir = '",
                           cache_dir, "' is not defined"))
     stop()
   }
   
-  if(!dir.exists(cache_dir)){
+  if (!dir.exists(cache_dir)) {
     lgr::lgr$fatal(paste0("Argument cache_dir = '",
                           cache_dir, "' does not exist"))
     stop()
@@ -432,7 +437,7 @@ get_biomarkers <- function(cache_dir = NA,
   biomarker_datasets <- list()
   file_maps <- c('biomarkers_curated')
   
-  for(elem in file_maps){
+  for (elem in file_maps) {
     
     fname_local <- file.path(
       cache_dir,
@@ -448,16 +453,18 @@ get_biomarkers <- function(cache_dir = NA,
       db_id_ref[db_id_ref$name == elem,]$md5Checksum
     
     #dat <- NULL
-    if(file.exists(fname_local) & force_download == F){
+    if (file.exists(fname_local) & force_download == F) {
       biomarker_datasets[[elem]] <- readRDS(fname_local)
       biomarker_datasets[[elem]][['fpath']] <- fname_local
-      if(!is.null(biomarker_datasets[[elem]][['records']]) & 
-         !is.null(biomarker_datasets[[elem]][['metadata']])){
+      if (!is.null(biomarker_datasets[[elem]][['records']]) & 
+         !is.null(biomarker_datasets[[elem]][['metadata']])) {
         lgr::lgr$info(paste0(
-          "Reading from cache_dir = '", cache_dir, "', argument force_download = F"))
+          "Reading from cache_dir = '", 
+          cache_dir, "', argument force_download = F"))
         lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
         lgr::lgr$info(paste0(
-          "Retrieved n = ", nrow(biomarker_datasets[[elem]][['records']]), " records"))
+          "Retrieved n = ", 
+          nrow(biomarker_datasets[[elem]][['records']]), " records"))
         
       }
       
@@ -477,18 +484,20 @@ get_biomarkers <- function(cache_dir = NA,
       md5checksum_local <- tools::md5sum(fname_local)
       names(md5checksum_local) <- NULL
       
-      if(md5checksum_remote == md5checksum_local){
+      if (md5checksum_remote == md5checksum_local) {
         biomarker_datasets[[elem]] <- readRDS(fname_local)
         biomarker_datasets[[elem]]$fpath <- fname_local
-        if(!is.null(biomarker_datasets[[elem]][['records']]) &
-           !is.null(biomarker_datasets[[elem]][['metadata']])){
+        if (!is.null(biomarker_datasets[[elem]][['records']]) &
+           !is.null(biomarker_datasets[[elem]][['metadata']])) {
           
           lgr::lgr$info(paste0(
-            "Reading from cache_dir = ' (", cache_dir, "'), argument force_download = F"))
+            "Reading from cache_dir = ' (", 
+            cache_dir, "'), argument force_download = F"))
           lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
           lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
           lgr::lgr$info(paste0(
-            "Retrieved ", nrow(biomarker_datasets[[elem]][['records']]), " records"))
+            "Retrieved ", 
+            nrow(biomarker_datasets[[elem]][['records']]), " records"))
           
         }
       }else{

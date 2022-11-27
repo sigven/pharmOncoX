@@ -1,7 +1,7 @@
 
 ## get metadata from metadata_pharma_oncox.xlsx
 metadata <- list()
-for(elem in c('compounds','biomarkers')){
+for (elem in c('compounds','biomarkers')) {
   metadata[[elem]] <- as.data.frame(openxlsx::read.xlsx(
     "data-raw/metadata_pharma_oncox.xlsx", sheet = elem, colNames = T) |>
       dplyr::mutate(version = dplyr::if_else(
@@ -13,8 +13,11 @@ for(elem in c('compounds','biomarkers')){
   )
 }
 
-nci_db_release <- metadata$compounds[metadata$compounds$abbreviation == "nci", "version"]
-opentargets_version <- metadata$compounds[metadata$compounds$abbreviation == "opentargets", "version"]
+nci_db_release <- 
+  metadata$compounds[metadata$compounds$abbreviation == "nci", "version"]
+opentargets_version <- 
+  metadata$compounds[metadata$compounds$abbreviation == "opentargets", 
+                     "version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
 chembl_pubchem_datestamp <- '20220531'
 
@@ -61,23 +64,23 @@ gene_info <- dplyr::bind_rows(
 
 
 nci_thesaurus_files <- list()
-nci_thesaurus_files[['flat']] <- paste0("Thesaurus_", nci_db_release,".FLAT.zip")
-nci_thesaurus_files[['owl']] <- paste0("Thesaurus_", nci_db_release,".OWL.zip")
-nci_thesaurus_files[['inf_owl']] <- paste0("ThesaurusInf_", nci_db_release,".OWL.zip")
+nci_thesaurus_files[['flat']] <- 
+  paste0("Thesaurus_", nci_db_release,".FLAT.zip")
+nci_thesaurus_files[['owl']] <- 
+  paste0("Thesaurus_", nci_db_release,".OWL.zip")
+nci_thesaurus_files[['inf_owl']] <- 
+  paste0("ThesaurusInf_", nci_db_release,".OWL.zip")
 
 
-####---- DailyMed drug indications----####
-
-# drug_indications_dailymed <-
-#   get_dailymed_drug_indications(update = update_dailymed,
-#                                 path_data_raw = path_data_raw)
-
-for(elem in c('flat','owl','inf_owl')){
+for (elem in c('flat','owl','inf_owl')) {
   remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
-  local_file <- file.path(path_data_raw,"nci_thesaurus",nci_thesaurus_files[[elem]])
-  if(!file.exists(local_file)){
+  local_file <- file.path(path_data_raw,"nci_thesaurus", 
+                          nci_thesaurus_files[[elem]])
+  if (!file.exists(local_file)) {
     download.file(url = remote_file, destfile = local_file, quiet = T)
-    system(paste0('unzip -d ',file.path(path_data_raw, "nci_thesaurus"), ' -o -u ',local_file))
+    system(paste0('unzip -d ',
+                  file.path(path_data_raw, "nci_thesaurus"), 
+                  ' -o -u ',local_file))
   }
 }
 
@@ -85,8 +88,9 @@ antineo_agents_url <-
   'https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Drug_or_Substance/Antineoplastic_Agent.txt'
 antineo_agents_local <-
   file.path(path_data_raw,"nci_thesaurus","Antineoplastic_Agent.txt")
-if(!file.exists(antineo_agents_local)){
-  download.file(url = antineo_agents_url, destfile = antineo_agents_local, quiet = T)
+if (!file.exists(antineo_agents_local)) {
+  download.file(url = antineo_agents_url, 
+                destfile = antineo_agents_local, quiet = T)
 }
 
 
@@ -119,7 +123,6 @@ ot_nci_drugs <- merge_nci_open_targets(
 
 
 ####-- Cancer drugs: NCI custom match----####
-
 drug_df <- map_custom_nci_targets(
   gene_info = gene_info,
   path_data_raw = path_data_raw,
@@ -159,20 +162,24 @@ rm(drug_df)
 
 ##################### BIOMARKERS ###############################
 
-civic_variant_summary <- paste0("data-raw/biomarkers/civic/variant_summary_",
-                                package_datestamp,
-                                ".tsv")
-civic_clinical_evidence <- paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
-                                  package_datestamp,
-                                  ".tsv")
+civic_variant_summary <- 
+  paste0("data-raw/biomarkers/civic/variant_summary_",
+         package_datestamp,
+         ".tsv")
+civic_clinical_evidence <- 
+  paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
+         package_datestamp,
+         ".tsv")
 
 if(!file.exists(civic_variant_summary)){
-  download.file(url = "https://civicdb.org/downloads/nightly/nightly-VariantSummaries.tsv",
-                destfile = civic_variant_summary)
+  download.file(
+    url = "https://civicdb.org/downloads/nightly/nightly-VariantSummaries.tsv",
+    destfile = civic_variant_summary)
 }
 if(!file.exists(civic_clinical_evidence)){
-  download.file(url = "https://civicdb.org/downloads/nightly/nightly-ClinicalEvidenceSummaries.tsv",
-                destfile = civic_clinical_evidence)
+  download.file(
+    url = "https://civicdb.org/downloads/nightly/nightly-ClinicalEvidenceSummaries.tsv",
+    destfile = civic_clinical_evidence)
 }
 
 # gene_info <- get_gene_info_ncbi(
@@ -382,8 +389,8 @@ for(elem in c('biomarkers_curated',
           file = local_rds_fpath)
 
   (gd_records[[elem]] <- googledrive::drive_upload(
-    local_rds_fpath,
-    paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
+    media = local_rds_fpath,
+    path = paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
     #paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
   ))
 

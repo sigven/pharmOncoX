@@ -2,14 +2,14 @@
 
 # pharmaOncoX <a href="https://sigven.github.io/pharmaOncoX/"><img src="man/figures/logo.png" align="right" height="130" width="113"/></a>
 
-**pharmaOncoX** (previously *oncoPharmaDB*) is an R package that provides access to targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. 
+**pharmaOncoX** is an R package that provides access to targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. 
 
 
 ## Getting started
 
-* [Installation instructions](https://sigven.github.io/pharmaOncoX/articles/installation.html)
-* [Usage examples](https://sigven.github.io/pharmaOncoX/articles/running.html)
-* [Function reference](https://sigven.github.io/pharmaOncoX/reference)
+* [Installation instructions](https://sigven.github.io/pharmaOncoX/articles/pharmaOncoX.html#installation)
+* [Usage examples](https://sigven.github.io/pharmaOncoX/articles/pharmaOncoX.html#retrieval-of-drugs---examples)
+* [Function reference](https://sigven.github.io/pharmaOncoX/reference/)
 
 ## Contact
 

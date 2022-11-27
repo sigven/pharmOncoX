@@ -1,0 +1,260 @@
+---
+title: "Getting started"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: '`r system.file("bibliography.bib", package = "pharmaOncoX")`'
+nocite: |
+  @Kim2021-ye, @Freshour2021-bh, @Sioutos2007-nl, 
+  @Ochoa2021-jc, @Nakken2022-ab
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = F}
+library(pharmaOncoX)
+```
+
+<br><br>
+
+# Installation
+
+```{r install, echo = T, eval = F}
+
+if (!("remotes" %in% installed.packages()) {
+  install.packages("remotes")
+}
+remotes::install_github('sigven/pharmaOncoX')
+```
+
+<br><br>
+
+# Retrieval of drugs - examples 
+
+## Get BRAF-targeted drugs, list records per indication
+
+
+```{r braf_drugs_full, echo = T}
+library(pharmaOncoX)
+
+## load the data
+#download_dir <- tempdir()
+cache_dir <- "~/Desktop"
+
+drugs <- get_drugs(
+  cache_dir = cache_dir,
+  drug_is_targeted = T,
+	drug_target = c('BRAF'))
+
+## Number of drug records
+nrow(drugs$records)
+
+## Column names of drug records
+colnames(drugs$records)
+
+
+```
+
+<br><br>
+
+## Get BRAF-targeted drugs, Open Targets Platform only, list per drug only
+
+```{r braf_drugs, echo = T, eval = T, results = "hide"}
+
+drugs <- get_drugs(
+  cache_dir = cache_dir, 
+  drug_is_targeted = T,
+	drug_target = c('BRAF'), 
+  source_opentargets_only = T, 
+  output_resolution = "drug" )
+
+drugs$records <- 
+  dplyr::select(
+    drugs$records,
+    -c("drug_alias",
+       "disease_main_group",
+       "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|",", ")
+    )
+
+dt_drugtable1 <- DT::datatable(
+  drugs$records,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+
+```
+
+<br>
+
+```{r dt1, echo = F, eval = T}
+dt_drugtable1
+```
+
+<br><br>
+
+## Get immune checkpoint inhibitors, list per drug-target entry
+
+```{r immune_checkpoint_inhibitors, echo = T, eval = T, results = "hide"}
+
+drugs <- get_drugs(
+  cache_dir = cache_dir, 
+  is_immune_checkpoint_inhibitor = T,
+   output_resolution = "drug2target")
+
+drugs$records <- 
+  dplyr::select(
+    drugs$records,
+    -c("drug_alias",
+       "disease_main_group",
+       "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|",", ")
+    ) |>
+  dplyr::select(
+    drug_id,
+    drug_name,
+    drug_type,
+    target_symbol,
+    target_genename,
+    dplyr::everything()
+  )
+
+dt_drugtable2 <- DT::datatable(
+  drugs$records,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+```
+
+<br>
+
+```{r dt2, echo = F, eval = T}
+dt_drugtable2
+```
+
+<br><br>
+
+## Get immune checkpoint inhibitors indicated for tumor subtypes within "Colon/Rectum", list per drug-target entry
+
+```{r immune_colon, echo = T, eval = T, results = "hide"}
+
+drugs <- get_drugs(
+  cache_dir = cache_dir, 
+  is_immune_checkpoint_inhibitor = T,
+  output_resolution = "drug2target", 
+  drug_indication_main = "Colon/Rectum")
+
+drugs$records <- 
+  dplyr::select(
+    drugs$records,
+    -c("drug_alias",
+       "disease_main_group",
+       "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|",", ")
+    ) |>
+  dplyr::select(
+    drug_id,
+    drug_name,
+    drug_type,
+    target_symbol,
+    target_genename,
+    dplyr::everything()
+  )
+
+dt_drugtable3 <- DT::datatable(
+  drugs$records,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+
+```
+
+<br>
+
+```{r dt3, echo = F, eval = T}
+dt_drugtable3
+```
+
+<br><br>
+
+## Get antimetabolite drugs
+
+```{r antimetabolites, echo = T}
+
+drugs <- get_drugs(
+  cache_dir = cache_dir, 
+  is_antimetabolite = T,
+  output_resolution = "drug")
+
+drugs$records <- 
+  dplyr::select(
+    drugs$records,
+    -c("drug_alias",
+       "disease_main_group",
+       "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|",", ")
+    )
+
+dt_drugtable4 <- DT::datatable(
+  drugs$records,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+
+```
+
+<br>
+
+```{r dt4, echo = F, eval = T}
+dt_drugtable4
+```
+
+<br><br>
+
+# Session Info
+
+\vspace{5pt}
+\footnotesize
+```{r sessioninfo, eval = TRUE}
+# set eval = FALSE if you don't want this info (useful for reproducibility) 
+# to appear
+sessionInfo()
+```
+\normalsize
+
+<br><br>
+
+# References

@@ -267,21 +267,18 @@ get_chembl_pubchem_compound_xref <- function(datestamp = '20220429',
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2022.06"){
+           ot_version = "2022.09"){
 
-  phenotype_cancer_efo <- oncoPhenoMap::auxiliary_maps$umls$concept |>
-    dplyr::filter(main_term == T) |>
-    dplyr::select(cui, cui_name) |>
-    dplyr::distinct() |>
-    dplyr::inner_join(
-      dplyr::select(oncoPhenoMap::oncotree_expanded_full,
-                    efo_id, cui,
-                    cui_name, primary_site),
-      by = c("cui", "cui_name")) |>
-    dplyr::rename(disease_efo_id = efo_id) |>
-    dplyr::filter(!is.na(disease_efo_id)) |>
-    dplyr::distinct()
-
+    cancer_terms <- list()
+    cancer_terms[['all']] <- phenoOncoX::get_terms(
+      cache_dir = path_data_raw
+    )
+    
+    cancer_terms[['efo']] <- cancer_terms[['all']]$records |>
+      dplyr::select(cui, cui_name, efo_id, primary_site) |> 
+      dplyr::filter(!is.na(efo_id)) |>
+      dplyr::distinct() |>
+      dplyr::rename(disease_efo_id = efo_id)
 
   fname <- paste0(path_data_raw,
                   paste0("/opentargets/opentargets_drugs_",
@@ -313,7 +310,7 @@ get_opentargets_cancer_drugs <-
     dplyr::mutate(
       disease_efo_id = stringr::str_replace_all(disease_efo_id, "_", ":")) |>
     dplyr::distinct()  |>
-    dplyr::left_join(phenotype_cancer_efo, by = "disease_efo_id") |>
+    dplyr::left_join(cancer_terms[['efo']], by = "disease_efo_id") |>
     ## general cancer ontology terms (neoplasm, cancer, carcinoma, squamous cell carcinoma)
     dplyr::mutate(
       cancer_drug =
@@ -403,7 +400,7 @@ get_opentargets_cancer_drugs <-
     dplyr::filter(cancer_drug == F)
   
   return(list('targeted' = targeted_cancer_compounds,
-              'targeted_noncancer' <- targeted_noncancer_compounds,
+              'targeted_noncancer' = targeted_noncancer_compounds,
               'untargeted' = untargeted_cancer_compounds))
 
 }

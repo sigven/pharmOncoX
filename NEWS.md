@@ -1,3 +1,9 @@
+# Version 1.0.0 (November 27th 2022)
+
+* Updated NCI Thesaurus (22.10e)
+* Updated Open Targets Platform (2022.11)
+* Renamed `get_onco_drugs()` to `get_drugs()`
+
 # Version 0.9.8 (October 3rd 2022)
 
 * Fixed bug in v0.9.7, duplicate data record entries (Google Drive, `db_id_ref` in `R/sysdata.rda`)
@@ -42,24 +48,4 @@ inhibitory role with respect to mechanism-of-action
     adding extended support for drug biomarkers moving forward
 * Now using [lgr](https://github.com/s-fleck/lgr) for logging
 
-# Version 0.8.4 (July 27th 2022)
-
-* Updated NCI Thesaurus (22.07d)
-* Updated biomarkers (CIViC/Mitelman database)
-
-# Version 0.8.3 (July 1st 2022)
-
-* Updated NCI Thesaurus (22.06d)
-* Updated Open Targets Platform (2022.06)
-* Updated biomarkers (CIViC)
-
-# Version 0.8.2 (June 19th 2022)
-
-* Added more drugs from NCI thesaurus
-* Drug indication updates: (EFO/DO - https://github.com/sigven/oncoPhenoMap)
-* Updated biomarkers (CIViC)
-
-# Version 0.8.1 (June 2nd 2022)
-
-* Data updates: NCI Thesaurus (22.05e)
 

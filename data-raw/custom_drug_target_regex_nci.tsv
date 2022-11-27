@@ -1,5 +1,18 @@
 pattern	symbol
 TAFIa Inhibitor DS-1040b	CPB2
+MTB-9655	ACSS2
+M1069	ADORA2A
+M1069	ADORA2B
+hSTC810	BTN1A1
+Divarasib	KRAS
+DYP688	GNAQ
+DYP688	GNA11
+PT2385|NKT2152|DFF332	EPAS1
+AZD3965	SLC16A1
+PCLX-001	NMT1
+Osemitamab	CLDN18
+Reozalimab	PDCD1
+Reozalimab	CD274
 Sirexatamab	DKK1
 Tinlorafenib	BRAF
 Xiliertinib	EGFR
@@ -419,6 +432,8 @@ Poly (ADP-Ribose) Polymerase Inhibitor|PARP 1, 2 and 3 inhibitor	PARP2
 Poly (ADP-Ribose) Polymerase Inhibitor|PARP 1, 2 and 3 inhibitor	PARP3
 Adebrelimab|Cosibelimab|Erfonrilimab|Envafolimab|Garivulimab|Lodapolimab|Manelimab|Opucolimab|Pacmilimab|Sugemalimab|Manelimab|Opucolimab|Pacmilimab|Adebrelimab|Cosibelimab|Envafolimab|Garivulimab|Lodapolimab|Tagitanlimab|Socazolimab	CD274
 Geptanolimab|Nofazinlimab|Rulonilimab|Balstilimab|Dostarlimab|Camrelizumab|Tislelizumab|Toripalimab|Zeluvalimab|Zimberelimab|Pembrolizumab|Anti-PD1|PD1 Inhibitor|PD-1-targeted|Cetrelimab|Ezabenlimab|Izuralimab|Finotonlimab|Budigalimab|Sintilimab|Pimivalimab|Prolgolimab|Pucotenlimab|Retifanlimab|Sasanlimab|Serplulimab|Spartalizumab|Penpulimab|Tebotelimab|Vudalimab	PDCD1
+H3B-6545	ESR1
+TQB3915	ESR1
 Anti-LAG-3/PD-L1	CD274
 PD-L1/PD-L2/VISTA Antagonist CA-170	CD274
 PD-L1/PD-L2/VISTA Antagonist CA-170	PDCD1LG2

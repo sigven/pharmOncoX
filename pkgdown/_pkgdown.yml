@@ -9,18 +9,12 @@ authors:
     href: "https://github.com/sigven"
 navbar:
   structure:
-    left:  [home, intro, installation, running, reference, news]
-    right: [reference, search, github]
+    left:  [home, get_started, reference, news]
+    right: [search, github]
   components:
-    home:
-      text: Intro
-      href: index.html
-    installation:
-      text: Installation
-      href: articles/installation.html
-    running:
-      text: Running
-      href: articles/running.html
+    get_started:
+      text: Getting started
+      href: articles/pharmaOncoX.html
 
 home:
   sidebar:
