@@ -19,7 +19,7 @@ opentargets_version <-
   metadata$compounds[metadata$compounds$abbreviation == "opentargets", 
                      "version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
-chembl_pubchem_datestamp <- '20220531'
+chembl_pubchem_datestamp <- '20220906'
 
 ## set logging layout
 lgr::lgr$appenders$console$set_layout(

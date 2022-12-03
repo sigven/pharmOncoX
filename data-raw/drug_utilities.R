@@ -244,18 +244,21 @@ process_nci_labels <- function(path_data_raw, overwrite = F) {
 
 ### CHEMBL-PUBCHEM COMPOUND CROSS-REFERENCE
 
-get_chembl_pubchem_compound_xref <- function(datestamp = '20220429',
+get_chembl_pubchem_compound_xref <- function(datestamp = '20220906',
                                              chembl_release = "v31",
                                              path_data_raw = NULL,
                                              update = F){
-  chembl_pubchem_xref_fname <- file.path(path_data_raw, "chembl",
-                                         paste0("chembl_pubchem_mapping_", datestamp,".txt.gz"))
+  chembl_pubchem_xref_fname <- file.path(
+    path_data_raw, "chembl",
+    paste0("chembl_pubchem_mapping_", datestamp,".txt.gz"))
   if(!file.exists(chembl_pubchem_xref_fname) | update == T){
-    download.file("ftp://ftp.ebi.ac.uk/pub/databases/chembl/UniChem/data/wholeSourceMapping/src_id1/src1src22.txt.gz",
-                  destfile = chembl_pubchem_xref_fname)
+    download.file(
+      "ftp://ftp.ebi.ac.uk/pub/databases/chembl/UniChem/data/wholeSourceMapping/src_id1/src1src22.txt.gz",
+      destfile = chembl_pubchem_xref_fname)
   }
-  chembl_pubchem_compound_xref <- read.table(gzfile(chembl_pubchem_xref_fname), header = F, skip = 1,
-                                             stringsAsFactors = F,sep="\t",quote="") |>
+  chembl_pubchem_compound_xref <- read.table(
+    gzfile(chembl_pubchem_xref_fname), header = F, skip = 1,
+    stringsAsFactors = F,sep="\t",quote="") |>
     magrittr::set_colnames(c('molecule_chembl_id','pubchem_cid')) |>
     dplyr::mutate(chembl_db_version = chembl_release)
 
@@ -2900,8 +2903,16 @@ expand_drug_aliases <- function(drug_index_map = NULL,
       is.na(word_length) |
         (!is.na(word_length) &
            word_length > 6 & 
-           !stringr::str_detect(
-             alias_lc,"(one|i(n|l)(e|s)?|ol|id(e)?|oid|trel|opa|phen|xel|tal|rapy|lite(s)?|tomy|ase|ole|pam|fan|fen|yl|ane|ose|ium|(ph|z)ene|yde|lan|tam|fam|xal|strogen|gen|nal|xan|ene|gon|ram|glycan|prim|vir|yte(s)?|ate(s)?)$"
+           stringr::str_detect(
+             alias_lc,
+             paste0(
+               "(one|ol|id(e)?|oid|",
+               "trel|ine|ile||ins|inl|ils|opa|phen|",
+               "xel|tal|rapy|lite(s)?|",
+               "tomy|ase|ole|pam|fan|fen|yl|ane|ose|",
+               "ium|(ph|z)ene|yde|lan|tam|fam|xal|",
+               "strogen|gen|nal|xan|cine|ene|gon|ram|",
+               "glycan|prim|vir|yte(s)?|ate(s)?)$")
            )
         )
   ) |>
@@ -2912,6 +2923,22 @@ expand_drug_aliases <- function(drug_index_map = NULL,
                     alias_lc != "feces" &
                     alias_lc != "fiber" &
                     alias_lc != "start" &
+                    alias_lc != "specimen" &
+                    alias_lc != "maintenance" &
+                    alias_lc != "cinnamon" &
+                    alias_lc != "terminator" &
+                    alias_lc != "prevail" &
+                    alias_lc != "antagonist" &
+                    alias_lc != "agonist" &
+                    alias_lc != "marshal" &
+                    alias_lc != "sheriff" &
+                    alias_lc != "stipend" &
+                    alias_lc != "sprinkle" &
+                    alias_lc != "calculus" &
+                    alias_lc != "reactive" &
+                    alias_lc != "seaweed" &
+                    alias_lc != "mustang" &
+                    alias_lc != "mustard" &
                     alias_lc != "other" &
                     alias_lc != "freeze" &
                     alias_lc != "transplantation" &
