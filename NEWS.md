@@ -1,3 +1,9 @@
+# Version 1.1.0 (December 5th 2022)
+
+* Updated NCI Thesaurus (2022.11d)
+* Rename package to *pharmOncoX* 
+* Rescue drug aliases that were erroneously discarded
+
 # Version 1.0.0 (November 27th 2022)
 
 * Updated NCI Thesaurus (22.10e)
@@ -13,7 +19,7 @@
 
 # Version 0.9.7 (September 21st 2022)
 
-* Upgraded [sigven/oncoPhenoMap](https://github.com/sigven/oncoPhenoMap) to v0.4.0
+* Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to v0.4.0
 * Upgraded [sigven/geneOncoX](https://github.com/sigven/geneOncoX)
 * Updated biomarkers (CIViC database)
 

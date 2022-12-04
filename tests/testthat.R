@@ -1,4 +1,4 @@
 library(testthat)
-library(pharmaOncoX)
+library(pharmOncoX)
 
-test_check("pharmaOncoX")
+test_check("pharmOncoX")

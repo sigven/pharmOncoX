@@ -258,7 +258,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
 
 
 
-#' Function that retrieves pharmaOncoX data from Google Drive
+#' Function that retrieves pharmOncoX data from Google Drive
 #'
 #' @param cache_dir Local directory for data download
 #' @param force_download Logical indicating if local cache should force downloaded
@@ -405,7 +405,7 @@ get_drug_records <- function(cache_dir = NA,
 }
 
 
-#' Function that retrieves pharmaOncoX data from Google Drive
+#' Function that retrieves pharmOncoX data from Google Drive
 #'
 #' @param cache_dir Local directory for data download
 #' @param force_download Logical indicating if local cache should force downloaded

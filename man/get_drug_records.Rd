@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{get_drug_records}
 \alias{get_drug_records}
-\title{Function that retrieves pharmaOncoX data from Google Drive}
+\title{Function that retrieves pharmOncoX data from Google Drive}
 \usage{
 get_drug_records(cache_dir = NA, force_download = F)
 }
@@ -13,6 +13,6 @@ get_drug_records(cache_dir = NA, force_download = F)
 (i.e. set to TRUE to re-download even if data exists in cache)}
 }
 \description{
-Function that retrieves pharmaOncoX data from Google Drive
+Function that retrieves pharmOncoX data from Google Drive
 }
 \keyword{internal}

@@ -195,7 +195,8 @@ expand_hgvs_terms <- function(var, aa_dict) {
 }
 
 load_civic_biomarkers <- function(datestamp = '20211217',
-                                  compound_synonyms = NULL) {
+                                  compound_synonyms = NULL,
+                                  cache_dir = NA) {
 
 
   aa_dict <- get_amino_acid_dictionary()
@@ -667,7 +668,8 @@ load_civic_biomarkers <- function(datestamp = '20211217',
                   dplyr::everything()
     )
 
-  biomarkers_all <- map_biomarker_phenotypes(biomarkers_all) |>
+  biomarkers_all <- map_biomarker_phenotypes(
+    biomarkers_all, cache_dir = cache_dir) |>
     dplyr::select(-do_cancer_slim) |>
     dplyr::distinct()
 
@@ -677,14 +679,20 @@ load_civic_biomarkers <- function(datestamp = '20211217',
 }
 
 
-load_cgi_biomarkers <- function(compound_synonyms = NULL) {
+load_cgi_biomarkers <- function(compound_synonyms = NULL,
+                                cache_dir = NA) {
 
   aa_dict <- get_amino_acid_dictionary()
   
   cancer_type_abbreviations <-
-    read.table(file = "data-raw/biomarkers/cgi/cancer_subtypes.tsv",sep = "\t", header = T,
-               stringsAsFactors = F, quote = "", na.strings = "",fill = T) |>
-    dplyr::mutate(disease_ontology_id = paste0("DOID:",disease_ontology_id))
+    read.table(
+      file = "data-raw/biomarkers/cgi/cancer_subtypes.tsv",
+      sep = "\t", header = T,
+      stringsAsFactors = F, quote = "", 
+      na.strings = "",fill = T) |>
+    dplyr::mutate(
+      disease_ontology_id = paste0(
+        "DOID:",disease_ontology_id))
 
   ## SNVs/InDels
   ## SKIP/IGNORE mutations that are
@@ -711,8 +719,6 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL) {
                     individual_mutation,
                     info, g_dna) |>
       dplyr::mutate(variant_id = dplyr::row_number()) |>
-      #{\(x) dplyr::mutate(variant_id = seq(1:nrow(x)))}() |>
-      #dplyr::mutate(variant_id = rep(1:nrow(.))) |>
       dplyr::mutate(gene = dplyr::case_when(
         gene == "MLL" ~ "KMT2A",
         gene == "MLL2" ~ "KMT2D",
@@ -720,7 +726,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL) {
       )) |>
       dplyr::mutate(variant_origin = "Somatic") |>
       dplyr::mutate(variant_origin = dplyr::if_else(
-        !is.na(comments) & stringr::str_detect(tolower(comments),"germline"),
+        !is.na(comments) & 
+          stringr::str_detect(tolower(comments),"germline"),
         "Germline",
         as.character(variant_origin)
       )) |>
@@ -729,30 +736,41 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL) {
       dplyr::mutate(
         alteration_type = dplyr::case_when(
           alteration_type == "EXPR" &
-            stringr::str_detect(toupper(biomarker),"OVER") ~ "EXP_OVER",
+            stringr::str_detect(
+              toupper(biomarker),"OVER") ~ "EXP_OVER",
           alteration_type == "EXPR" &
-            stringr::str_detect(toupper(biomarker),"UNDE") ~ "EXP_UNDER",
+            stringr::str_detect(
+              toupper(biomarker),"UNDE") ~ "EXP_UNDER",
           alteration_type == "EXPR" &
-            !stringr::str_detect(toupper(biomarker),"OVER|UNDE") ~ "EXP",
+            !stringr::str_detect(
+              toupper(biomarker),"OVER|UNDE") ~ "EXP",
           alteration_type == "FUS" ~ "TRANSLOCATION_FUSION",
           TRUE ~ as.character(alteration_type)
         )) |>
 
-      tidyr::separate_rows(primary_tumor_acronym, sep = ";") |>
-      dplyr::filter(!stringr::str_detect(association,"Toxicity")) |>
-      dplyr::filter(!stringr::str_detect(source, "^ENA|ASCO|AACR|ESMO|http")) |>
-      dplyr::filter(primary_tumor_acronym != 'SM' &
-                      primary_tumor_acronym != 'AA' &
-                      primary_tumor_acronym != 'HES' &
-                      primary_tumor_acronym != 'WM') |>
+      tidyr::separate_rows(
+        primary_tumor_acronym, sep = ";") |>
+      dplyr::filter(
+        !stringr::str_detect(
+          association,"Toxicity")) |>
+      dplyr::filter(
+        !stringr::str_detect(
+          source,  "^ENA|ASCO|AACR|ESMO|http")) |>
+      dplyr::filter(
+        primary_tumor_acronym != 'SM' &
+          primary_tumor_acronym != 'AA' &
+          primary_tumor_acronym != 'HES' &
+          primary_tumor_acronym != 'WM') |>
       dplyr::rename(citation_id = source) |>
-      dplyr::left_join(cancer_type_abbreviations,
-                       by = c("primary_tumor_acronym" = "cgi_abbreviation")) |>
+      dplyr::left_join(
+        cancer_type_abbreviations,
+        by = c("primary_tumor_acronym" = "cgi_abbreviation")) |>
       dplyr::distinct() |>
       tidyr::separate(individual_mutation, c('symbol','alteration'), sep = ":") |>
-      dplyr::mutate(symbol = dplyr::if_else(is.na(symbol) & !is.na(gene),
-                                            gene,
-                                            as.character(symbol))) |>
+      dplyr::mutate(symbol = dplyr::if_else(
+        is.na(symbol) & !is.na(gene),
+        gene,
+        as.character(symbol))) |>
       dplyr::mutate(
         eitem_consequence =
           dplyr::if_else(stringr::str_detect(toupper(biomarker), "AMPLIFICATION") &
@@ -994,7 +1012,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL) {
                   molecule_chembl_id,
                   dplyr::everything())
 
-  biomarkers_all <- map_biomarker_phenotypes(biomarkers_all) |>
+  biomarkers_all <- map_biomarker_phenotypes(
+    biomarkers_all, cache_dir = cache_dir) |>
     dplyr::select(-do_cancer_slim) |>
     dplyr::distinct()
 
@@ -1005,19 +1024,21 @@ map_biomarker_phenotypes <- function(biomarkers_all,
                                      cache_dir = NA) {
 
   cancer_pheno_map <- 
-    phenoOncoX::get_terms(cache_dir = cache_dir)
+    phenOncoX::get_terms(cache_dir = cache_dir)
   
   cancer_aux_pheno_maps <- 
-    phenoOncoX::get_aux_maps(cache_dir = cache_dir)
+    phenOncoX::get_aux_maps(cache_dir = cache_dir)
   
-  omap <- oncoPhenoMap::oncotree_expanded_full |>
+  omap <- cancer_pheno_map$records |>
+  #omap <- oncoPhenoMap::oncotree_expanded_full |>
     dplyr::select(do_id, efo_id, efo_name, do_name,
                   cui, cui_name, primary_site) |>
     dplyr::filter(!is.na(do_id) & !is.na(cui)) |>
     dplyr::rename(disease_ontology_id = do_id) |>
     dplyr::distinct()
 
-  umls_terms <- oncoPhenoMap::auxiliary_maps$umls$concept |>
+  #umls_terms <- oncoPhenoMap::auxiliary_maps$umls$concept |>
+  umls_terms <- cancer_aux_pheno_maps$records$umls$concept |>
     dplyr::filter(main_term == T) |>
     dplyr::select(cui, cui_name)
 
@@ -1028,11 +1049,14 @@ map_biomarker_phenotypes <- function(biomarkers_all,
     dplyr::filter(is.na(cui)) |>
     dplyr::select(-c(cui, cui_name, primary_site,
                      efo_id, do_name, efo_name)) |>
-    dplyr::inner_join(oncoPhenoMap::auxiliary_maps$do,
-                      by = c("disease_ontology_id" = "do_id")) |>
+    dplyr::inner_join(
+      cancer_aux_pheno_maps$records$do,
+      #oncoPhenoMap::auxiliary_maps$do,
+      by = c("disease_ontology_id" = "do_id")) |>
     dplyr::left_join(umls_terms, by = "cui") |>
     dplyr::left_join(dplyr::select(
-      oncoPhenoMap::auxiliary_maps$efo$efo2xref,
+      cancer_aux_pheno_maps$records$efo$efo2xref,
+      #oncoPhenoMap::auxiliary_maps$efo$efo2xref,
       cui, efo_id, efo_name
     ), by = "cui") |>
     dplyr::distinct() |>
@@ -1059,15 +1083,19 @@ map_biomarker_phenotypes <- function(biomarkers_all,
 }
 
 
-load_pmkb_biomarkers <- function() {
+load_pmkb_biomarkers <- function(cache_dir = NA) {
 
 
   aa_dict <- get_amino_acid_dictionary()
   
   pmkb_biomarkers <- as.data.frame(
-    readr::read_delim(file="data-raw/biomarkers/pmkb/PMKB_Interpretations_Complete_20211220-0312.csv",
-                    show_col_types = F, delim = ",")
-  ) |>
+    readr::read_delim(
+      file = file.path(
+        "data-raw",
+        "biomarkers",
+        "pmkb",
+        "PMKB_Interpretations_Complete_20211220-0312.csv"),
+      show_col_types = F, delim = ",")) |>
     janitor::clean_names() |>
     dplyr::mutate(gene = dplyr::if_else(
       gene == "SEPT14", "SEPTIN14", as.character(gene)
@@ -1100,36 +1128,51 @@ load_pmkb_biomarkers <- function() {
       TRUE ~ as.character(variant_s)
     )) |>
     dplyr::mutate(variant = dplyr::if_else(
-      stringr::str_detect(variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? deletion"),
-      paste0("EXON ",
-             stringr::str_replace_all(variant,"\\S+ exon\\(s\\) | deletion",""),
-             " DELETION"),
+      stringr::str_detect(
+        variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? deletion"),
+      paste0(
+        "EXON ",
+        stringr::str_replace_all(
+          variant,"\\S+ exon\\(s\\) | deletion",""),
+        " DELETION"),
       as.character(variant)
     )) |>
     dplyr::mutate(variant = dplyr::if_else(
-      stringr::str_detect(variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? insertion"),
-      paste0("EXON ",
-             stringr::str_replace_all(variant,"\\S+ exon\\(s\\) | insertion",""),
-             " INSERTION"),
+      stringr::str_detect(
+        variant,
+        "exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? insertion"),
+      paste0(
+        "EXON ",
+        stringr::str_replace_all(
+          variant,"\\S+ exon\\(s\\) | insertion",""),
+        " INSERTION"),
       as.character(variant)
     )) |>
     dplyr::mutate(variant = dplyr::if_else(
-      stringr::str_detect(variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? frameshift"),
-      paste0("EXON ",
-             stringr::str_replace_all(variant,"\\S+ exon\\(s\\) | frameshift",""),
-             " FRAMESHIFT"),
+      stringr::str_detect(
+        variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? frameshift"),
+      paste0(
+        "EXON ",
+        stringr::str_replace_all(
+          variant,"\\S+ exon\\(s\\) | frameshift",""),
+        " FRAMESHIFT"),
       as.character(variant)
     )) |>
     dplyr::mutate(variant = dplyr::if_else(
-      stringr::str_detect(variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? (missense|nonsense)"),
-      paste0("EXON ",
-             stringr::str_replace_all(variant,"\\S+ exon\\(s\\) | (missense|nonsense)",""),
-             " MUTATION"),
+      stringr::str_detect(
+        variant,"exon\\(s\\) [0-9]{1,}(-[0-9]{1,})? (missense|nonsense)"),
+      paste0(
+        "EXON ",
+        stringr::str_replace_all(
+          variant,"\\S+ exon\\(s\\) | (missense|nonsense)",""),
+        " MUTATION"),
       as.character(variant)
     )) |>
     dplyr::mutate(alteration_type = dplyr::case_when(
-      variant == "AMPLIFICATION" | variant == "DELETION" ~ "CNA",
-      stringr::str_detect(variant,"codon\\(s\\)") ~ "CODON",
+      variant == "AMPLIFICATION" | 
+        variant == "DELETION" ~ "CNA",
+      stringr::str_detect(
+        variant,"codon\\(s\\)") ~ "CODON",
       TRUE ~ as.character("MUT")
     )) |>
     dplyr::mutate(gene = dplyr::if_else(
@@ -1138,7 +1181,9 @@ load_pmkb_biomarkers <- function() {
     dplyr::mutate(variant = stringr::str_replace(
       variant,"\\*$","X"
     )) |>
-    dplyr::filter(variant != "Undefined" & !stringr::str_detect(variant,"rearrangement")) |>
+    dplyr::filter(
+      variant != "Undefined" & 
+        !stringr::str_detect(variant,"rearrangement")) |>
     dplyr::rename(tissue = tissue_type_s,
                   evidence_description = interpretations,
                   evidence_url = pmkb_url,
@@ -1148,10 +1193,11 @@ load_pmkb_biomarkers <- function() {
     #{\(x) dplyr::mutate(evidence_id = seq(1:nrow(x)))}() |>
     #dplyr::mutate(evidence_id = seq(1:nrow(.))) |>
     dplyr::mutate(evidence_id = paste0("PMKB_",evidence_id))
-
-
-  codon_mapping <- readr::read_delim("data-raw/biomarkers/pmkb/codon_mapping.tsv",
-                                   show_col_types = F, delim = ";") |>
+  
+  
+  codon_mapping <- readr::read_delim(
+    "data-raw/biomarkers/pmkb/codon_mapping.tsv",
+    show_col_types = F, delim = ";") |>
     dplyr::mutate(variant2 = paste0(amino_acid,position)) |>
     dplyr::select(variant, variant2) |>
     dplyr::distinct()
@@ -1182,12 +1228,12 @@ load_pmkb_biomarkers <- function() {
 
 
   
-  cancer_terms <- phenoOncoX::get_terms(
-    cache_dir = path_data_raw
+  cancer_terms <- phenOncoX::get_terms(
+    cache_dir = cache_dir
   )
   
-  ontology_maps <- phenoOncoX::get_aux_maps(
-    cache_dir = path_data_raw
+  ontology_maps <- phenOncoX::get_aux_maps(
+    cache_dir = cache_dir
   )
   
   umls_concept <- ontology_maps$records$umls$concept
@@ -1511,7 +1557,7 @@ load_custom_fusion_db <- function() {
 
 }
 
-load_mitelman_db <- function() {
+load_mitelman_db <- function(cache_dir = NA) {
 
 
   phenotypes_morph <- read.table(
@@ -1646,8 +1692,8 @@ load_mitelman_db <- function() {
   mitelman_db$symbol <- stringr::str_split_fixed(
     mitelman_db$variant_id, " - ", 2)[,1]
 
-  ontology_maps <- phenoOncoX::get_aux_maps(
-    cache_dir = path_data_raw
+  ontology_maps <- phenOncoX::get_aux_maps(
+    cache_dir = cache_dir
   )
   
   umls_concept <- ontology_maps$records$umls$concept

@@ -1,8 +1,8 @@
-Package: pharmaOncoX
+Package: pharmOncoX
 Type: Package
 Title: Annotated targeted and non-targeted anticancer drugs
 Version: 1.0.0
-Date: 2022-11-27
+Date: 2022-12-04
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -16,8 +16,8 @@ Description: This data package collects aticancer drug information from multiple
     which can be queried with a range of parameters, including clinical development phase, approval
     status, drug targets, mechanism-of-action/drug category etc.
 License: MIT + file LICENSE
-URL: https://github.com/sigven/pharmaOncoX
-BugReports: https://github.com/sigven/pharmaOncoX/issues
+URL: https://github.com/sigven/pharmOncoX
+BugReports: https://github.com/sigven/pharmOncoX/issues
 Depends: 
     R (>= 4.1.0)
 Imports: dplyr,

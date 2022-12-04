@@ -7,7 +7,7 @@ vignette: >
   %\VignetteIndexEntry{Getting started}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: '`r system.file("bibliography.bib", package = "pharmaOncoX")`'
+bibliography: '`r system.file("bibliography.bib", package = "pharmOncoX")`'
 nocite: |
   @Kim2021-ye, @Freshour2021-bh, @Sioutos2007-nl, 
   @Ochoa2021-jc, @Nakken2022-ab
@@ -20,10 +20,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, echo = F}
-library(pharmaOncoX)
-```
-
 <br><br>
 
 # Installation
@@ -33,7 +29,7 @@ library(pharmaOncoX)
 if (!("remotes" %in% installed.packages()) {
   install.packages("remotes")
 }
-remotes::install_github('sigven/pharmaOncoX')
+remotes::install_github('sigven/pharmOncoX')
 ```
 
 <br><br>
@@ -44,10 +40,11 @@ remotes::install_github('sigven/pharmaOncoX')
 
 
 ```{r braf_drugs_full, echo = T}
-library(pharmaOncoX)
+library(pharmOncoX)
 
 ## load the data
-cache_dir <- tempdir()
+cache_dir <- "~/Desktop"
+#cache_dir <- tempdir()
 
 drugs <- get_drugs(
   cache_dir = cache_dir,

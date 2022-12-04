@@ -3,7 +3,7 @@
 metadata <- list()
 for (elem in c('compounds','biomarkers')) {
   metadata[[elem]] <- as.data.frame(openxlsx::read.xlsx(
-    "data-raw/metadata_pharma_oncox.xlsx", sheet = elem, colNames = T) |>
+    "data-raw/metadata_pharm_oncox.xlsx", sheet = elem, colNames = T) |>
       dplyr::mutate(version = dplyr::if_else(
         is.na(version) &
           abbreviation == "civic",
@@ -190,11 +190,15 @@ raw_biomarkers <- list()
 raw_biomarkers[['civic']] <-
   load_civic_biomarkers(
     compound_synonyms = compound_synonyms,
-    datestamp = package_datestamp)
+    datestamp = package_datestamp,
+    cache_dir = path_data_raw)
 raw_biomarkers[['cgi']] <- load_cgi_biomarkers(
-  compound_synonyms = compound_synonyms)
-raw_biomarkers[['mitelmandb']] <- load_mitelman_db()
-raw_biomarkers[['pmkb']] <- load_pmkb_biomarkers()
+  compound_synonyms = compound_synonyms,
+  cache_dir = path_data_raw)
+raw_biomarkers[['mitelmandb']] <- load_mitelman_db(cache_dir = path_data_raw)
+raw_biomarkers[['pmkb']] <- load_pmkb_biomarkers(
+  cache_dir = path_data_raw
+)
 custom_fusiondb <- load_custom_fusion_db() |>
   dplyr::anti_join(raw_biomarkers[["mitelmandb"]], by = "variant")
 
@@ -390,8 +394,7 @@ for(elem in c('biomarkers_curated',
 
   (gd_records[[elem]] <- googledrive::drive_upload(
     media = local_rds_fpath,
-    path = paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
-    #paste0("pharmaOncoX/", elem, "_v", version_minor_bumped,".rds")
+    path = paste0("pharmOncoX/", elem, "_v", version_minor_bumped,".rds")
   ))
 
   google_rec_df <-

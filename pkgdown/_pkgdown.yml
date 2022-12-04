@@ -1,5 +1,5 @@
-url: https://sigven.github.io/pharmaOncoX/
-title: pharmaOncoX
+url: https://sigven.github.io/pharmOncoX/
+title: pharmOncoX
 toc:
   depth: 3
 template:
@@ -14,7 +14,7 @@ navbar:
   components:
     get_started:
       text: Getting started
-      href: articles/pharmaOncoX.html
+      href: articles/pharmOncoX.html
 
 home:
   sidebar:
@@ -22,6 +22,6 @@ home:
     components:
       citation:
           title: Citation
-          text: "[Citing pharmaOncoX](authors.html#citation)"
+          text: "[Citing pharmOncoX](authors.html#citation)"
 news:
   one_page: true

@@ -267,7 +267,7 @@ Chk1 Inhibitor|Checkpoint Kinase Inhibitor	CHEK1
 Dihydroorotate Dehydrogenase	DHODH
 DNA-dependent Protein Kinase|DNA-PK	PRKDC
 ALK2	ACVR1
-Bcr-Abl	ABL1
+Bcr-Abl|BCR-ABL	ABL1
 ROS1	ROS1
 DNMT1	DNMT1
 Epidermal Growth Factor Receptor|Anti-[A-Za-z]{1,}[0-9]{0,}/EGFR|EGFR (.+)?Antagonist	EGFR
@@ -366,6 +366,7 @@ Gunagratinib	FGFR2
 Gunagratinib	FGFR3
 Gunagratinib	FGFR4
 Vofatamab	FGFR3
+TYRA-300	FGFR3
 Anti-EGFR|EGFR Inhibitor|(^EGFR(/)?.+ (Inhibitor|Antibody))	EGFR
 Anti-NY-ESO(-)?1	CTAG1B
 Anti-GITR|Anti-human GITR	TNFRSF18
