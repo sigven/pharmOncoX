@@ -461,21 +461,21 @@ load_civic_biomarkers <- function(datestamp = '20211217',
 
       )) |>
       dplyr::mutate(variant_types = dplyr::if_else(
-        stringr::str_detect(variant_types,"") &
+        variant_types == "" &
           stringr::str_detect(variant,"EXON") &
           stringr::str_detect(variant,"DELETION"),
         "exon_loss_variant",
         as.character(variant_types)
       )) |>
       dplyr::mutate(variant_types = dplyr::if_else(
-        stringr::str_detect(variant_types,"") &
+        variant_types == "" &
           stringr::str_detect(variant,"EXON") &
           stringr::str_detect(variant,"MUTATION"),
         "exon_variant",
         as.character(variant_types)
       )) |>
       dplyr::mutate(variant_types = dplyr::if_else(
-        stringr::str_detect(variant_types,"") &
+        variant_types == "" &
           stringr::str_detect(variant,"^(LOSS|LOSS-OF-FUNCTION)$"),
         "loss_of_function_variant",
         as.character(variant_types)

@@ -1,3 +1,8 @@
+# Version 1.1.1 (December 5th 2022)
+
+* Removal of multiple duplicate drug entries (Open Targets Platform 
+vs. NCI thesaurus)
+
 # Version 1.1.0 (December 5th 2022)
 
 * Updated NCI Thesaurus (2022.11d)
