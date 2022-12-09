@@ -22,7 +22,7 @@ records - a data frame with drug records
     
     <a class="navbar-brand me-2" href="../index.html">pharmOncoX</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,6 +94,7 @@ based on various criteria set by the user.</p>
 <span>  is_hedgehog_antagonist <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_hdac_inhibitor <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_hormone_therapy <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  is_iap_inhibitor <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_immune_checkpoint_inhibitor <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_kinase_inhibitor <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  is_monoclonal_antibody <span class="op">=</span> <span class="cn">F</span>,</span>
@@ -174,71 +175,75 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
 
 
 <dt>is_alkylating_agent</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_angiogenesis_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_anthracycline</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_antimetabolite</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_ar_antagonist</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_bet_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_hedgehog_antagonist</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_hdac_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_hormone_therapy</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
+
+
+<dt>is_iap_inhibitor</dt>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_immune_checkpoint_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_kinase_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_monoclonal_antibody</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_parp_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_platinum_compound</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_proteasome_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_topoisomerase_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 
 <dt>is_tubulin_inhibitor</dt>
-<dd><p>logical indicating if only this drug class is wanted</p></dd>
+<dd><p>logical indicating if only this drug class is to be considered</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -261,9 +266,9 @@ will be shown based on the value of <code>output_resolution</code>)</p>
 <li><p><em>is_adc</em> - logical - drug record represents an antibody-drug conjugate (ADC - excluded by default)</p></li>
 <li><p><em>drug_blacbox_warning</em> - logical indicating if drug has blackbox warning</p></li>
 <li><p><em>nci_t</em> - NCI thesaurus identifier</p></li>
-<li><p><em>comb_regimen_indication</em> - logical for whether use of drug in a given condition is in the context of a drug combination</p></li>
 <li><p><em>immune_checkpoint_inhibitor</em> - logical indicating if drug is an immune checkpoint inhibitor</p></li>
 <li><p><em>topoisomerase_inhibitor</em> - logical indicating if drug is a topoisomerase inhibitor</p></li>
+<li><p><em>iap_inhibitor</em> - logical indicating if drug is an IAP inhibitor</p></li>
 <li><p><em>tubulin_inhibitor</em> - logical indicating if drug is a tubulin inhibitor</p></li>
 <li><p><em>kinase_inhibitor</em> - logical indicating if drug is a kinase inhibitor</p></li>
 <li><p><em>hdac_inhibitor</em> - logical indicating if drug is a HDAC inhibitor</p></li>
