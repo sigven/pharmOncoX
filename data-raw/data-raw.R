@@ -39,17 +39,23 @@ path_data_tmp_processed <-
 
 
 # ####--- NCBI gene xrefs----####
-gene_basic <- geneOncoX::get_basic(cache_dir = path_data_tmp_processed)
-gene_gencode <- geneOncoX::get_gencode(cache_dir = path_data_tmp_processed)
+gene_basic <- geneOncoX::get_basic(
+  cache_dir = path_data_tmp_processed)
+gene_gencode <- geneOncoX::get_gencode(
+  cache_dir = path_data_tmp_processed)
 
 gene_info <- dplyr::bind_rows(
   dplyr::inner_join(
-    dplyr::select(gene_basic$records, entrezgene, symbol, name, gene_biotype),
-    dplyr::select(gene_gencode$records$grch38, entrezgene, ensembl_gene_id),
+    dplyr::select(gene_basic$records, entrezgene, 
+                  symbol, name, gene_biotype),
+    dplyr::select(gene_gencode$records$grch38, 
+                  entrezgene, ensembl_gene_id),
     by = c("entrezgene")),
   dplyr::inner_join(
-    dplyr::select(gene_basic$records, entrezgene, symbol, name, gene_biotype),
-    dplyr::select(gene_gencode$records$grch37, entrezgene, ensembl_gene_id),
+    dplyr::select(gene_basic$records, entrezgene, 
+                  symbol, name, gene_biotype),
+    dplyr::select(gene_gencode$records$grch37, 
+                  entrezgene, ensembl_gene_id),
     by = c("entrezgene"))) |>
   dplyr::filter(gene_biotype == "protein-coding") |>
   dplyr::distinct() |>
@@ -59,7 +65,6 @@ gene_info <- dplyr::bind_rows(
   dplyr::rename(genename = name,
                 target_entrezgene = entrezgene,
                 target_ensembl_gene_id = ensembl_gene_id)
-
 
 
 
@@ -99,7 +104,7 @@ if (!file.exists(antineo_agents_local)) {
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -116,14 +121,14 @@ ot_drugs <-
 ## 2) By name (if molecule chembl id does not provide any cross-ref)
 ## 3) Remove ambiguous names/ids
 ##
-ot_nci_drugs <- merge_nci_open_targets(
+ot_nci_drugs <- merge_nci_opentargets(
   ot_drugs = ot_drugs,
   path_data_raw = path_data_raw,
   nci_antineo_all = nci_antineo_all)
 
 
-####-- Cancer drugs: NCI custom match----####
-drug_df <- map_custom_nci_targets(
+####-- Cancer drugs: Custom/curated target match ----####
+drug_df <- map_curated_targets(
   gene_info = gene_info,
   path_data_raw = path_data_raw,
   drug_df = ot_nci_drugs

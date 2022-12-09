@@ -1,3 +1,8 @@
+# Version 1.1.2 (December 9th 2022)
+
+* Added drug category *iap_inhibitor* - inhibitor of IAP 
+(*Inhibitor of Apoptosis*) proteins
+
 # Version 1.1.1 (December 5th 2022)
 
 * Removal of multiple duplicate drug entries (Open Targets Platform 

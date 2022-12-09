@@ -29,6 +29,7 @@ get_drugs(
   is_hedgehog_antagonist = F,
   is_hdac_inhibitor = F,
   is_hormone_therapy = F,
+  is_iap_inhibitor = F,
   is_immune_checkpoint_inhibitor = F,
   is_kinase_inhibitor = F,
   is_monoclonal_antibody = F,
@@ -76,39 +77,41 @@ possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","
 
 \item{inhibitor_only}{logical indicating to return only drugs with inhibitory mechanism-of-action}
 
-\item{is_alkylating_agent}{logical indicating if only this drug class is wanted}
+\item{is_alkylating_agent}{logical indicating if only this drug class is to be considered}
 
-\item{is_angiogenesis_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_angiogenesis_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_anthracycline}{logical indicating if only this drug class is wanted}
+\item{is_anthracycline}{logical indicating if only this drug class is to be considered}
 
-\item{is_antimetabolite}{logical indicating if only this drug class is wanted}
+\item{is_antimetabolite}{logical indicating if only this drug class is to be considered}
 
-\item{is_ar_antagonist}{logical indicating if only this drug class is wanted}
+\item{is_ar_antagonist}{logical indicating if only this drug class is to be considered}
 
-\item{is_bet_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_bet_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_hedgehog_antagonist}{logical indicating if only this drug class is wanted}
+\item{is_hedgehog_antagonist}{logical indicating if only this drug class is to be considered}
 
-\item{is_hdac_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_hdac_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_hormone_therapy}{logical indicating if only this drug class is wanted}
+\item{is_hormone_therapy}{logical indicating if only this drug class is to be considered}
 
-\item{is_immune_checkpoint_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_iap_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_kinase_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_immune_checkpoint_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_monoclonal_antibody}{logical indicating if only this drug class is wanted}
+\item{is_kinase_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_parp_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_monoclonal_antibody}{logical indicating if only this drug class is to be considered}
 
-\item{is_platinum_compound}{logical indicating if only this drug class is wanted}
+\item{is_parp_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_proteasome_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_platinum_compound}{logical indicating if only this drug class is to be considered}
 
-\item{is_topoisomerase_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_proteasome_inhibitor}{logical indicating if only this drug class is to be considered}
 
-\item{is_tubulin_inhibitor}{logical indicating if only this drug class is wanted}
+\item{is_topoisomerase_inhibitor}{logical indicating if only this drug class is to be considered}
+
+\item{is_tubulin_inhibitor}{logical indicating if only this drug class is to be considered}
 }
 \value{
 The \code{records} data frame contains the following columns (only selected columns
@@ -127,9 +130,9 @@ will be shown based on the value of \code{output_resolution})
 \item \emph{is_adc} - logical - drug record represents an antibody-drug conjugate (ADC - excluded by default)
 \item \emph{drug_blacbox_warning} - logical indicating if drug has blackbox warning
 \item \emph{nci_t} - NCI thesaurus identifier
-\item \emph{comb_regimen_indication} - logical for whether use of drug in a given condition is in the context of a drug combination
 \item \emph{immune_checkpoint_inhibitor} - logical indicating if drug is an immune checkpoint inhibitor
 \item \emph{topoisomerase_inhibitor} - logical indicating if drug is a topoisomerase inhibitor
+\item \emph{iap_inhibitor} - logical indicating if drug is an IAP inhibitor
 \item \emph{tubulin_inhibitor} - logical indicating if drug is a tubulin inhibitor
 \item \emph{kinase_inhibitor} - logical indicating if drug is a kinase inhibitor
 \item \emph{hdac_inhibitor} - logical indicating if drug is a HDAC inhibitor

@@ -30,23 +30,24 @@
 #' @param drug_minimum_phase_any_indication only include drug records that are in a clinical phase (any indication) greater or equal than this phase
 #' @param output_resolution dictate output record resolution ('drug','drug2target','drug2target2indication')
 #' @param inhibitor_only logical indicating to return only drugs with inhibitory mechanism-of-action 
-#' @param is_alkylating_agent logical indicating if only this drug class is wanted
-#' @param is_angiogenesis_inhibitor logical indicating if only this drug class is wanted
-#' @param is_anthracycline logical indicating if only this drug class is wanted
-#' @param is_antimetabolite logical indicating if only this drug class is wanted
-#' @param is_ar_antagonist logical indicating if only this drug class is wanted
-#' @param is_bet_inhibitor logical indicating if only this drug class is wanted
-#' @param is_hedgehog_antagonist logical indicating if only this drug class is wanted
-#' @param is_hdac_inhibitor logical indicating if only this drug class is wanted
-#' @param is_hormone_therapy logical indicating if only this drug class is wanted
-#' @param is_immune_checkpoint_inhibitor logical indicating if only this drug class is wanted
-#' @param is_kinase_inhibitor logical indicating if only this drug class is wanted
-#' @param is_monoclonal_antibody logical indicating if only this drug class is wanted
-#' @param is_parp_inhibitor logical indicating if only this drug class is wanted
-#' @param is_platinum_compound logical indicating if only this drug class is wanted
-#' @param is_proteasome_inhibitor logical indicating if only this drug class is wanted
-#' @param is_topoisomerase_inhibitor logical indicating if only this drug class is wanted
-#' @param is_tubulin_inhibitor logical indicating if only this drug class is wanted
+#' @param is_alkylating_agent logical indicating if only this drug class is to be considered
+#' @param is_angiogenesis_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_anthracycline logical indicating if only this drug class is to be considered
+#' @param is_antimetabolite logical indicating if only this drug class is to be considered
+#' @param is_ar_antagonist logical indicating if only this drug class is to be considered
+#' @param is_bet_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_hedgehog_antagonist logical indicating if only this drug class is to be considered
+#' @param is_hdac_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_hormone_therapy logical indicating if only this drug class is to be considered
+#' @param is_iap_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_immune_checkpoint_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_kinase_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_monoclonal_antibody logical indicating if only this drug class is to be considered
+#' @param is_parp_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_platinum_compound logical indicating if only this drug class is to be considered
+#' @param is_proteasome_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_topoisomerase_inhibitor logical indicating if only this drug class is to be considered
+#' @param is_tubulin_inhibitor logical indicating if only this drug class is to be considered
 #'
 #' @return
 #'
@@ -66,9 +67,9 @@
 #'   \item \emph{is_adc} - logical - drug record represents an antibody-drug conjugate (ADC - excluded by default)
 #'   \item \emph{drug_blacbox_warning} - logical indicating if drug has blackbox warning
 #'   \item \emph{nci_t} - NCI thesaurus identifier
-#'   \item \emph{comb_regimen_indication} - logical for whether use of drug in a given condition is in the context of a drug combination
 #'   \item \emph{immune_checkpoint_inhibitor} - logical indicating if drug is an immune checkpoint inhibitor
 #'   \item \emph{topoisomerase_inhibitor} - logical indicating if drug is a topoisomerase inhibitor
+#'   \item \emph{iap_inhibitor} - logical indicating if drug is an IAP inhibitor
 #'   \item \emph{tubulin_inhibitor} - logical indicating if drug is a tubulin inhibitor
 #'   \item \emph{kinase_inhibitor} - logical indicating if drug is a kinase inhibitor
 #'   \item \emph{hdac_inhibitor} - logical indicating if drug is a HDAC inhibitor
@@ -131,6 +132,7 @@ get_drugs <- function(
     is_hedgehog_antagonist = F,
     is_hdac_inhibitor = F,
     is_hormone_therapy = F,
+    is_iap_inhibitor = F,
     is_immune_checkpoint_inhibitor = F,
     is_kinase_inhibitor = F,
     is_monoclonal_antibody = F,
@@ -336,10 +338,16 @@ get_drugs <- function(
 
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
+      is.logical(is_iap_inhibitor),
+      msg = "ERROR: Argument 'is_inhibitor_therapy' must be logical (TRUE/FALSE)")
+  arg_counter <- arg_counter + 1
+
+  arg_validation_messages[[arg_counter]] <-
+    assertthat::validate_that(
       is.logical(is_hormone_therapy),
       msg = "ERROR: Argument 'is_hormone_therapy' must be logical (TRUE/FALSE)")
   arg_counter <- arg_counter + 1
-
+  
   arg_validation_messages[[arg_counter]] <-
     assertthat::validate_that(
       is.logical(is_immune_checkpoint_inhibitor),
@@ -716,6 +724,14 @@ get_drugs <- function(
                         .data$hormone_therapy == T)
     }
   }
+  
+  if (is_iap_inhibitor == T) {
+    if (nrow(drug_records) > 0) {
+      drug_records <- drug_records |>
+        dplyr::filter(!is.na(.data$iap_inhibitor) &
+                        .data$iap_inhibitor == T)
+    }
+  }
 
   if (is_immune_checkpoint_inhibitor == T) {
     if (nrow(drug_records) > 0) {
@@ -798,7 +814,7 @@ get_drugs <- function(
                          .data$disease_efo_id,
                          .data$cui,
                          .data$cui_name,
-                         .data$comb_regimen_indication,
+                         #.data$comb_regimen_indication,
                          .data$drug_approved_indication,
                          .data$drug_clinical_source)) |>
         dplyr::distinct()
@@ -836,7 +852,7 @@ get_drugs <- function(
         dplyr::select(-c(.data$disease_efo_id,
                          .data$cui,
                          .data$cui_name,
-                         .data$comb_regimen_indication,
+                         #.data$comb_regimen_indication,
                          .data$drug_approved_indication,
                          .data$drug_clinical_source)) |>
         dplyr::distinct()

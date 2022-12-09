@@ -1830,7 +1830,7 @@ get_compound_properties <- function(molecule_chembl_id = NULL,
 # }
 
 
-merge_nci_open_targets <- function(ot_drugs = NULL,
+merge_nci_opentargets <- function(ot_drugs = NULL,
                                    path_data_raw = NULL,
                                  nci_antineo_all = NULL){
 
@@ -1853,17 +1853,6 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
       ot_nci_matched[['targeted_by_id']]) |>
     dplyr::filter(!is.na(drug_name_lc)) |>
     dplyr::select(-c(drug_name_lc))
-  
-  # ## X-ref Open Targets and NCI (with molecule ID) by drug name
-  # ot_nci_matched[['targeted_by_name2']] <- ot_drugs$targeted |>
-  #   dplyr::left_join(
-  #     nci_antineo_all[['no_chembl_id']],
-  #     by = c("drug_name_lc" = "nci_drug_name")) |>
-  #   dplyr::anti_join(
-  #     ot_nci_matched[['targeted_by_name']]) |>
-  #   dplyr::filter(!is.na(drug_name_lc)) |>
-  #   dplyr::select(-c(drug_name_lc))
-
 
   ## X-ref Open Targeets (no target) by molecule identifier
   ot_nci_matched[['untargeted_by_id']] <- ot_drugs$untargeted |>
@@ -2032,6 +2021,9 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
       as.logical(is_salt)
     )) |>
     dplyr::anti_join(custom_name_ignore)
+    # dplyr::filter(
+    #   !stringr::str_detect(nci_cd_name," vaccine")
+    # )
 
   ## antibody drug conjugates
   adc_candidates <- all_drugs_final |>
@@ -2075,7 +2067,7 @@ merge_nci_open_targets <- function(ot_drugs = NULL,
 
 }
 
-map_custom_nci_targets <- function(gene_info = NULL,
+map_curated_targets <- function(gene_info = NULL,
                                    path_data_raw = NULL,
                                    drug_df = NULL){
 
@@ -2097,10 +2089,10 @@ map_custom_nci_targets <- function(gene_info = NULL,
     dplyr::filter(is.na(target_symbol)) |>
     dplyr::filter(stringr::str_detect(
       tolower(nci_cd_name),
-      "inhibitor|antagonist|antibody|blocker") |
+      "inhibitor|antagonist|antibody|blocker|sepantronium| mimetic") |
         stringr::str_detect(
           tolower(nci_cd_name),
-          "ib$|mab$|mab/|^anti-") |
+          "ib$|mab$|ant$|ium$|xil$|ide$|mab/|^anti-") |
         (stringr::str_detect(nci_concept_definition,"KRAS") &
            stringr::str_detect(nci_concept_definition,"inhibitor"))) |>
     dplyr::filter(!stringr::str_detect(
@@ -2225,9 +2217,7 @@ map_custom_nci_targets <- function(gene_info = NULL,
         stringr::str_detect(drug_action_type,"^(SUBSTRATE|HYDROLYTIC ENZYME|RELEASING AGENT)"),
       paste0(drug_action_type,"_OTHER"),
       as.character(drug_action_type)
-    )) |>
-    dplyr::mutate(comb_regimen_indication = F)
-
+    ))
 
   return(ot_nci_drugs_curated)
 }
@@ -2242,6 +2232,12 @@ assign_drug_category <- function(drug_df = NULL,
         stringr::str_detect(
           tolower(nci_concept_definition),
           "antimetabol|anti-metabol|nucleoside analog"),TRUE,FALSE)
+    ) |>
+    dplyr::mutate(iap_inhibitor = dplyr::if_else(
+      !is.na(target_symbol) &
+        stringr::str_detect(
+          target_symbol,
+          "^(BIRC|XIAP)"),TRUE,FALSE)
     ) |>
     dplyr::mutate(topoisomerase_inhibitor = dplyr::if_else(
       (!is.na(nci_concept_definition) &
@@ -2381,6 +2377,7 @@ assign_drug_category <- function(drug_df = NULL,
       (!is.na(nci_concept_definition) &
          !stringr::str_detect(
            tolower(nci_cd_name), "oncolytic|pentoxifylline|vaccine") &
+         iap_inhibitor == FALSE &
          stringr::str_detect(
            tolower(nci_concept_definition),
            "immune checkpoint inhib")) |
@@ -2424,6 +2421,7 @@ assign_drug_category <- function(drug_df = NULL,
              'topoisomerase_inhibitor',
              'tubulin_inhibitor',
              'kinase_inhibitor',
+             'iap_inhibitor',
              'hdac_inhibitor',
              'parp_inhibitor',
              'bet_inhibitor',
@@ -2789,9 +2787,9 @@ clean_final_drug_list <- function(drug_df = NULL){
                   nci_concept_definition,
                   nci_t,
                   opentargets,
-                  comb_regimen_indication,
                   immune_checkpoint_inhibitor,
                   topoisomerase_inhibitor,
+                  iap_inhibitor,
                   tubulin_inhibitor,
                   kinase_inhibitor,
                   hdac_inhibitor,
