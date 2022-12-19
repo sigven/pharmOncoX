@@ -2390,15 +2390,7 @@ assign_drug_category <- function(drug_df = NULL,
            (target_symbol == "CD274" |
               target_symbol == "CTLA4" |
               target_symbol == "PDCD1" |
-              target_symbol == "TIGIT")) |
-        (!is.na(nci_concept_definition) &
-           !is.na(target_symbol) &
-           stringr::str_detect(nci_concept_definition,
-                               "immunemodulating|immune response") &
-           !stringr::str_detect(
-             tolower(nci_cd_name), "oncolytic|pentoxifylline|vaccine") &
-           (target_symbol == "ADORA2A" |
-              target_symbol == "ADORA2B")),
+              target_symbol == "TIGIT")),
       TRUE,FALSE)
     ) |>
     dplyr::mutate(immune_checkpoint_inhibitor = dplyr::if_else(

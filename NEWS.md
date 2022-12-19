@@ -1,6 +1,8 @@
 # Version 1.1.3 (December 19th 2022)
 
 * Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to v0.5.5
+* Excluded immunomodulatory adenosine receptor antagonists from the immune
+checkpoint inhibition category
 
 # Version 1.1.2 (December 9th 2022)
 
