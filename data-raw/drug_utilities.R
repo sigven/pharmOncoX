@@ -2557,7 +2557,6 @@ clean_final_drug_list <- function(drug_df = NULL){
 
   pharmaoncox$drug_max_ct_phase <- NULL
 
-  #tmp2 <- tmp |>
   pharmaoncox <- pharmaoncox |>
     dplyr::left_join(drug_max_ct_phase,
                      by = "nci_cd_name") |>
@@ -2606,6 +2605,7 @@ clean_final_drug_list <- function(drug_df = NULL){
     dplyr::mutate(drug_action_type = stringr::str_replace_all(
       drug_action_type, "/NA|NA/",""
     ))
+    
 
 
   ## Simplify records with only "cancer" indications, mapping them to a unique
@@ -2727,7 +2727,21 @@ clean_final_drug_list <- function(drug_df = NULL){
   
   pharmaoncox2$inhibition_moa <- NULL
   pharmaoncox2 <- pharmaoncox2 |> 
-    dplyr::left_join(inhibition_moa_df, by = "drug_name")
+    dplyr::left_join(inhibition_moa_df, by = "drug_name") |>
+    
+    ## remove non-cancer drugs
+    dplyr::filter(
+      !(disease_efo_label == "cancer" & 
+        !stringr::str_detect(nci_concept_definition,"antineoplastic|cancer") & 
+        !stringr::str_detect(
+          target_genename, paste0(
+            "^CD|heat shock|ADP-ribose|kinase|growth factor|tubulin|",
+            "histone|T cell immuno|TNF receptor|activin A|androgen receptor|",
+            "BCL2 apoptosis|bromodomain|cytotoxic T-lymphocyte|",
+            "estrogen receptor|polycomb repressive complex|",
+            "tyrosine phosphatase|isocitrate dehydro|oncogene|",
+            "cell death|cell adhesion|DNA topo|WNT signaling|",
+            "apoptosis|adenosine A2"))))
   
   
 

@@ -16,6 +16,7 @@ Furthermore, we provide anti-cancer drugs in **pharmOncoX** with the following t
 * Hedgehog antagonists
 * HDAC inhibitors
 * Hormone therapies
+* IAP inhibitors
 * Immune checkpoint inhibitors
 * Kinase inhibitors
 * Monoclonal antibodies

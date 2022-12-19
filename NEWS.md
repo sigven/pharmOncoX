@@ -1,3 +1,7 @@
+# Version 1.1.3 (December 19th 2022)
+
+* Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to v0.5.5
+
 # Version 1.1.2 (December 9th 2022)
 
 * Added drug category *iap_inhibitor* - inhibitor of IAP 
