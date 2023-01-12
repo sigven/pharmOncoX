@@ -2084,23 +2084,31 @@ map_curated_targets <- function(gene_info = NULL,
     dplyr::inner_join(gene_info, by = "symbol") |>
     dplyr::distinct()
 
-
+  drugname_suffix <- 
+    paste0("(ab|al|an|at|cl|co|da|de|dy|ea|ed|el|en|er|es|ex|fa|ib|ic|",
+           "id|il|im|in|ir|is|le|ls|lt|me|na|ne|ns|nt|od|ol|on|or|pt|",
+           "py|ra|rd|re|rm|rt|se|ta|te|ts|ue|um|us|yl)$")
+  drug_inhibitor_regex <- 
+    paste0(drugname_suffix,"|^(anti-|inhibitor of)|inhibitor")
+  
   all_inhibitors_no_target <- ot_nci_drugs |>
     dplyr::filter(is.na(target_symbol)) |>
-    dplyr::filter(stringr::str_detect(
-      tolower(nci_cd_name),
-      "inhibitor|antagonist|antibody|blocker|sepantronium| mimetic") |
+    dplyr::filter(
+      stringr::str_detect(
+        tolower(nci_cd_name),
+        "inhibitor|antagonist|antibody|blocker|sepantronium| mimetic") |
         stringr::str_detect(
           tolower(nci_cd_name),
-          "ib$|mab$|ant$|ium$|xil$|ide$|mab/|^anti-") |
+          drug_inhibitor_regex) |
         (stringr::str_detect(nci_concept_definition,"KRAS") &
            stringr::str_detect(nci_concept_definition,"inhibitor"))) |>
     dplyr::filter(!stringr::str_detect(
       nci_cd_name,
-      " CAR T|SARS-CoV-2| Regimen$")) |>
+      " CAR T|(T|t)herapy|SARS-CoV-2|( (R|r)egimen|(A|a)cid|Hydrochloride)$")) |>
     dplyr::filter(!stringr::str_detect(
       nci_concept_definition,
-      "SARS-CoV-2"))
+      "SARS-CoV-2")) |>
+    dplyr::filter(nchar(nci_concept_definition) > 0)
 
   custom_nci_targeted_drugs <- data.frame()
   for(i in 1:nrow(drug_target_patterns)){
@@ -2117,9 +2125,10 @@ map_curated_targets <- function(gene_info = NULL,
         nci_cd_name,
         pattern = pattern) |
           (stringr::str_detect(
-            nci_cd_name,
-            "^(Inhibitor of|Anti-)|ib$|Inhibitor|targeting|ine$|ate$|ide$|mab$|antibody|ant$|mab/") &
-             stringr::str_detect(nci_concept_definition, pattern))
+            tolower(nci_cd_name),
+            drug_inhibitor_regex) &
+             stringr::str_detect(
+               nci_concept_definition, pattern))
       )
 
     if(nrow(hits) > 0){
@@ -2127,8 +2136,8 @@ map_curated_targets <- function(gene_info = NULL,
       for(n in 1:nrow(hits)){
         hit <- hits[n,]
 
-        if(stringr::str_detect(hit$nci_cd_name,
-                               "mab$|monoclonal antibody")){
+        if(stringr::str_detect(tolower(hit$nci_cd_name),
+                               "(mab|art)$|monoclonal antibody|^anti-")){
           hit$drug_type <- "Antibody"
         }else{
           hit$drug_type <- "Small molecule"
@@ -2150,7 +2159,6 @@ map_curated_targets <- function(gene_info = NULL,
         hit$target_type <- target_type
         hit$target_entrezgene <- target_entrezgene
         hit$target_ensembl_gene_id <- target_ensembl_gene_id
-        #hit$target_uniprot_id <- target_uniprot_id
         hit$drug_clinical_source <- "nci_thesaurus_custom"
         hit$cancer_drug <- TRUE
 
@@ -2179,6 +2187,21 @@ map_curated_targets <- function(gene_info = NULL,
     dplyr::filter(!stringr::str_detect(
       nci_concept_definition, "(A|a)ntibody(-| )drug conjugate \\(ADC\\)"
     )) |>
+    
+    ## filter for the presence of gene symbols in name or concept definition
+    dplyr::filter(
+      stringr::str_detect(
+        nci_cd_name, trialOncoX::tox_int_data$regex_patterns$variant[51,]$regex) |
+        stringr::str_detect(
+          nci_concept_definition,
+        trialOncoX::tox_int_data$regex_patterns$variant[51,]$regex
+        )
+    ) |>
+    dplyr::filter(
+      stringr::str_detect(
+        nci_concept_definition, "antineoplastic"
+      )
+    ) |>
     dplyr::select(nci_cd_name,
                   nci_concept_definition) |>
     dplyr::distinct()
@@ -2199,7 +2222,7 @@ map_curated_targets <- function(gene_info = NULL,
       (stringr::str_detect(tolower(nci_cd_name),"inhibitor") &
          is.na(drug_action_type)) |
         (!is.na(nci_cd_name) &
-           stringr::str_detect(nci_cd_name,"mab$") &
+           stringr::str_detect(nci_cd_name,"(mab|art)$") &
            is.na(drug_action_type)),
       "INHIBITOR",
       as.character(drug_action_type))) |>

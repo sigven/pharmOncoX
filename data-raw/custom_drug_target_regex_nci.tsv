@@ -1,6 +1,36 @@
 pattern	symbol
+Acasunlimab	CD274
+Acasunlimab	TNFRSF9
+Anbenitamab	ERBB2
+Anetumab	MSLN
+Anti-LGR5 Monoclonal Antibody	LGR5
+Apamistamab	PTPRC
+Garsorasib	KRAS
+Izalontamab	HER1
+Izalontamab	ERBB3
+JAK Inhibitor INCB047986	JAK1
+JAK Inhibitor INCB047986	JAK2
+JAK Inhibitor INCB047986	JAK3
 TAFIa Inhibitor DS-1040b	CPB2
+Lilotomab	CD37
 MTB-9655	ACSS2
+Lipustobart	PDCD1
+Murlentamab	AMHR2
+Ozekibart	GDF15
+P-cadherin Antagonist PF-03732010	CDH3
+P-cadherin Inhibitor PCA062	CDH3
+Palupiprant	PTGER4
+AZD9574	PARP1
+Pirotinib	EGFR
+Pirotinib	ERBB2
+Pirotinib	ERBB4
+Pifusertib	AKT1
+Polzastobart	LILRB2
+
+Pradusinstobart	PDCD1
+Betifisolimab	CD274
+Anti-LAIR1	LAIR1
+Ocifisertib	PLK4
 M1069	ADORA2A
 M1069	ADORA2B
 EZN-3042|Sepantronium	BIRC5
@@ -96,7 +126,6 @@ Anti-HGF	HGF
 Anti-integrin Beta-1	ITGB1
 Anti-integrin Beta-6	ITGB6
 Anti-LILRB2	LILRB2
-Anti-LILRB4	LILRB4
 Anti-NRP1	NRP1
 Anty-NY-ESO-1	CTAG1B
 Anti-PSMA	FOLH1
@@ -130,11 +159,13 @@ SMO Protein Inhibitor	SMO
 PTPN2 Inhibitor	PTPN2
 Hpk1 Inhibitor	MAP4K1
 Vactosertib	TGFBR1
+Unesbulin	BMI1
 MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP1
-MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP2
-MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP3
-MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP9
-MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP13
+Tanomastat|Prinomastat|MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP2
+Tanomastat|MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP3
+Tanomastat|Prinomastat|MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP9
+Prinomastat|MMP-1, 2, 3, 9, and 13|MMP Inhibitor	MMP13
+Prinomastat	MMP14
 RIPK1	RIPK1
 Anti-CTLA-4|CTLA-4|Anti-CTLA4	CTLA4
 Anti-CD47|CD47	CD47
@@ -457,17 +488,29 @@ C/EBP Beta Antagonist	CEBPB
 CBL-B Inhibitor NX-1607	CBLB
 Aromatase Inhibitor	CYP19A1
 Bexmarilimab	STAB1
-Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC1
-Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC2
-Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC3
+Sonepcizumab	MBTPS1
+Src/tubulin Inhibitor KX2-361	SRC
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC1
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC2
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC3
 Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC8
 Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC11
-HDAC Class I/IIb Inhibitor	HDAC1
-HDAC Class I/IIb Inhibitor	HDAC2
-HDAC Class I/IIb Inhibitor	HDAC3
-HDAC Class I/IIb Inhibitor	HDAC8
-HDAC Class I/IIb Inhibitor	HDAC6
-HDAC Class I/IIb Inhibitor	HDAC10
+Givinostat|HDAC Class I/IIb Inhibitor	HDAC1
+Givinostat|HDAC Class I/IIb Inhibitor	HDAC2
+Givinostat|HDAC Class I/IIb Inhibitor	HDAC3
+Givinostat|HDAC Class I/IIb Inhibitor	HDAC8
+Givinostat|HDAC Class I/IIb Inhibitor	HDAC6
+Givinostat|HDAC Class I/IIb Inhibitor|Tucidinostat	HDAC10
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC1
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC2
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC3
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC8
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC11
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC4
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC5
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC7
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC9
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC6
 HDAC Inhibitor	HDAC1
 HDAC Inhibitor	HDAC2
 HDAC Inhibitor	HDAC3
@@ -505,15 +548,18 @@ STAT Inhibitor OPB-111077	STAT6
 (TRK Inhibitor )	NTRK1
 (TRK Inhibitor )	NTRK2
 (TRK Inhibitor )	NTRK3
-Tubulin (Polymerization )?Inhibitor	TUBB
-Tubulin (Polymerization )?Inhibitor	TUBB2A
-Tubulin (Polymerization )?Inhibitor	TUBB8
-Tubulin (Polymerization )?Inhibitor	TUBB1
-Tubulin (Polymerization )?Inhibitor	TUBB2B
-Tubulin (Polymerization )?Inhibitor	TUBB3
-Tubulin (Polymerization )?Inhibitor	TUBB4A
-Tubulin (Polymerization )?Inhibitor	TUBB4B
-Tubulin (Polymerization )?Inhibitor	TUBB6
+Riviciclib	CDK1
+Riviciclib	CDK4
+Riviciclib	CDK9
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB2A
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB8
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB1
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB2B
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB3
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB4A
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB4B
+Tubulin (Polymerization )?Inhibitor|Src/tubulin Inhibitor KX2-361	TUBB6
 (TrkA)	NTRK1
 (VEGFR |VEGFR/)	KDR
 ((P|p)orcupine)	PORCN

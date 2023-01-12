@@ -2,7 +2,7 @@ Package: pharmOncoX
 Type: Package
 Title: Annotated targeted and non-targeted anticancer drugs
 Version: 1.1.3
-Date: 2022-12-19
+Date: 2023-01-12
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",

@@ -1,3 +1,7 @@
+# Version 1.1.4 (January 12th 2023)
+
+* Upgraded NCI Thesaurus (v22.12d)
+
 # Version 1.1.3 (December 19th 2022)
 
 * Upgraded [sigven/phenOncoX](https://github.com/sigven/phenOncoX) to v0.5.5
