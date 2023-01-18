@@ -104,7 +104,7 @@ if (!file.exists(antineo_agents_local)) {
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 

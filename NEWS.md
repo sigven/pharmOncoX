@@ -1,3 +1,7 @@
+# Version 1.1.5 (January 19th 2023)
+
+* Rescued some missing fusion entries from Mitelman database (`pharmOncoX:::get_biomarkers()`)
+
 # Version 1.1.4 (January 12th 2023)
 
 * Upgraded NCI Thesaurus (v22.12d)

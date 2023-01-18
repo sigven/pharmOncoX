@@ -206,23 +206,27 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
              datestamp,
              ".tsv"),
-      select = c(1:41), fill = T)) |>
+      select = c(1:25), fill = T)) |>
     dplyr::filter(source_type == "PubMed") |>
-    dplyr::select(variant_id,
+    dplyr::select(molecular_profile,
+                  molecular_profile_id,
                   evidence_id,
                   evidence_civic_url,
                   disease,
                   doid,
-                  drugs,
+                  therapies,
                   citation_id,
                   evidence_statement,
                   evidence_type,
                   evidence_level,
                   evidence_direction,
-                  clinical_significance,
+                  significance,
                   variant_origin,
                   rating) |>
     dplyr::rename(disease_ontology_id = doid,
+                  variant = molecular_profile,
+                  clinical_significance = significance,
+                  variant_id = molecular_profile_id,
                   evidence_description = evidence_statement,
                   evidence_url = evidence_civic_url,
                   cancer_type = disease) |>
@@ -251,17 +255,17 @@ load_civic_biomarkers <- function(datestamp = '20211217',
 
   therapeutic_contexts <- as.data.frame(
     clinicalEvidenceSummary |>
-      dplyr::select(evidence_id, drugs) |>
-      dplyr::filter(!is.na(drugs) &
-                      nchar(drugs) > 0) |>
-      tidyr::separate_rows(drugs, sep = ",") |>
-      dplyr::mutate(drugs = tolower(drugs)) |>
+      dplyr::select(evidence_id, therapies) |>
+      dplyr::filter(!is.na(therapies) &
+                      nchar(therapies) > 0) |>
+      tidyr::separate_rows(therapies, sep = ",") |>
+      dplyr::mutate(therapies = tolower(therapies)) |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
                       drugname_lc, 
                       drug_name, 
                       molecule_chembl_id),
-        by = c("drugs" = "drugname_lc")
+        by = c("therapies" = "drugname_lc")
       ) |>
       # dplyr::left_join(oncoPharmaDB::compound_synonyms,
       #                  by = c("drugs" = "alias")) |>
@@ -286,7 +290,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
     data.table::fread(paste0("data-raw/biomarkers/civic/variant_summary_",
                              datestamp,
                              ".tsv"),
-                      select = c(1:30), fill = T) |>
+                      select = c(1:25), fill = T) |>
       dplyr::mutate(alteration_type = "MUT") |>
       dplyr::mutate(
         alteration_type =
@@ -607,21 +611,8 @@ load_civic_biomarkers <- function(datestamp = '20211217',
     }
   }
   
-  # for (aa in c("PRO","ILE","HIS","GLY","GLU","LEU","THR",
-  #             "TYR","SER","ASN","ASP","LYS","PHE","ARG","GLN")) {
-  #   aa_three_lc <- stringr::str_to_title(aa)
-  #   if (nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-  #                                stringr::str_detect(expanded_variant_set$variant,aa),]) > 0) {
-  #     expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-  #                            stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
-  #       stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-  #                                                   stringr::str_detect(expanded_variant_set$variant,aa),]$variant,
-  #                            aa,
-  #                            aa_three_lc)
-  #   }
-  # }
 
-  variant_set_other <- variantSummary |>
+  variant_set_other <- as.data.frame(variantSummary |>
     dplyr::filter(!stringr::str_detect(alteration_type,"MUT")) |>
     dplyr::select(variant_id, variant_types,
                   variant, alteration_type,
@@ -641,11 +632,16 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       variant, "ProMOTER","PROMOTER")) |>
     dplyr::mutate(variant = stringr::str_replace_all(
       variant, "delETERIOUS","DELETERIOUS"))
+  )
+  attr(variant_set_other,"groups") <- NULL
+  
+  
 
   variant_evidence_full <-
     clinicalEvidenceSummary |>
+    dplyr::select(-variant) |>
     dplyr::inner_join(dplyr::bind_rows(expanded_variant_set, variant_set_other)) |>
-    dplyr::rename(therapeutic_context = drugs) |>
+    dplyr::rename(therapeutic_context = therapies) |>
     dplyr::mutate(variant = stringr::str_replace_all(
       variant, "delETERIOUS","DELETERIOUS")) |>
     dplyr::select(-c(rating)) |>
@@ -1743,6 +1739,36 @@ load_mitelman_db <- function(cache_dir = NA) {
     mitelman_db_final |>
     dplyr::left_join(ontology_maps$records$do, by = "cui") |>
     dplyr::select(-do_cancer_slim) |>
+    dplyr::mutate(do_id = dplyr::if_else(
+      is.na(do_id) & !is.na(cui) & cui == "C0007138",
+      "DOID:2671",
+      as.character(do_id)
+    )) |>
+    dplyr::mutate(do_name = dplyr::if_else(
+      is.na(do_name) & !is.na(cui) & cui == "C0007138",
+      "transitional cell carcinoma",
+      as.character(do_name)
+    )) |>
+    dplyr::mutate(do_id = dplyr::if_else(
+      is.na(do_id) & !is.na(cui) & cui == "C1314694",
+      "DOID:0080829",
+      as.character(do_id)
+    )) |>
+    dplyr::mutate(do_name = dplyr::if_else(
+      is.na(do_name) & !is.na(cui) & cui == "C1314694",
+      "low grade glioma",
+      as.character(do_name)
+    )) |>
+    dplyr::mutate(do_id = dplyr::if_else(
+      is.na(do_id) & !is.na(cui) & cui == "C3640999",
+      "DOID:3070",
+      as.character(do_id)
+    )) |>
+    dplyr::mutate(do_name = dplyr::if_else(
+      is.na(do_name) & !is.na(cui) & cui == "C3640999",
+      "high grade glioma",
+      as.character(do_name)
+    )) |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
     dplyr::left_join(ontology_maps$records$efo$efo2xref, by = "cui") |>
