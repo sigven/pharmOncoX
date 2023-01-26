@@ -1,3 +1,7 @@
+# Version 1.1.6 (January 26th 2023)
+
+* Updated Mitelman/CIViC data
+
 # Version 1.1.5 (January 19th 2023)
 
 * Rescued some missing fusion entries from Mitelman database (`pharmOncoX:::get_biomarkers()`)
