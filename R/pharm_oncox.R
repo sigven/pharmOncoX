@@ -547,7 +547,8 @@ get_drugs <- function(
     }
     if (nrow(drug_records) > 0) {
       drug_records <- drug_records |>
-        dplyr::inner_join(all_drug_targets, by = "target_symbol")
+        dplyr::inner_join(
+          all_drug_targets, by = "target_symbol")
 
       if (nrow(drug_records) == 0) {
         lgr::lgr$info(paste0("WARNING: For the conditions listed below, NO molecularly targeted drugs were found for the target proteins provided in the 'drug_target' argument: ",

@@ -156,11 +156,13 @@ drug_index_map$id2synonym <- NULL
 
 compound_synonyms <- drug_index_map[['id2alias']] |>
   dplyr::mutate(drugname_lc = tolower(alias)) |>
-  dplyr::left_join(drug_index_map[['id2name']], by = "drug_id") |>
+  dplyr::left_join(
+    drug_index_map[['id2name']], by = "drug_id",
+    multiple = "all") |>
   dplyr::left_join(
     dplyr::select(drug_index_map[['id2basic']],
                   drug_id, molecule_chembl_id),
-    by = "drug_id")
+    by = "drug_id", multiple = "all")
 
 rm(drug_df)
 
@@ -335,9 +337,9 @@ rm(pearson)
 biomarkers_invitro <- list()
 biomarkers_invitro[['metadata']] <- metadata$biomarkers[5,]
 biomarkers_invitro[['records']] <- all_predictive_features |>
-  dplyr::inner_join(ccle_drugs, by = "compound_id") |>
+  dplyr::inner_join(ccle_drugs, by = "compound_id", multiple = "all") |>
   dplyr::inner_join(compound_synonyms,
-                    by = "drugname_lc") |>
+                    by = "drugname_lc", multiple = "all") |>
   dplyr::select(-c(drugname_lc, drugtarget, drug_moa,
                    drug_indication, drugname)) |>
   dplyr::distinct() |>

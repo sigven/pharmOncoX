@@ -1,3 +1,10 @@
+# Version 1.1.7 (February 1st 2023)
+
+* Using [sigven/phenOncoX](https://github.com/sigven/phenOncoX) v0.5.6
+  for cancer phenotype matching
+* Updated NCI Thesaurus (23.01e release)
+* Updated Mitelman/CIViC data
+
 # Version 1.1.6 (January 26th 2023)
 
 * Updated Mitelman/CIViC data

@@ -265,7 +265,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
                       drugname_lc, 
                       drug_name, 
                       molecule_chembl_id),
-        by = c("therapies" = "drugname_lc")
+        by = c("therapies" = "drugname_lc"), multiple = "all"
       ) |>
       # dplyr::left_join(oncoPharmaDB::compound_synonyms,
       #                  by = c("drugs" = "alias")) |>
@@ -284,7 +284,7 @@ load_civic_biomarkers <- function(datestamp = '20211217',
   )
 
   clinicalEvidenceSummary <- clinicalEvidenceSummary |>
-    dplyr::left_join(therapeutic_contexts, by = "evidence_id")
+    dplyr::left_join(therapeutic_contexts, by = "evidence_id", multiple = "all")
 
   variantSummary <- as.data.frame(
     data.table::fread(paste0("data-raw/biomarkers/civic/variant_summary_",
@@ -640,7 +640,9 @@ load_civic_biomarkers <- function(datestamp = '20211217',
   variant_evidence_full <-
     clinicalEvidenceSummary |>
     dplyr::select(-variant) |>
-    dplyr::inner_join(dplyr::bind_rows(expanded_variant_set, variant_set_other)) |>
+    dplyr::inner_join(
+      dplyr::bind_rows(expanded_variant_set, variant_set_other),
+      multiple = "all") |>
     dplyr::rename(therapeutic_context = therapies) |>
     dplyr::mutate(variant = stringr::str_replace_all(
       variant, "delETERIOUS","DELETERIOUS")) |>
@@ -760,7 +762,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       dplyr::rename(citation_id = source) |>
       dplyr::left_join(
         cancer_type_abbreviations,
-        by = c("primary_tumor_acronym" = "cgi_abbreviation")) |>
+        by = c("primary_tumor_acronym" = "cgi_abbreviation"),
+        multiple = "all") |>
       dplyr::distinct() |>
       tidyr::separate(individual_mutation, c('symbol','alteration'), sep = ":") |>
       dplyr::mutate(symbol = dplyr::if_else(
@@ -906,7 +909,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
                     alteration_type == "MUT") |>
     dplyr::select(-alteration) |>
     dplyr::inner_join(all_mut_entries_expanded,
-                      by = "evidence_id")
+                      by = "evidence_id", multiple = "all")
 
 
   cgi_biomarkers_all <- cgi_biomarker_muts |>
@@ -966,7 +969,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
                       drugname_lc, 
                       drug_name, 
                       molecule_chembl_id),
-        by = c("therapeutic_context" = "drugname_lc")
+        by = c("therapeutic_context" = "drugname_lc"), multiple = "all"
       ) |>
       # dplyr::left_join(oncoPharmaDB::compound_synonyms,
       #                  by = c("drugs" = "alias")) |>
@@ -988,7 +991,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
   )
 
   cgi_biomarkers_all <- cgi_biomarkers_all |>
-    dplyr::left_join(therapeutic_contexts, by = "evidence_id") |>
+    dplyr::left_join(therapeutic_contexts, by = "evidence_id", multiple = "all") |>
     dplyr::mutate(evidence_url = "https://www.cancergenomeinterpreter.org/biomarkers") |>
     dplyr::mutate(biomarker_source_db = "cgi") |>
     dplyr::mutate(evidence_description = NA,
@@ -1039,7 +1042,7 @@ map_biomarker_phenotypes <- function(biomarkers_all,
     dplyr::select(cui, cui_name)
 
   biomarkers_all_phenotypes <- biomarkers_all |>
-    dplyr::left_join(omap, by = "disease_ontology_id")
+    dplyr::left_join(omap, by = "disease_ontology_id", multiple = "all")
 
   missing_do_phenotypes <- biomarkers_all_phenotypes |>
     dplyr::filter(is.na(cui)) |>
@@ -1048,13 +1051,13 @@ map_biomarker_phenotypes <- function(biomarkers_all,
     dplyr::inner_join(
       cancer_aux_pheno_maps$records$do,
       #oncoPhenoMap::auxiliary_maps$do,
-      by = c("disease_ontology_id" = "do_id")) |>
-    dplyr::left_join(umls_terms, by = "cui") |>
+      by = c("disease_ontology_id" = "do_id"), multiple = "all") |>
+    dplyr::left_join(umls_terms, by = "cui", multiple = "all") |>
     dplyr::left_join(dplyr::select(
       cancer_aux_pheno_maps$records$efo$efo2xref,
       #oncoPhenoMap::auxiliary_maps$efo$efo2xref,
       cui, efo_id, efo_name
-    ), by = "cui") |>
+    ), by = "cui", multiple = "all") |>
     dplyr::distinct() |>
     dplyr::mutate(primary_site = dplyr::case_when(
       do_name == "cancer" ~ as.character(NA),
@@ -1200,7 +1203,7 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
 
   codon_hits <- pmkb_biomarkers  |>
     dplyr::filter(stringr::str_detect(variant," codon\\(s\\)")) |>
-    dplyr::left_join(codon_mapping, by = "variant") |>
+    dplyr::left_join(codon_mapping, by = "variant", multiple = "all") |>
     dplyr::filter(!is.na(variant2)) |>
     dplyr::mutate(variant2 = paste(gene, variant2, sep = " ")) |>
     dplyr::mutate(variant = variant2) |>
@@ -1237,7 +1240,7 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
   umls_aliases <- cancer_terms$records |>
     dplyr::select(cui) |>
     dplyr::distinct() |>
-    dplyr::left_join(umls_concept, by = "cui") |>
+    dplyr::left_join(umls_concept, by = "cui", multiple = "all") |>
     dplyr::select(cui, cui_name) |>
     dplyr::mutate(cui_name_lc = tolower(cui_name)) |>
     dplyr::select(cui_name_lc, cui) |>
@@ -1249,14 +1252,16 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
                       cancer_type == "Squamous Cell Carcinoma" |
                       cancer_type == "Basal Cell Carcinoma")) |>
     dplyr::mutate(cancer_type2 = tolower(cancer_type)) |>
-    dplyr::left_join(umls_aliases, by = c("cancer_type2" = "cui_name_lc")) |>
+    dplyr::left_join(
+      umls_aliases, 
+      by = c("cancer_type2" = "cui_name_lc"), multiple = "all") |>
     #dplyr::select(-cancer_type2) |>
     dplyr::distinct() |>
     dplyr::left_join(dplyr::select(
       cancer_terms$records,
       cui, cui_name, efo_id, efo_name, do_name,
       do_id, primary_site, do_cancer_slim),
-      by = "cui") |>
+      by = "cui", multiple = "all") |>
     dplyr::distinct() |>
     dplyr::rename(disease_ontology_id = do_id)
 
@@ -1296,14 +1301,14 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
     dplyr::select(-c(tissue)) |>
     dplyr::distinct() |>
     dplyr::left_join(umls_aliases,
-                     by = c("cancer_type2" = "cui_name_lc")) |>
+                     by = c("cancer_type2" = "cui_name_lc"), multiple = "all") |>
     #dplyr::select(-cancer_type2) |>
     dplyr::distinct() |>
     dplyr::left_join(dplyr::select(
       cancer_terms$records,
       cui, cui_name, efo_id, efo_name, do_name,
       do_id, primary_site, do_cancer_slim),
-      by = "cui") |>
+      by = "cui", multiple = "all") |>
     dplyr::distinct() |>
     dplyr::rename(disease_ontology_id = do_id) |>
     dplyr::anti_join(pmkb_cancer_spec, by = c("evidence_id","primary_site"))
@@ -1442,7 +1447,7 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
     dplyr::filter(alteration_type != "CNA") |>
     dplyr::select(-c(variant, alteration_type, variant_type)) |>
     dplyr::left_join(expanded_variant_set,
-                     by = c("symbol", "evidence_id")) |>
+                     by = c("symbol", "evidence_id"), multiple = "all") |>
     dplyr::distinct() |>
     dplyr::bind_rows(
       dplyr::filter(pmkb_phenotype_mapped,
@@ -1586,8 +1591,8 @@ load_mitelman_db <- function(cache_dir = NA) {
     dplyr::select(MolClin, RefNo, InvNo, Morph, Topo,
                   variant, karyotype) |>
     tidyr::separate_rows(variant, sep = ",") |>
-    dplyr::left_join(pmid_data, by = "RefNo") |>
-    dplyr::left_join(morph, by = "Morph") |>
+    dplyr::left_join(pmid_data, by = "RefNo", multiple = "all") |>
+    dplyr::left_join(morph, by = "Morph", multiple = "all") |>
     dplyr::filter(stringr::str_detect(variant,"::")) |>
     dplyr::mutate(variant = stringr::str_replace(
       variant, "\\+", "")) |>
@@ -1711,7 +1716,7 @@ load_mitelman_db <- function(cache_dir = NA) {
       as.character(cancer_type)
     )) |>
     dplyr::mutate(cancer_type_lc = tolower(cancer_type)) |>
-    dplyr::left_join(umls_aliases, by = c("cancer_type_lc" = "cui_name")) |>
+    dplyr::left_join(umls_aliases, by = c("cancer_type_lc" = "cui_name"), multiple = "all") |>
     dplyr::filter(!stringr::str_detect(cancer_type_lc,"nonneoplastic"))
 
   missing <- mitelman_db |>
@@ -1725,7 +1730,7 @@ load_mitelman_db <- function(cache_dir = NA) {
       ", (nos|special type|, cutaneous type|dedifferentiated|aberrant translocation)$","")
     ) |>
     dplyr::left_join(umls_aliases,
-                     by = c("cancer_type_lc" = "cui_name"))
+                     by = c("cancer_type_lc" = "cui_name"), multiple = "all")
 
   mitelman_db_final <-
     dplyr::bind_rows(
@@ -1737,7 +1742,7 @@ load_mitelman_db <- function(cache_dir = NA) {
 
   mitelman <-
     mitelman_db_final |>
-    dplyr::left_join(ontology_maps$records$do, by = "cui") |>
+    dplyr::left_join(ontology_maps$records$do, by = "cui", multiple = "all") |>
     dplyr::select(-do_cancer_slim) |>
     dplyr::mutate(do_id = dplyr::if_else(
       is.na(do_id) & !is.na(cui) & cui == "C0007138",
@@ -1771,7 +1776,7 @@ load_mitelman_db <- function(cache_dir = NA) {
     )) |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
-    dplyr::left_join(ontology_maps$records$efo$efo2xref, by = "cui") |>
+    dplyr::left_join(ontology_maps$records$efo$efo2xref, by = "cui", multiple = "all") |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
     dplyr::rename(disease_ontology_id = do_id) |>
