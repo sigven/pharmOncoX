@@ -50,13 +50,13 @@ gene_info <- dplyr::bind_rows(
                   symbol, name, gene_biotype),
     dplyr::select(gene_gencode$records$grch38, 
                   entrezgene, ensembl_gene_id),
-    by = c("entrezgene")),
+    by = c("entrezgene"), multiple = "all"),
   dplyr::inner_join(
     dplyr::select(gene_basic$records, entrezgene, 
                   symbol, name, gene_biotype),
     dplyr::select(gene_gencode$records$grch37, 
                   entrezgene, ensembl_gene_id),
-    by = c("entrezgene"))) |>
+    by = c("entrezgene"), multiple = "all")) |>
   dplyr::filter(gene_biotype == "protein-coding") |>
   dplyr::distinct() |>
   dplyr::mutate(association_sourceID = "nci_thesaurus_custom",
@@ -359,8 +359,6 @@ version_minor_bumped <- paste0(
   as.character(as.integer(substr(as.character(packageVersion("pharmaOncoX")),3,3)) + 1),
   ".0")
 
-gd_records <- list()
-db_id_ref <- data.frame()
 
 db <- list()
 db[['biomarkers_curated']] <- biomarkers_curated
@@ -376,7 +374,11 @@ db[['drug_map_basic']][['records']] <- drug_index_map[['id2basic']]
 db[['drug_map_alias']] <- list()
 db[['drug_map_alias']][['records']] <- drug_index_map[['id2alias']]
 
-googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
+#googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
+
+gd_records <- list()
+db_id_ref <- data.frame()
+
 
 for(elem in c('biomarkers_curated',
               'biomarkers_invitro',

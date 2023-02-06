@@ -1,3 +1,7 @@
+# Version 1.1.8 (February 6th 2023)
+
+* Resolved different drug names mapped to the same ChEMBL identifier
+
 # Version 1.1.7 (February 1st 2023)
 
 * Using [sigven/phenOncoX](https://github.com/sigven/phenOncoX) v0.5.6

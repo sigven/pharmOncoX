@@ -1869,7 +1869,7 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
       by = c("drug_name_lc" = "nci_drug_name"),
       multiple = "all") |>
     dplyr::anti_join(
-      ot_nci_matched[['targeted_by_id']]) |>
+      ot_nci_matched[['targeted_by_id']], by = "nci_cd_name") |>
     dplyr::filter(!is.na(drug_name_lc)) |>
     dplyr::select(-c(drug_name_lc))
 
@@ -2265,6 +2265,48 @@ map_curated_targets <- function(gene_info = NULL,
       paste0(drug_action_type,"_OTHER"),
       as.character(drug_action_type)
     ))
+  
+  
+  # ot_nci_drugs_curated2  <- ot_nci_drugs_curated |>
+  #   dplyr::filter(!((!is.na(molecule_chembl_id) & 
+  #                     molecule_chembl_id == "CHEMBL1742994") &
+  #                     drug_name == "Brentuximab vedotin")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL1908394" &
+  #                   drug_name == "GSK-461364")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL2158685") &
+  #                   drug_name == "ABC-294640") |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL2331680" &
+  #                   drug_name == "RG-7603")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL253969" &
+  #                   drug_name == "OSI-632")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL283120" &
+  #                   drug_name == "AXL-1717")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL52885" &
+  #                   drug_name == "ENMD-981693")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4303241" &
+  #                   drug_name == "BAY-1161909")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4298098" &
+  #                   drug_name == "SAR-408701")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4091801" &
+  #                   drug_name == "APG115")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3623290" &
+  #                   drug_name == "AZD-3759")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3545007" &
+  #                   drug_name == "RG-7602")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3545003" &
+  #                   drug_name == "MSC-2363318A")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4297310" &
+  #                   drug_name == "ONC-201")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4297930" &
+  #                   drug_name == "CYC-065")) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3899477" &
+  #                   (nci_t == "NA" | is.na(nci_t)))) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3126004" &
+  #                     (nci_t == "NA" | is.na(nci_t)))) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL376408" &
+  #                     (nci_t == "NA" | is.na(nci_t)))) |>
+  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4297489" &
+  #                     (nci_t == "NA" | is.na(nci_t))))
 
   return(ot_nci_drugs_curated)
 }
@@ -2549,11 +2591,11 @@ clean_final_drug_list <- function(drug_df = NULL){
       stringr::str_to_title(drug_name),
       as.character(nci_cd_name)
     )) |>
-    dplyr::mutate(nci_cd_name = dplyr::if_else(
-      nci_cd_name == "Cediranib Maleate",
-      "Cediranib",
-      as.character(nci_cd_name)
-    )) |>
+    # dplyr::mutate(nci_cd_name = dplyr::if_else(
+    #   nci_cd_name == "Cediranib Maleate",
+    #   "Cediranib",
+    #   as.character(nci_cd_name)
+    # )) |>
     dplyr::mutate(is_salt = dplyr::if_else(
       nci_cd_name == "Avitinib Maleate",
       as.logical(NA),
@@ -2791,7 +2833,86 @@ clean_final_drug_list <- function(drug_df = NULL){
             "estrogen receptor|polycomb repressive complex|",
             "tyrosine phosphatase|isocitrate dehydro|oncogene|",
             "cell death|cell adhesion|DNA topo|WNT signaling|",
-            "apoptosis|adenosine A2"))))
+            "apoptosis|adenosine A2")))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) &
+                       molecule_chembl_id == "CHEMBL1742994") &
+                      drug_name == "Brentuximab vedotin")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL1908394") &
+                      drug_name == "GSK-461364")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) &
+                       molecule_chembl_id == "CHEMBL2158685") &
+                    drug_name == "ABC-294640")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL2331680") &
+                      drug_name == "RG-7603")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL253969") &
+                      drug_name == "OSI-632")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL283120") &
+                    drug_name == "AXL-1717")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL52885") &
+                    drug_name == "ENMD-981693")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4650827") &
+                      drug_name == "SNDX-5613 FREE BASE")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL1645462") &
+                      drug_name == "AC-480")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4303241") &
+                    drug_name == "BAY-1161909")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4298098") &
+                    drug_name == "SAR-408701")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4091801") &
+                    drug_name == "APG115")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL3623290") &
+                    drug_name == "AZD-3759")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL103") &
+                      drug_name == "Mycophenolic Acid")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL3545007") &
+                    drug_name == "RG-7602")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                      molecule_chembl_id == "CHEMBL3545003") &
+                    drug_name == "MSC-2363318A")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4297310") &
+                    drug_name == "ONC-201")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4297930") &
+                    drug_name == "CYC-065")) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL3899477") &
+                    (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL3126004") &
+                      (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL376408") &
+                      (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL4297489") &
+                      (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL17157") &
+                      (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL1201231") &
+                      (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!((!is.na(molecule_chembl_id) & 
+                       molecule_chembl_id == "CHEMBL1433") &
+                      (nci_t == "NA" | is.na(nci_t)))) |>
+    dplyr::filter(!(drug_name == "Risedronate Sodium" | 
+                      drug_name == "Reminertant" |
+                      drug_name == 'Ibandronate Sodium'))
+
   
   
 
