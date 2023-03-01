@@ -2213,14 +2213,14 @@ map_curated_targets <- function(gene_info = NULL,
     )) |>
     
     ## filter for the presence of gene symbols in name or concept definition
-    dplyr::filter(
-      stringr::str_detect(
-        nci_cd_name, trialOncoX::tox_int_data$regex_patterns$variant[51,]$regex) |
-        stringr::str_detect(
-          nci_concept_definition,
-        trialOncoX::tox_int_data$regex_patterns$variant[51,]$regex
-        )
-    ) |>
+    # dplyr::filter(
+    #   stringr::str_detect(
+    #     nci_cd_name, trialOncoX::tox_int_data$regex_patterns$variant[51,]$regex) |
+    #     stringr::str_detect(
+    #       nci_concept_definition,
+    #     trialOncoX::tox_int_data$regex_patterns$variant[51,]$regex
+    #     )
+    # ) |>
     dplyr::filter(
       stringr::str_detect(
         nci_concept_definition, "antineoplastic"

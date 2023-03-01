@@ -1,3 +1,9 @@
+# Version 1.1.9 (March 1st 2023)
+
+* Updated NCI Thesaurus (23.02d release)
+* Updated biomarker data (CIViC)
+* Updated Open Targets Platform (2023.02)
+
 # Version 1.1.8 (February 6th 2023)
 
 * Resolved different drug names mapped to the same ChEMBL identifier

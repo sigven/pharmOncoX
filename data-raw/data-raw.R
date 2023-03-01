@@ -77,6 +77,7 @@ nci_thesaurus_files[['inf_owl']] <-
   paste0("ThesaurusInf_", nci_db_release,".OWL.zip")
 
 
+options(timeout = 50000)
 for (elem in c('flat','owl','inf_owl')) {
   remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
   local_file <- file.path(path_data_raw,"nci_thesaurus", 
@@ -104,7 +105,7 @@ if (!file.exists(antineo_agents_local)) {
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 nci_antineo_all <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -354,10 +355,10 @@ rm(compound_synonyms)
 
 
 ## upload to Google Drive
-version_minor_bumped <- paste0(
-  "0.",
-  as.character(as.integer(substr(as.character(packageVersion("pharmaOncoX")),3,3)) + 1),
-  ".0")
+version_bump <- paste0(
+  substr(as.character(packageVersion("pharmOncoX")),1,4),
+  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
+  
 
 
 db <- list()
@@ -395,7 +396,7 @@ for(elem in c('biomarkers_curated',
   
   local_rds_fpath <- file.path(
     "data-raw", "gd_local", 
-    paste0(elem,"_v", version_minor_bumped, ".rds"))
+    paste0(elem,"_v", version_bump, ".rds"))
   
   saveRDS(
     db[[elem]],
@@ -403,7 +404,7 @@ for(elem in c('biomarkers_curated',
 
   (gd_records[[elem]] <- googledrive::drive_upload(
     media = local_rds_fpath,
-    path = paste0("pharmOncoX/", elem, "_v", version_minor_bumped,".rds")
+    path = paste0("pharmOncoX/", elem, "_v", version_bump,".rds")
   ))
 
   google_rec_df <-
@@ -416,7 +417,7 @@ for(elem in c('biomarkers_curated',
       name =
         stringr::str_replace(filename,"_v\\S+$",""),
       date = as.character(Sys.Date()),
-      pVersion = version_minor_bumped) |>
+      pVersion = version_bump) |>
     dplyr::mutate(
       md5Checksum =
         gd_records[[elem]]$drive_resource[[1]]$md5Checksum)

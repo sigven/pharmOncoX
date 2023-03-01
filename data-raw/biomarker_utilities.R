@@ -284,7 +284,8 @@ load_civic_biomarkers <- function(datestamp = '20211217',
   )
 
   clinicalEvidenceSummary <- clinicalEvidenceSummary |>
-    dplyr::left_join(therapeutic_contexts, by = "evidence_id", multiple = "all")
+    dplyr::left_join(therapeutic_contexts, 
+                     by = "evidence_id", multiple = "all")
 
   variantSummary <- as.data.frame(
     data.table::fread(paste0("data-raw/biomarkers/civic/variant_summary_",
