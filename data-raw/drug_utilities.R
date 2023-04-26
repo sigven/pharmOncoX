@@ -270,7 +270,7 @@ get_chembl_pubchem_compound_xref <- function(datestamp = '20220906',
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2022.11"){
+           ot_version = "2023.02"){
 
     cancer_terms <- list()
     cancer_terms[['all']] <- phenOncoX::get_terms(
@@ -317,7 +317,8 @@ get_opentargets_cancer_drugs <-
     dplyr::left_join(
       cancer_terms[['efo']], 
       by = "disease_efo_id", 
-      multiple = "all") |>
+      multiple = "all", 
+      relationship = "many-to-many") |>
     ## general cancer ontology terms (neoplasm, cancer, carcinoma, squamous cell carcinoma)
     dplyr::mutate(
       cancer_drug =
@@ -368,7 +369,7 @@ get_opentargets_cancer_drugs <-
       dplyr::left_join(
         drugs_with_max_phase_adj,
         by = c("drug_name","molecule_chembl_id"),
-        multiple = "all")) |>
+        multiple = "all", relationship = "many-to-many")) |>
     dplyr::mutate(drug_name_lc = tolower(drug_name))
 
   targeted_compounds <- as.data.frame(
@@ -405,7 +406,7 @@ get_opentargets_cancer_drugs <-
     dplyr::left_join(
       drugs_with_max_phase_adj, 
       by = c("drug_name","molecule_chembl_id"),
-      multiple = "all")
+      multiple = "all", relationship = "many-to-many")
   )
   
   targeted_cancer_compounds <- targeted_compounds |>
@@ -548,7 +549,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
           nci_concept_semantic_type,"Chemical|Substance|Therapeutic|Drug|Immunologic")) |>
       dplyr::left_join(
         nci_antineo_agents, by = c("nci_t"),
-        multiple = "all") |>
+        multiple = "all", relationship = "many-to-many") |>
       dplyr::select(-c(nci_concept_name, nci_cd_name)) |>
       # dplyr::filter(
       #   nci_concept_status != 'Obsolete_Concept' &
@@ -571,14 +572,15 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
                          nci_concept_definition)) |> ## redundant Sorafenib entries
       dplyr::distinct() |>
       dplyr::left_join(
-        nci_display_labels, by = c("nci_t"), multiple = "all") |>
+        nci_display_labels, by = c("nci_t"), 
+        multiple = "all", relationship = "many-to-many") |>
       dplyr::filter(!(nci_t == "C1806" & nci_concept_synonym == "gemtuzumab")) |>
       dplyr::filter(!(nci_t == "C405" & nci_concept_synonym == "ctx")) |>
 
       dplyr::left_join(
         drug2chembl_all, 
         by = c("nci_concept_synonym" = "drug_name"),
-        multiple = "all") |>
+        multiple = "all", relationship = "many-to-many") |>
       dplyr::mutate(nci_db_version = nci_db_release) |>
       dplyr::filter(!is.na(nci_cd_name)) |>
       dplyr::filter(!stringr::str_detect(
@@ -691,7 +693,8 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
       dplyr::select(-molecule_chembl_id) |>
       dplyr::left_join(
         nci_with_chembl, by = c("nci_t"),
-        multiple = "all")
+        multiple = "all", 
+        relationship = "many-to-many")
 
     nci_antineo_thesaurus <- nci_antineo_thesaurus |>
       dplyr::filter(!is.na(molecule_chembl_id)) |>
@@ -788,7 +791,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
         dplyr::inner_join(
           chembl2alias, 
           by = c("nci_cd_name_lc" = "alias"),
-          multiple = "all")
+          multiple = "all", relationship = "many-to-many")
 
 
       rm(chembl2alias)
@@ -797,7 +800,9 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
         hits <- hits |>
           dplyr::inner_join(
             chembl2pubchem, 
-            by = "pubchem_cid", multiple = "all") |>
+            by = "pubchem_cid", 
+            multiple = "all",
+            relationship = "many-to-many") |>
           dplyr::select(nci_cd_name,
                         molecule_chembl_id)
 
@@ -856,11 +861,14 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
 
     nci_antineo_thesaurus_no_chembl <- nci_antineo_thesaurus |>
       dplyr::inner_join(nci_compounds_no_chembl,
-                        by = "nci_cd_name", multiple = "all") |>
+                        by = "nci_cd_name", 
+                        multiple = "all", relationship = "many-to-many") |>
       dplyr::select(-c(num_spaces, molecule_chembl_id)) |>
       dplyr::left_join(
         nci_compounds_chembl_match_unique,
-        by = "nci_cd_name", multiple = "all")
+        by = "nci_cd_name", 
+        multiple = "all", 
+        relationship = "many-to-many")
     
     nci_antineo_thesaurus <-
       nci_antineo_thesaurus_chembl |>
@@ -1856,18 +1864,20 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
 
   ## X-ref Open Targets and NCI by molecule id
   ot_nci_matched[['targeted_by_id']] <- ot_drugs$targeted |>
-    dplyr::left_join(nci_antineo_all[['with_chembl_id']],
-                     by = c("molecule_chembl_id"), multiple = "all") |>
+    dplyr::left_join(
+      nci_antineo_all[['with_chembl_id']], by = c("molecule_chembl_id"), 
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::filter(!is.na(nci_drug_name)) |>
     dplyr::select(-c(drug_name_lc, nci_drug_name))
 
   ## X-ref Open Targets and NCI (with molecule ID) by drug name
   ot_nci_matched[['targeted_by_name']] <- ot_drugs$targeted |>
     dplyr::left_join(
-      dplyr::select(nci_antineo_all[['with_chembl_id']],
+      dplyr::select(
+        nci_antineo_all[['with_chembl_id']],
                     -molecule_chembl_id),
       by = c("drug_name_lc" = "nci_drug_name"),
-      multiple = "all") |>
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::anti_join(
       ot_nci_matched[['targeted_by_id']], by = "nci_cd_name") |>
     dplyr::filter(!is.na(drug_name_lc)) |>
@@ -1875,19 +1885,18 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
 
   ## X-ref Open Targeets (no target) by molecule identifier
   ot_nci_matched[['untargeted_by_id']] <- ot_drugs$untargeted |>
-    dplyr::left_join(nci_antineo_all[['with_chembl_id']],
-                     by = c("molecule_chembl_id"),
-                     multiple = "all") |>
+    dplyr::left_join(
+      nci_antineo_all[['with_chembl_id']], by = c("molecule_chembl_id"),
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::filter(!is.na(nci_drug_name)) |>
     dplyr::select(-c(drug_name_lc, nci_drug_name))
 
   ## X-ref Open Targeets (no target) by drug name
   ot_nci_matched[['untargeted_by_name']] <- ot_drugs$untargeted |>
     dplyr::left_join(
-      dplyr::select(nci_antineo_all[['with_chembl_id']],
-                    -molecule_chembl_id),
+      dplyr::select(nci_antineo_all[['with_chembl_id']], -molecule_chembl_id),
       by = c("drug_name_lc" = "nci_drug_name"),
-      multiple = "all") |>
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::anti_join(
       ot_nci_matched[['untargeted_by_id']]) |>
     dplyr::filter(!is.na(drug_name_lc)) |>
@@ -1902,7 +1911,7 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
     dplyr::left_join(
       nci_antineo_all[['no_chembl_id']],
       by = c("drug_name_lc" = "nci_drug_name"),
-      multiple = "all") |>
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::select(-drug_name_lc)
 
   ot_drugs_all <- ot_nci_matched_all |>
@@ -1955,7 +1964,7 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
     dplyr::anti_join(
       ot_drugs_all, by = c("drug_name_lc" = "drug_name_lc2")) |>
     dplyr::inner_join(nci_missing, by = "drug_name_lc",
-                      multiple = "all") |>
+                      multiple = "all", relationship = "many-to-many") |>
     dplyr::select(-drug_name_lc)
   
   all_cancer_drugs <- ot_drugs_all |>
@@ -1989,14 +1998,17 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
   ## Drugs that map to a single identifier
   name2chembl_unique <- name2chembl_id |>
     dplyr::filter(!stringr::str_detect(m,";")) |>
-    dplyr::inner_join(all_cancer_drugs, multiple = "all") |>
+    dplyr::inner_join(
+      all_cancer_drugs, multiple = "all", relationship = "many-to-many") |>
     dplyr::select(-m)
 
   ## Drugs that map to multiple identifiers
   name2chembl_ambiguous_curated <- name2chembl_id |>
     dplyr::filter(stringr::str_detect(m, ";")) |>
-    dplyr::inner_join(custom_chembl_map, multiple = "all") |>
-    dplyr::inner_join(all_cancer_drugs, multiple = "all") |>
+    dplyr::inner_join(
+      custom_chembl_map, multiple = "all", relationship = "many-to-many") |>
+    dplyr::inner_join(
+      all_cancer_drugs, multiple = "all", relationship = "many-to-many") |>
     dplyr::select(-m)
 
   all_drugs <- dplyr::bind_rows(
@@ -2032,13 +2044,14 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
     dplyr::inner_join(
       dplyr::select(all_drugs, nci_cd_name),
       by = c("tradename" = "nci_cd_name"),
-      multiple = "all") |>
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::select(-tradename)
 
 
   all_drugs_final <- all_drugs |>
-    dplyr::left_join(salt_forms, multiple = "all") |>
+    dplyr::left_join(
+      salt_forms, multiple = "all", relationship = "many-to-many") |>
     dplyr::mutate(is_salt = dplyr::if_else(
       is.na(is_salt),
       as.logical(FALSE),
@@ -2069,25 +2082,16 @@ merge_nci_opentargets <- function(ot_drugs = NULL,
     dplyr::distinct()
 
   all_drugs_final <- all_drugs_final |>
-    dplyr::left_join(adc_candidates, multiple = "all") |>
+    dplyr::left_join(
+      adc_candidates, multiple = "all", 
+      relationship = "many-to-many") |>
     dplyr::mutate(is_adc = dplyr::if_else(
       is.na(is_adc),
       as.logical(FALSE),
       as.logical(is_adc)
     ))
 
-
   return(all_drugs_final)
-
-  # ambig <- all_drugs_final |>
-  #   dplyr::filter(!is.na(molecule_chembl_id)) |>
-  #   #dplyr::filter(!is.na(opentargets_version)) |>
-  #   #dplyr::filter(is.na(is_salt)) |>
-  #   dplyr::group_by(molecule_chembl_id) |>
-  #   dplyr::summarise(m = paste(unique(nci_cd_name),
-  #                              collapse = "@")) |>
-  #   dplyr::distinct() |>
-  #   dplyr::
 
 }
 
@@ -2105,7 +2109,9 @@ map_curated_targets <- function(gene_info = NULL,
       path_data_raw,
       "custom_drug_target_regex_nci.tsv"),
       sep = "\t", header = T, stringsAsFactors = F, quote = "") |>
-    dplyr::inner_join(gene_info, by = "symbol", multiple = "all") |>
+    dplyr::inner_join(
+      gene_info, by = "symbol", multiple = "all", 
+      relationship = "many-to-many") |>
     dplyr::distinct()
 
   drugname_suffix <- 
@@ -2265,48 +2271,6 @@ map_curated_targets <- function(gene_info = NULL,
       paste0(drug_action_type,"_OTHER"),
       as.character(drug_action_type)
     ))
-  
-  
-  # ot_nci_drugs_curated2  <- ot_nci_drugs_curated |>
-  #   dplyr::filter(!((!is.na(molecule_chembl_id) & 
-  #                     molecule_chembl_id == "CHEMBL1742994") &
-  #                     drug_name == "Brentuximab vedotin")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL1908394" &
-  #                   drug_name == "GSK-461364")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL2158685") &
-  #                   drug_name == "ABC-294640") |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL2331680" &
-  #                   drug_name == "RG-7603")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL253969" &
-  #                   drug_name == "OSI-632")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL283120" &
-  #                   drug_name == "AXL-1717")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL52885" &
-  #                   drug_name == "ENMD-981693")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4303241" &
-  #                   drug_name == "BAY-1161909")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4298098" &
-  #                   drug_name == "SAR-408701")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4091801" &
-  #                   drug_name == "APG115")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3623290" &
-  #                   drug_name == "AZD-3759")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3545007" &
-  #                   drug_name == "RG-7602")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3545003" &
-  #                   drug_name == "MSC-2363318A")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4297310" &
-  #                   drug_name == "ONC-201")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4297930" &
-  #                   drug_name == "CYC-065")) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3899477" &
-  #                   (nci_t == "NA" | is.na(nci_t)))) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL3126004" &
-  #                     (nci_t == "NA" | is.na(nci_t)))) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL376408" &
-  #                     (nci_t == "NA" | is.na(nci_t)))) |>
-  #   dplyr::filter(!(molecule_chembl_id == "CHEMBL4297489" &
-  #                     (nci_t == "NA" | is.na(nci_t))))
 
   return(ot_nci_drugs_curated)
 }
@@ -3036,13 +3000,15 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     dplyr::rename(nci_concept_synonym = nci_concept_synonym_all) |>
     dplyr::inner_join(
       non_ambiguous_synonyms, 
-      by = "nci_concept_synonym", multiple = "all") |>
+      by = "nci_concept_synonym", 
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::rename(alias = nci_concept_synonym) |>
     dplyr::select(-n) |>
     dplyr::left_join(
       dplyr::select(drug_index_map[['id2basic']],
                     drug_id, molecule_chembl_id),
-      by = "drug_id", multiple = "all") |>
+      by = "drug_id", multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::distinct()
 
   ## include also the primary name among aliases
@@ -3054,7 +3020,8 @@ expand_drug_aliases <- function(drug_index_map = NULL,
       dplyr::select(
         drug_index_map[['id2basic']], 
         drug_id, molecule_chembl_id),
-      by = "drug_id", multiple = "all"
+      by = "drug_id", multiple = "all",
+      relationship = "many-to-many"
     ) |>
     dplyr::distinct()
 
@@ -3074,7 +3041,7 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     dplyr::left_join(
       chembl_pubchem_xref, 
       by = "molecule_chembl_id",
-      multiple = "all") |>
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::filter(!is.na(pubchem_cid)) |>
     dplyr::select(-c(chembl_db_version))
 
@@ -3095,9 +3062,11 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     ))
 
     pubchem_alias_df <- synonym_data |>
-      dplyr::inner_join(unique_chembl_pubchem,
-                        by = "pubchem_cid", multiple = "all")
-
+      dplyr::inner_join(
+        unique_chembl_pubchem,
+        by = "pubchem_cid", 
+        multiple = "all", relationship = "many-to-many")
+    
     if(nrow(pubchem_alias_df) > 0){
       pubchem_alias_df <- pubchem_alias_df |>
         dplyr::select(-pubchem_cid)
@@ -3118,7 +3087,8 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     dplyr::left_join(
       drug_index_map[['id2name']], 
       by = "drug_id",
-      multiple = "all") |>
+      multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::filter(!(alias == "nab-paclitaxel" &
                       drug_name == "Paclitaxel")) |>
     dplyr::select(alias, drug_name) |>
@@ -3132,11 +3102,13 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     dplyr::bind_rows(antineopharma_synonyms, antineopharma_synonyms_pubchem) |>
     dplyr::left_join(
       drug_index_map[['id2name']], 
-      by = "drug_id", multiple = "all") |>
+      by = "drug_id", multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::inner_join(
       unambiguous_drug_aliases, 
-      by = "alias", multiple = "all") |>
+      by = "alias", multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::distinct()  |>
     dplyr::mutate(alias = dplyr::if_else(
       alias == "nab-paclitaxel" & drug_name == "Paclitaxel",
@@ -3161,7 +3133,7 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     dplyr::left_join(
       words::words, 
       by = c("alias_lc" = "word"),
-      multiple = "all") |> 
+      multiple = "all", relationship = "many-to-many") |> 
     dplyr::filter(
       is.na(word_length) |
         (!is.na(word_length) &

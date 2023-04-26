@@ -10,7 +10,7 @@ vignette: >
 bibliography: '`r system.file("bibliography.bib", package = "pharmOncoX")`'
 nocite: |
   @Kim2021-ye, @Freshour2021-bh, @Sioutos2007-nl, 
-  @Ochoa2021-jc, @Nakken2022-ab
+  @Ochoa2021-jc, @Nakken2023-ab
 ---
 
 ```{r, include = FALSE}

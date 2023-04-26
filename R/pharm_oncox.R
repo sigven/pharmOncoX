@@ -938,93 +938,93 @@ get_drugs <- function(
 
 }
 
-get_drug_biomarkers <- function(
-    drug_query = "Vemurafenib",
-    force_download = FALSE,
-    cache_dir = NA){
-  
-  ## set logging layout
-  lgr::lgr$appenders$console$set_layout(
-    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
-  
-  all_drug_recs <- get_drug_records(cache_dir, force_download)
-  
-  drugname_primary <- all_drug_recs$records |>
-    dplyr::select("drug_name", 
-                  "drug_id",
-                  "molecule_chembl_id", 
-                  "drug_alias") |>
-    dplyr::distinct() |>
-    dplyr::mutate(alias = tolower(.data$drug_name))
-  
-  drugname_alias <- drugname_primary |>
-    dplyr::select(c("drug_id","drug_alias")) |>
-    tidyr::separate_rows(.data$drug_alias, sep = "\\|") |>
-    dplyr::mutate(alias = tolower(.data$drug_alias)) |>
-    dplyr::select(c("drug_id", "alias")) |>
-    dplyr::distinct()
-  
-  drugname_chembl <- drugname_primary |>
-    dplyr::select("drug_id", "molecule_chembl_id") |>
-    dplyr::filter(!is.na(.data$molecule_chembl_id)) |>
-    dplyr::rename(alias = .data$molecule_chembl_id) |>
-    dplyr::select(c("drug_id","alias")) |>
-    dplyr::distinct()
-  
-  drugname_primary_lc <- drugname_primary |>
-    dplyr::select(c("drug_id", "alias")) |>
-    dplyr::distinct()
-  
-  all_aliases <- drugname_primary_lc |>
-    dplyr::bind_rows(drugname_alias) |>
-    dplyr::bind_rows(drugname_chembl) |>
-    dplyr::mutate(alias = stringr::str_trim(.data$alias)) |>
-    dplyr::filter(nchar(.data$alias) > 2) |>
-    dplyr::distinct()
-  
-  drug_dictionary <- drugname_primary |>
-    dplyr::select(c("drug_id", "drug_name")) |>
-    dplyr::left_join(all_aliases, by = "drug_id") |>
-    dplyr::filter(
-      !stringr::str_detect(tolower(.data$drug_name),"regimen")
-    )
-  
-  query_hit <- drug_dictionary |>
-    dplyr::filter(.data$alias == tolower(drug_query))
-  
-  
-  #biomarkers <- get_biomarkers(cache_dir = cache_dir,
-                               #force_download = force_download)
-  
-  # therapy_biomarkers <- biomarkers$records |>
-  #   dplyr::filter(!is.na(therapeutic_context)) |>
-  #   dplyr::filter(nchar(therapeutic_context) > 0) |>
-  #   dplyr::select(evidence_id, symbol, variant, 
-  #                 variant_id, therapeutic_context,
-  #                 alteration_type, cancer_type, 
-  #                 molecule_chembl_id, evidence_level,
-  #                 evidence_direction, evidence_description,
-  #                 clinical_significance) |>
-  #   dplyr::distinct() |>
-  #   dplyr::filter(alteration_type != "BIA" & 
-  #                   alteration_type != "METHYL" &
-  #                   alteration_type != "CODON") |>
-  #   dplyr::filter(!stringr::str_detect(
-  #     therapeutic_context, "(hibitors|gens)$"
-  #   )) |>
-  #   dplyr::filter(!stringr::str_detect(
-  #     therapeutic_context, "alone or in combination"
-  #   ))
-  #   
-  # 
-  # aa_markers <- therapy_biomarkers |>
-  #   dplyr::filter(stringr::str_detect(variant, "p\\.[A-Z][0-9]{1,}"))
-  # 
-  # 
-  
-  ## check if hits
-  
-}
+# get_drug_biomarkers <- function(
+#     drug_query = "Vemurafenib",
+#     force_download = FALSE,
+#     cache_dir = NA){
+#   
+#   ## set logging layout
+#   lgr::lgr$appenders$console$set_layout(
+#     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+#   
+#   all_drug_recs <- get_drug_records(cache_dir, force_download)
+#   
+#   drugname_primary <- all_drug_recs$records |>
+#     dplyr::select("drug_name", 
+#                   "drug_id",
+#                   "molecule_chembl_id", 
+#                   "drug_alias") |>
+#     dplyr::distinct() |>
+#     dplyr::mutate(alias = tolower(.data$drug_name))
+#   
+#   drugname_alias <- drugname_primary |>
+#     dplyr::select(c("drug_id","drug_alias")) |>
+#     tidyr::separate_rows(.data$drug_alias, sep = "\\|") |>
+#     dplyr::mutate(alias = tolower(.data$drug_alias)) |>
+#     dplyr::select(c("drug_id", "alias")) |>
+#     dplyr::distinct()
+#   
+#   drugname_chembl <- drugname_primary |>
+#     dplyr::select("drug_id", "molecule_chembl_id") |>
+#     dplyr::filter(!is.na(.data$molecule_chembl_id)) |>
+#     dplyr::rename(alias = .data$molecule_chembl_id) |>
+#     dplyr::select(c("drug_id","alias")) |>
+#     dplyr::distinct()
+#   
+#   drugname_primary_lc <- drugname_primary |>
+#     dplyr::select(c("drug_id", "alias")) |>
+#     dplyr::distinct()
+#   
+#   all_aliases <- drugname_primary_lc |>
+#     dplyr::bind_rows(drugname_alias) |>
+#     dplyr::bind_rows(drugname_chembl) |>
+#     dplyr::mutate(alias = stringr::str_trim(.data$alias)) |>
+#     dplyr::filter(nchar(.data$alias) > 2) |>
+#     dplyr::distinct()
+#   
+#   drug_dictionary <- drugname_primary |>
+#     dplyr::select(c("drug_id", "drug_name")) |>
+#     dplyr::left_join(all_aliases, by = "drug_id") |>
+#     dplyr::filter(
+#       !stringr::str_detect(tolower(.data$drug_name),"regimen")
+#     )
+#   
+#   query_hit <- drug_dictionary |>
+#     dplyr::filter(.data$alias == tolower(drug_query))
+#   
+#   
+#   #biomarkers <- get_biomarkers(cache_dir = cache_dir,
+#                                #force_download = force_download)
+#   
+#   # therapy_biomarkers <- biomarkers$records |>
+#   #   dplyr::filter(!is.na(therapeutic_context)) |>
+#   #   dplyr::filter(nchar(therapeutic_context) > 0) |>
+#   #   dplyr::select(evidence_id, symbol, variant, 
+#   #                 variant_id, therapeutic_context,
+#   #                 alteration_type, cancer_type, 
+#   #                 molecule_chembl_id, evidence_level,
+#   #                 evidence_direction, evidence_description,
+#   #                 clinical_significance) |>
+#   #   dplyr::distinct() |>
+#   #   dplyr::filter(alteration_type != "BIA" & 
+#   #                   alteration_type != "METHYL" &
+#   #                   alteration_type != "CODON") |>
+#   #   dplyr::filter(!stringr::str_detect(
+#   #     therapeutic_context, "(hibitors|gens)$"
+#   #   )) |>
+#   #   dplyr::filter(!stringr::str_detect(
+#   #     therapeutic_context, "alone or in combination"
+#   #   ))
+#   #   
+#   # 
+#   # aa_markers <- therapy_biomarkers |>
+#   #   dplyr::filter(stringr::str_detect(variant, "p\\.[A-Z][0-9]{1,}"))
+#   # 
+#   # 
+#   
+#   ## check if hits
+#   
+# }
 
 
 #' Tidy eval helpers

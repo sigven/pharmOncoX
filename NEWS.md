@@ -1,3 +1,10 @@
+# Version 1.2.0 (April 26th 2023)
+
+* Using [sigven/phenOncoX](https://github.com/sigven/phenOncoX) v0.5.8
+  for cancer phenotype matching
+* Updated NCI Thesaurus (23.03d release)
+* New helper function to retrieve drug biomarkers (`pharmOncoX:::get_biomarkers`)
+
 # Version 1.1.9 (March 1st 2023)
 
 * Updated NCI Thesaurus (23.02d release)

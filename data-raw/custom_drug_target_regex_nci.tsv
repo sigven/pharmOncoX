@@ -26,7 +26,7 @@ Pirotinib	ERBB2
 Pirotinib	ERBB4
 Pifusertib	AKT1
 Polzastobart	LILRB2
-
+Anti-LILRB4	LILRB4
 Pradusinstobart	PDCD1
 Betifisolimab	CD274
 Anti-LAIR1	LAIR1
@@ -214,7 +214,7 @@ EBNA-1	EBNA1
 Glutaminase	GLS
 GSK-3	GSK3A
 GSK-3	GSK3B
-belvarafenib	BRAF
+belvarafenib|exarafenib	BRAF
 belvarafenib	CRAF
 nhibitor of 6-phosphofructo-2-kinase	PFKFB3
 belumosudil binds to and inhibits	ROCK2
@@ -398,7 +398,8 @@ Menin Inhibitor	MEN1
 FGF Receptor Antagonist HGS1036	FGFR1
 Gunagratinib	FGFR1
 Gunagratinib	FGFR2
-Gunagratinib	FGFR3
+
+Gunagratinib|LOXO-435	FGFR3
 Gunagratinib	FGFR4
 Vofatamab	FGFR3
 TYRA-300	FGFR3
@@ -413,6 +414,7 @@ Anti-CD33(-|/| )	CD33
 Anti-CD38(-|/| )	CD38
 FLT3|Flt3|Flt-3	FLT3
 AXL|Axl	AXL
+BMS-986360	MAPK8
 Tomaralimab	TLR2
 Tinurilimab	CEACAM6
 CSF1R|CSF-1R	CSF1R
@@ -570,7 +572,8 @@ CXCR2	CXCR2
 CXCR4	CXCR4
 PERK Inhibitor	EIF2AK3
 ERK Inhibitor	MAPK1
-Kras G12C Inhibitor	KRAS
+MRTX0902	SOS1
+Kras G12C Inhibitor|HRS-4642	KRAS
 (ERK1/2|ERK 1/2)	MAPK3
 (ERK1/2|ERK 1/2)	MAPK1
 (MEK 1/2|MEK (I|i)nhibitor|inhibitor of mitogen-activated protein kinase)	MAP2K1

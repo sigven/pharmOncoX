@@ -1,4 +1,222 @@
 
+get_literature_references <- function(biomarker_items){
+  
+  ## set logging layout
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+  
+  biomarker_items[['literature']] <- as.data.frame(
+    biomarker_items[['clinical']] |>
+      dplyr::filter(!is.na(citation_id)) |>
+      
+      tidyr::separate_rows(citation_id, sep=";") |> 
+      dplyr::mutate(citation_id = stringr::str_trim(citation_id)) |> 
+      dplyr::filter(
+        !stringr::str_detect(
+          tolower(citation_id),"asco|aacr|abstr|suppl|confex|jci|blood|annonc|caris")) |> 
+      dplyr::distinct() |>
+      dplyr::mutate(citation_id = dplyr::case_when(
+        citation_id == "PMC3638050" ~ "PMID:22038996",
+        citation_id == "PMC3936420" ~ "PMID:24265155",
+        TRUE ~ as.character(stringr::str_replace(citation_id,"PMID: ","PMID:"))
+      )) |>
+      dplyr::filter(!stringr::str_detect(citation_id, "^[0-9]{1,5}$")) |>
+      dplyr::filter(citation_id != "PMID:238900088" &
+                      citation_id != "PMID:24569783" &
+                      citation_id != "2556735") |>
+      dplyr::mutate(citation_id = dplyr::case_when(
+        stringr::str_detect(citation_id, "^FDA") ~ "FDA",
+        stringr::str_detect(citation_id, "NCCN") ~ "NCCN",
+        TRUE ~ as.character(citation_id)
+      )) |>
+      dplyr::mutate(citation_id = stringr::str_replace(
+        citation_id, "PMID:",""
+      )) |>
+      
+      dplyr::select(citation_id, evidence_id) |>
+      dplyr::rename(source_id = citation_id) |>
+      dplyr::mutate(source_id = as.character(source_id)) |>
+      dplyr::group_by(source_id) |>
+      dplyr::summarise(evidence_id = paste(
+        unique(sort(evidence_id)), collapse = ";"
+      ), .groups = "drop") |>
+      dplyr::left_join(
+        literatureVault::vault,
+        by = "source_id", 
+        relationship = "many-to-many",
+        multiple = "all"
+      )
+  )
+  
+  biomarker_items[['clinical']]$citation_id <- NULL
+  
+  not_found <- biomarker_items$literature |>
+    dplyr::filter(is.na(link)) |>
+    dplyr::select(source, source_id)
+  
+  if(NROW(not_found) > 0){
+    lgr::lgr$info(
+      "Citations missing in sigven/literatureVault::vault - update needed")
+    return(not_found)
+  }else{
+    lgr::lgr$info(
+      "Found all literature references in sigven/literatureVault::vault"
+    )
+  }
+  
+  ## ignore molecular profiles/biomarkers that lack literature support
+  biomarkers_with_literature_support <- as.data.frame(
+    biomarker_items[['literature']] |>
+      dplyr::select(evidence_id, source_id) |>
+      tidyr::separate_rows(evidence_id, sep = ";") |>
+      dplyr::group_by(evidence_id) |>
+      dplyr::mutate(source_id = paste(
+        unique(source_id), collapse = ";"
+      )) |>
+      dplyr::distinct()
+  )
+  
+  biomarker_items[['clinical']] <- biomarker_items[['clinical']] |>
+    dplyr::inner_join(
+      biomarkers_with_literature_support,
+      by = "evidence_id", multiple = "all",
+      relationship = "many-to-many")
+  
+  return(biomarker_items)
+  
+}
+
+#' #' A function that splits an array into chunks of equal size
+#' chunk <- function(x,n) split(x, factor(sort(rank(x)%%n)))
+#' 
+#' #' A function that returns a citation with first author, journal and year for a PubMed ID
+#' #'
+#' #' @param pmid An array of Pubmed IDs
+#' #' @param chunk_size Size of PMID chunks
+#' #'
+#' #' @export
+#' #'
+#' #' @return citation PubMed citation, with first author, journal and year
+#' #'
+#' get_citations_pubmed <- function(
+#'     pmid,
+#'     pmid_cache_dir = NA,
+#'     chunk_size = 2){
+#'   
+#'   ## make chunk of maximal 400 PMIDs from input array (limit by EUtils)
+#'   pmid_chunks <- chunk(pmid, ceiling(length(pmid)/chunk_size))
+#'   j <- 0
+#'   all_citations <- data.frame()
+#'   cat('Retrieving PubMed citations for PMID list, total length', length(pmid))
+#'   cat('\n')
+#'   while(j < length(pmid_chunks)){
+#'     #cat(unlist(pmid_chunks),"\n")
+#'     pmid_chunk <- pmid_chunks[[as.character(j)]]
+#'     #cat(unlist(pmid_chunk),"\n")
+#'     #cat('Processing chunk ',j,' with ',length(pmid_chunk),'PMIDS')
+#'     #cat('\n')
+#'     pmid_string <- paste(pmid_chunk,collapse = " ")
+#'     res <- RISmed::EUtilsGet(
+#'       RISmed::EUtilsSummary(pmid_string, type="esearch", db="pubmed", retmax = 5000)
+#'     )
+#'     
+#'     
+#'     year <- RISmed::YearPubmed(res)
+#'     authorlist <- RISmed::Author(res)
+#'     pmid_list <- RISmed::PMID(res)
+#'     i <- 1
+#'     first_author <- c()
+#'     while(i <= length(authorlist)){
+#'       
+#'       
+#'       if(length(authorlist[[i]]) == 5){
+#'         first_author <- c(
+#'           first_author,
+#'           paste(authorlist[[i]][1,]$LastName," et al.",sep=""))
+#'       }else{
+#'         first_author <- c(
+#'           first_author, as.character("Unknown et al.")
+#'         )
+#'       }
+#'       i <- i + 1
+#'     }
+#'     journal <- RISmed::ISOAbbreviation(res)
+#'     citations <- data.frame('pmid' = as.integer(pmid_list),
+#'                             'citation' = paste(first_author,year,journal,sep=", "),
+#'                             stringsAsFactors = F)
+#'     citations$link <- paste0('<a href=\'https://www.ncbi.nlm.nih.gov/pubmed/',
+#'                              citations$pmid,'\' target=\'_blank\'>',
+#'                              citations$citation,'</a>')
+#'     all_citations <- dplyr::bind_rows(
+#'       all_citations, citations)
+#'     j <- j + 1
+#'   }
+#'   
+#'   return(all_citations)
+#'   
+#' }
+#' 
+#' 
+#' get_literature_links <- function(literature_df) {
+#'   
+#'   stopifnot(is.data.frame(literature_df))
+#'   assertable::assert_colnames(
+#'     literature_df, c("source","source_id","evidence_id"),
+#'     quiet = T)
+#'   
+#'   pubmed_source_ids <- literature_df |>
+#'     dplyr::filter(source == "PubMed")
+#'   
+#'   other_source_ids <- literature_df |>
+#'     dplyr::filter(source != "PubMed")
+#'   
+#'   
+#'   if (NROW(pubmed_source_ids) > 0) {
+#'     pubmed_source_ids <- get_citations_pubmed(
+#'       pmid = pubmed_source_ids$source_id, chunk_size = 100) |>
+#'       dplyr::rename(
+#'         name = citation,
+#'       ) |>
+#'       dplyr::mutate(source_id = as.character(pmid)) |>
+#'       dplyr::select(-pmid) |>
+#'       dplyr::left_join(
+#'         pubmed_source_ids, by = "source_id")
+#'   }
+#'     
+#'   if (NROW(other_source_ids) > 0) {
+#'     other_source_ids <- other_source_ids |>
+#'       dplyr::filter(source != "PubMed") |>
+#'       dplyr::mutate(name = source_id) |>
+#'       dplyr::mutate(link = dplyr::case_when(
+#'         source == "FDA" ~
+#'           "<a href='https://www.fda.gov/drugs/resources-information-approved-drugs/oncology-cancer-hematologic-malignancies-approval-notifications' target='_blank'>FDA approvals</a>",
+#'         source == "NCCN" ~
+#'           "<a href='https://www.nccn.org/guidelines/category_1' target='_blank'>NCCN guidelines</a>",
+#'         source == "EMA" ~ "<a href='https://www.ema.europa.eu/en/medicines/field_ema_web_categories%253Aname_field/Human' target='_blank'>European Medicines Agency (EMA)</a>",
+#'         source == "clinicaltrials.gov" ~ paste0(
+#'           "<a href='https://clinicaltrials.gov/ct2/show/", 
+#'           source_id, "' target='_blank'>", 
+#'           source_id, "</a>")
+#'       ))
+#'   }
+#'   
+#'   all_literature_links <- pubmed_source_ids |>
+#'     dplyr::select(source, source_id, 
+#'                   evidence_id, 
+#'                   dplyr::everything())
+#'   
+#'   if(NROW(other_source_ids) > 0){
+#'     all_literature_links <- 
+#'       other_source_ids |>
+#'       dplyr::bind_rows(pubmed_source_ids)
+#'   }
+#'   
+#'   return(all_literature_links)
+#'   
+#'   
+#' }
+
+
 get_amino_acid_dictionary <- function() {
   aa_df <- 
     data.frame('one_letter' = names(Biostrings::AMINO_ACID_CODE), 
@@ -194,22 +412,125 @@ expand_hgvs_terms <- function(var, aa_dict) {
   return(hits)
 }
 
-load_civic_biomarkers <- function(datestamp = '20211217',
-                                  compound_synonyms = NULL,
-                                  cache_dir = NA) {
+load_civic_biomarkers <- function(
+    datestamp = '20211217',
+    compound_synonyms = NULL,
+    hg38_fasta = "/Users/sigven/research/DB/hg38/hg38.fa",
+    crossmap_chainfile_dir = "/Users/sigven/research/DB/chainFiles",
+    cache_dir = NA) {
+  
 
+  gene_alias <- geneOncoX::get_alias(
+    cache_dir = cache_dir
+  )
+  civic_local_fnames <- list()
+  for(e in c("VariantSummaries",
+             "civic_accepted",
+             "ClinicalEvidenceSummaries",
+             "MolecularProfileSummaries")){
+    
+    
+    civic_local_fnames[[e]] <- file.path(
+      cache_dir,
+      paste0("civic_", e, "_", datestamp,".tsv")
+    )
+    
+    remote_url <- paste0(
+      "https://civicdb.org/downloads/nightly/nightly-", e, ".tsv")
+    if(e == "civic_accepted"){
+      remote_url <- paste0(
+        "https://civicdb.org/downloads/nightly/nightly-", e, ".vcf")
+      civic_local_fnames[['vcf_grch37']] <- file.path(
+        cache_dir,
+        paste0("civic_", datestamp,"_grch37.vcf")
+      )
+      civic_local_fnames[['vcf_grch38']] <- file.path(
+        cache_dir,
+        paste0("civic_", datestamp,"_grch38.vcf")
+      )
+    }
+    
+    
+    
+    if(e == "civic_accepted"){
+      if(!file.exists(civic_local_fnames[['vcf_grch37']])){
+        download.file(
+          url = remote_url,
+          destfile = civic_local_fnames[['vcf_grch37']])
+      }
+    }else{
+      if(!file.exists(civic_local_fnames[[e]])){
+        download.file(
+          url = remote_url,
+          destfile = civic_local_fnames[[e]])
+      }
+    }
 
+    if(e == 'civic_accepted'){
+      vcfhelpR::crossmap_vcf(
+        direction = "hg19Tohg38",
+        chain_file_directory = crossmap_chainfile_dir,
+        target_genome_file = hg38_fasta,
+        source_vcf = civic_local_fnames[['vcf_grch37']],
+        target_vcf = civic_local_fnames[['vcf_grch38']])
+      
+      system(paste0('bgzip -dc ',civic_local_fnames[['vcf_grch38']],
+                    '.gz > ', 
+                    civic_local_fnames[['vcf_grch38']]))
+    }
+  }
+  
   aa_dict <- get_amino_acid_dictionary()
+  
+  variant_coordinates <- data.frame()
+  for(assembly in c('grch37','grch38')){
+    skip_lines <- 8
+    if(assembly == "grch38"){
+      skip_lines <- 6
+    }
+    
+    variant_coordinates <- as.data.frame(
+      dplyr::bind_rows(
+        variant_coordinates,
+        readr::read_tsv(
+          file = civic_local_fnames[[paste0('vcf_',assembly)]], 
+          skip = skip_lines, 
+          show_col_types = F, col_names = T) |>
+          janitor::clean_names() |>
+          dplyr::rename(variant_id = id) |>
+          dplyr::mutate(
+            vcf_coord = paste0(
+              assembly, ":", 
+              paste(number_chrom, pos, ref, alt, sep="_"))
+          ) |>
+          dplyr::select(variant_id, vcf_coord)
+      )
+    )
+  }
+  
+  molecularProfileSummary <- as.data.frame(
+    data.table::fread(
+      civic_local_fnames[['MolecularProfileSummaries']],
+      select = c(1:13), fill = T)) |>
+    dplyr::rename(variant_id = variant_ids,
+                  molecular_profile_name = name,
+                  molecular_profile_summary = summary) |>
+    dplyr::select(variant_id, 
+                  molecular_profile_id, 
+                  molecular_profile_name,
+                  molecular_profile_summary) |>
+    ## ignore profiles with aberration combinations for now
+    dplyr::filter(!stringr::str_detect(variant_id, ",")) |>
+    dplyr::mutate(variant_id = as.integer(variant_id))
+
   
   clinicalEvidenceSummary <- as.data.frame(
     data.table::fread(
-      paste0("data-raw/biomarkers/civic/clinical_evidence_summary_",
-             datestamp,
-             ".tsv"),
+      civic_local_fnames[['ClinicalEvidenceSummaries']],
       select = c(1:25), fill = T)) |>
     dplyr::filter(source_type == "PubMed") |>
-    dplyr::select(molecular_profile,
-                  molecular_profile_id,
+    dplyr::mutate(citation_id = as.character(citation_id)) |>
+    dplyr::select(molecular_profile_id,
                   evidence_id,
                   evidence_civic_url,
                   disease,
@@ -223,10 +544,13 @@ load_civic_biomarkers <- function(datestamp = '20211217',
                   significance,
                   variant_origin,
                   rating) |>
+    dplyr::mutate(citation_id = dplyr::case_when(
+      citation_id == "27577079" ~ "28947956",
+      citation_id == "27556863" ~ "28978004",
+      TRUE ~ as.character(citation_id)
+    )) |>
     dplyr::rename(disease_ontology_id = doid,
-                  variant = molecular_profile,
                   clinical_significance = significance,
-                  variant_id = molecular_profile_id,
                   evidence_description = evidence_statement,
                   evidence_url = evidence_civic_url,
                   cancer_type = disease) |>
@@ -248,9 +572,12 @@ load_civic_biomarkers <- function(datestamp = '20211217',
     dplyr::mutate(
       variant_origin =
         dplyr::if_else(
-          variant_origin == "N/A" | variant_origin == "Unknown",
+          variant_origin == "N/A" | 
+            variant_origin == "Unknown",
           as.character(NA),
-          as.character(stringr::str_replace(variant_origin,"Rare |Common ",""))))
+          as.character(
+            stringr::str_replace(
+              variant_origin,"Rare |Common ",""))))
 
 
   therapeutic_contexts <- as.data.frame(
@@ -262,13 +589,12 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       dplyr::mutate(therapies = tolower(therapies)) |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
-                      drugname_lc, 
-                      drug_name, 
+                      alias_lc,
+                      drug_name,
                       molecule_chembl_id),
-        by = c("therapies" = "drugname_lc"), multiple = "all"
+        by = c("therapies" = "alias_lc"), 
+        multiple = "all", relationship = "many-to-many"
       ) |>
-      # dplyr::left_join(oncoPharmaDB::compound_synonyms,
-      #                  by = c("drugs" = "alias")) |>
       dplyr::filter(!is.na(drug_name)) |>
       dplyr::select(evidence_id, molecule_chembl_id) |>
       dplyr::distinct() |>
@@ -284,27 +610,41 @@ load_civic_biomarkers <- function(datestamp = '20211217',
   )
 
   clinicalEvidenceSummary <- clinicalEvidenceSummary |>
-    dplyr::left_join(therapeutic_contexts, 
-                     by = "evidence_id", multiple = "all")
-
+    dplyr::left_join(
+      therapeutic_contexts,
+      by = "evidence_id", multiple = "all",
+      relationship = "many-to-many")
+  
   variantSummary <- as.data.frame(
-    data.table::fread(paste0("data-raw/biomarkers/civic/variant_summary_",
-                             datestamp,
-                             ".tsv"),
+    data.table::fread(civic_local_fnames[['VariantSummaries']],
                       select = c(1:25), fill = T) |>
+      #dplyr::rename(molecular_profile_id = variant_id) |>
       dplyr::mutate(alteration_type = "MUT") |>
+      dplyr::mutate(variant = stringr::str_trim(variant)) |>
+      dplyr::filter(variant != "Alu insertion") |>
+      dplyr::mutate(variant = dplyr::case_when(
+        variant == "D835H/Y" ~ "D835H,D835Y",
+        variant == "G12/G13" ~  "G12,G13",
+        variant == "Q157P/R" ~ "Q157P,Q157R",
+        variant == "S310F/Y" ~ "S310F,S310Y",
+        variant == "S34Y/F" ~ "S34Y,S34F",
+        variant == "S893A/T" ~  "S893A,S893T",
+        TRUE ~ as.character(variant)
+      )) |>
+      tidyr::separate_rows(variant, sep=",") |>
+      dplyr::rename(variant_consequence = variant_types) |>
       dplyr::mutate(
         alteration_type =
           dplyr::if_else(
             stringr::str_detect(toupper(variant),"EXPRESSION"),
             "EXP",as.character(alteration_type))) |>
       dplyr::mutate(
-        variant_types =
+        variant_consequence =
           dplyr::if_else(
             stringr::str_detect(toupper(variant),"EXPRESSION") &
-              variant_types == "N/A",
+              variant_consequence == "N/A",
             "transcript_amplification",
-            as.character(variant_types))) |>
+            as.character(variant_consequence))) |>
       dplyr::mutate(
         alteration_type =
           dplyr::case_when(
@@ -330,66 +670,88 @@ load_civic_biomarkers <- function(datestamp = '20211217',
           dplyr::if_else(
             stringr::str_detect(toupper(variant),"LOSS-OF-FUNCTION|LOSS|TRUNCAT|INACTIVAT") |
               stringr::str_detect(
-                variant_types, "stop_gained,loss_of_function_variant|loss_of_function_variant,stop_gained") |
-              (stringr::str_detect(variant_types, "loss_of_function_variant") &
+                variant_consequence, "stop_gained,loss_of_function_variant|loss_of_function_variant,stop_gained") |
+              (stringr::str_detect(variant_consequence, "loss_of_function_variant") &
                  toupper(variant) == "MUTATION") |
-              stringr::str_detect(variant_types,"truncation"),
+              stringr::str_detect(variant_consequence,"truncation"),
             "MUT_LOF",as.character(alteration_type))) |>
+      
+      dplyr::mutate(alteration_type = dplyr::if_else(
+        variant == "BIALLELIC INACTIVATION",
+        "MUT_LOF_BIALLELIC",
+        as.character(alteration_type)
+      )) |>
+      dplyr::mutate(variant = dplyr::if_else(
+        variant == "BIALLELIC INACTIVATION",
+        "MUTATION",
+        as.character(variant)
+      )) |>
       dplyr::mutate(
         alteration_type =
           dplyr::if_else(
             alteration_type == 'MUT_LOF' &
               (stringr::str_detect(toupper(variant),"FRAMESHIFT") |
-                 stringr::str_detect(variant_types,"truncation")),
+                 stringr::str_detect(variant_consequence,"truncation")),
             "MUT_LOF_FS",as.character(alteration_type))) |>
       dplyr::mutate(
         alteration_type =
           dplyr::if_else(
             stringr::str_detect(toupper(variant), "AMPLIFICATION|DELETION|COPY") &
-              stringr::str_detect(variant_types, "_amplification|_ablation"),
+              stringr::str_detect(variant_consequence, "_amplification|_ablation"),
             "CNA",as.character(alteration_type))) |>
 
       dplyr::mutate(
         alteration_type =
           dplyr::if_else(
-            stringr::str_detect(toupper(variant_types),"TRANSCRIPT_FUSION|REGION_FUSION") |
+            stringr::str_detect(toupper(variant_consequence),"TRANSCRIPT_FUSION|REGION_FUSION") |
               stringr::str_detect(toupper(variant),"TRANSLOCATION|FUSION|REARRANGEMENT") |
-              variant_types == "" & stringr::str_detect(variant,"::"),
+              variant_consequence == "" & stringr::str_detect(variant,"::"),
             "TRANSLOCATION_FUSION",as.character(alteration_type))) |>
       dplyr::mutate(
         alteration_type =
           dplyr::if_else(
-            (stringr::str_detect(toupper(variant_types),"TRANSCRIPT_FUSION") &
-               stringr::str_detect(toupper(variant_types),"MISSENSE")) |
-              variant_types == "missense_variant" & stringr::str_detect(variant,"BCR-ABL"),
+            (stringr::str_detect(toupper(variant_consequence),"TRANSCRIPT_FUSION") &
+               stringr::str_detect(toupper(variant_consequence),"MISSENSE")) |
+              variant_consequence == "missense_variant" & stringr::str_detect(variant,"BCR-ABL"),
             "TRANSLOCATION_FUSION_MUT",as.character(alteration_type))) |>
-
+      dplyr::rename(variant_alias = variant_aliases) |>
       dplyr::select(variant_id,
-                    variant_types,
+                    variant_consequence,
                     variant,
                     alteration_type,
+                    hgvs_descriptions,
                     gene,
-                    variant_aliases) |>
-      tidyr::separate_rows(variant_aliases, sep = ",") |>
+                    variant_alias) |>
+      dplyr::mutate(variant_alias = dplyr::if_else(
+        !is.na(hgvs_descriptions) & 
+          hgvs_descriptions != "NA" & 
+          nchar(hgvs_descriptions) > 0,
+        paste(variant_alias, hgvs_descriptions, sep=","),
+        as.character(variant_alias)
+      )) |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias, "^,", ""
+      )) |>
+      tidyr::separate_rows(variant_alias, sep = ",") |>
 
       dplyr::mutate(
         variant =
           stringr::str_replace(variant,
                                " \\(.+\\)$","")) |>
       dplyr::mutate(
-        variant_aliases =
-          stringr::str_replace(variant_aliases,
+        variant_alias =
+          stringr::str_replace(variant_alias,
                                " \\(.+\\)$","")) |>
       dplyr::mutate(
         variant =
           stringr::str_replace(variant,
                                "\\*$","X")) |>
       dplyr::mutate(
-        variant_aliases =
-          stringr::str_replace(variant_aliases,
+        variant_alias =
+          stringr::str_replace(variant_alias,
                                "\\*$","X")) |>
       dplyr::mutate(variant = dplyr::if_else(
-        variant_types == "N/A",
+        variant_consequence == "N/A",
         stringr::str_replace(toupper(variant),"P16 |NUCLEAR |ISOFORM ",""),
         as.character(variant)
       )) |>
@@ -409,9 +771,9 @@ load_civic_biomarkers <- function(datestamp = '20211217',
             toupper(variant)," RECIPROCAL |RARE | AND AMPLIFICATION| FUSION","")
       ) |>
       dplyr::mutate(
-        variant_aliases =
+        variant_alias =
           stringr::str_replace(
-            toupper(variant_aliases),"FUSION | TYPE 1|RECIPROCAL ","")
+            toupper(variant_alias),"FUSION | TYPE 1|RECIPROCAL ","")
       ) |>
       dplyr::rowwise() |>
       dplyr::mutate(variant = stringr::str_replace(
@@ -419,36 +781,36 @@ load_civic_biomarkers <- function(datestamp = '20211217',
       )) |>
       dplyr::mutate(gene2 = dplyr::if_else(
         stringr::str_detect(variant,"BCR-ABL") |
-          variant_types == "missense_variant,transcript_fusion" |
-          variant_types == "inframe_insertion,transcript_fusion" |
-          variant_types == "transcript_fusion" |
-          variant_types == "transcript_regulatory_region_fusion" |
-          variant_types == "gene_fusion,transcript_fusion",
+          variant_consequence == "missense_variant,transcript_fusion" |
+          variant_consequence == "inframe_insertion,transcript_fusion" |
+          variant_consequence == "transcript_fusion" |
+          variant_consequence == "transcript_regulatory_region_fusion" |
+          variant_consequence == "gene_fusion,transcript_fusion",
         stringr::str_match(variant,"\\S{1,}-\\S{1,}")[[1]],
         as.character(gene)
       )) |>
       dplyr::mutate(gene2 = dplyr::if_else(
         is.na(gene2) &
-          (variant_types == "missense_variant,transcript_fusion" |
-             variant_types == "transcript_fusion"),
+          (variant_consequence == "missense_variant,transcript_fusion" |
+             variant_consequence == "transcript_fusion"),
         as.character(gene),
         as.character(gene2)
       )) |>
-      dplyr::mutate(variant_aliases = dplyr::if_else(
-        stringr::str_detect(variant_aliases,"^RS[0-9]{5,}$"),
-        stringr::str_replace(variant_aliases,"RS","rs"),
-        as.character(variant_aliases))) |>
+      dplyr::mutate(variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_alias,"^RS[0-9]{5,}$"),
+        stringr::str_replace(variant_alias,"RS","rs"),
+        as.character(variant_alias))) |>
       dplyr::mutate(variant = dplyr::if_else(
         stringr::str_detect(variant,"^RS[0-9]{5,}$"),
         stringr::str_replace(variant,"RS","rs"),
         as.character(variant))) |>
-      dplyr::mutate(variant_aliases = dplyr::if_else(
-        stringr::str_detect(variant_types,"fusion"),
-        stringr::str_replace(variant_aliases,"ALK(S)? |(\\S{1,}-\\S{1,}\\s?)",""),
-        as.character(variant_aliases)
+      dplyr::mutate(variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_consequence,"fusion"),
+        stringr::str_replace(variant_alias,"ALK(S)? |(\\S{1,}-\\S{1,}\\s?)",""),
+        as.character(variant_alias)
       )) |>
       dplyr::mutate(variant = dplyr::if_else(
-        stringr::str_detect(variant_types,"fusion"),
+        stringr::str_detect(variant_consequence,"fusion"),
         stringr::str_replace(variant,"ALK(S)? |(\\S{1,}-\\S{1,}\\s?)",""),
         as.character(variant)
       )) |>
@@ -458,32 +820,33 @@ load_civic_biomarkers <- function(datestamp = '20211217',
         stringr::str_replace(variant,"BCR::ABL(1)? ",""),
         as.character(variant)
       )) |>
-      dplyr::mutate(variant_aliases = dplyr::if_else(
+      
+      dplyr::mutate(variant_alias = dplyr::if_else(
         alteration_type == "TRANSLOCATION_FUSION_MUT" |
-          stringr::str_detect(variant_aliases,"BCR::ABL(1)? [A-Z]"),
-        stringr::str_replace(variant_aliases,"BCR::ABL(1)? ",""),
-        as.character(variant_aliases)
+          stringr::str_detect(variant_alias,"BCR::ABL(1)? [A-Z]"),
+        stringr::str_replace(variant_alias,"BCR::ABL(1)? ",""),
+        as.character(variant_alias)
 
       )) |>
-      dplyr::mutate(variant_types = dplyr::if_else(
-        variant_types == "" &
+      dplyr::mutate(variant_consequence = dplyr::if_else(
+        variant_consequence == "" &
           stringr::str_detect(variant,"EXON") &
           stringr::str_detect(variant,"DELETION"),
         "exon_loss_variant",
-        as.character(variant_types)
+        as.character(variant_consequence)
       )) |>
-      dplyr::mutate(variant_types = dplyr::if_else(
-        variant_types == "" &
+      dplyr::mutate(variant_consequence = dplyr::if_else(
+        variant_consequence == "" &
           stringr::str_detect(variant,"EXON") &
           stringr::str_detect(variant,"MUTATION"),
         "exon_variant",
-        as.character(variant_types)
+        as.character(variant_consequence)
       )) |>
-      dplyr::mutate(variant_types = dplyr::if_else(
-        variant_types == "" &
+      dplyr::mutate(variant_consequence = dplyr::if_else(
+        variant_consequence == "" &
           stringr::str_detect(variant,"^(LOSS|LOSS-OF-FUNCTION)$"),
         "loss_of_function_variant",
-        as.character(variant_types)
+        as.character(variant_consequence)
       )) |>
       dplyr::mutate(
         variant = stringr::str_replace_all(
@@ -497,24 +860,67 @@ load_civic_biomarkers <- function(datestamp = '20211217',
         )
       ) |>
       dplyr::mutate(
-        variant_aliases = dplyr::if_else(
-          stringr::str_detect(variant_aliases,"^(INV|T)\\("),
-          tolower(variant_aliases),
-          as.character(variant_aliases)
+        variant_alias = dplyr::if_else(
+          stringr::str_detect(variant_alias,"^(INV|T)\\("),
+          tolower(variant_alias),
+          as.character(variant_alias)
         )
       ) |>
+      dplyr::filter(
+        !stringr::str_detect(variant_alias,"SERUM|INTRON|T17 DELETION")
+      ) |>
+      dplyr::mutate(variant_consequence = dplyr::if_else(
+        stringr::str_detect(variant,"^(ACTIVATING|GAIN-OF-FUNCTION)") &
+          (is.na(variant_consequence) | nchar(variant_consequence) == 0),
+        "gain_of_function_variant",
+        as.character(variant_consequence)
+      )) |>
+      dplyr::mutate(variant = dplyr::if_else(
+        stringr::str_detect(variant,"^(GAIN-OF-FUNCTION|N-TERMINAL FRAME SHIFT|FRAMESHIFT|LOSS-OF-FUNCTION|INTERNAL DUPLICATION)"),
+        "MUTATION",
+        as.character(variant)
+      )) |>
+      dplyr::mutate(variant = stringr::str_replace(
+        variant, 
+        "^((TRUNCATING |DELETERIOUS |ACTIVATING |PROMOTER |INACTIVATING |3' UTR |INTRON [0-9]{1,} )MUTATION)",
+        "MUTATION"
+      )) |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias, "(ENSP[0-9]{1,}|NP_[0-9]{1,})(\\.[0-9]{1,})?:P\\.","p."
+      )) |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias, "(ENST[0-9]{1,}|NM_[0-9]{1,})(\\.[0-9]{1,})?:C\\.","c."
+      )) |>
+      dplyr::filter(
+        !stringr::str_detect(variant_alias, "^(NC_)") 
+      ) |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias, "^N/A$",""
+      )) |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias, "WILD TYPE","WILDTYPE"
+      )) |>
+      dplyr::mutate(variant_consequence = dplyr::if_else(
+        alteration_type == "EXP_UNDER",
+        "transcript_ablation",
+        as.character(variant_consequence)
+      )) |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias, "IVS2\\+1G>A","c.444+1G>A"
+      )) |>
       dplyr::distinct()
   )
 
-  expanded_variant_set <- data.frame()
+  variants_expanded <- list()
+  variants_expanded[['mut']] <- data.frame()
 
   for (i in unique(variantSummary$variant_id)) {
     vrows <- variantSummary[variantSummary$variant_id == i,]
 
     variant_entries <- unique(c(vrows$variant,
-                                vrows$variant_aliases))
+                                vrows$variant_alias))
     gene <- unique(vrows$gene2)
-    variant_type <- unique(vrows$variant_types)
+    variant_consequence <- unique(vrows$variant_consequence)
     alteration_type <- unique(vrows$alteration_type)
 
     all_aliases <- c()
@@ -534,65 +940,71 @@ load_civic_biomarkers <- function(datestamp = '20211217',
         df <- data.frame(
           'variant_id' = i,
           'symbol' = gene,
+          'variant_alias' = variant_alias,
           'alteration_type' = alteration_type,
-          'variant_type' = variant_type,
-          'variant' = variant_alias,
+          'variant_consequence' = variant_consequence,
           stringsAsFactors = F)
-        expanded_variant_set <- dplyr::bind_rows(
-          expanded_variant_set, df
+        variants_expanded[['mut']] <- dplyr::bind_rows(
+          variants_expanded[['mut']], df
         )
       }
     }
 
   }
 
-  expanded_variant_set <- expanded_variant_set |>
+  variants_expanded[['mut']] <- variants_expanded[['mut']] |>
     dplyr::mutate(
       alteration_type =
         dplyr::if_else(
-          stringr::str_detect(variant,"^(p\\.)?(([A-Z]{1}[0-9]{1,})|([A-Z]{1}[a-z]{2}[0-9]{1,}))$"),
+          stringr::str_detect(variant_alias,"^(p\\.)?(([A-Z]{1}[0-9]{1,})|([A-Z]{1}[a-z]{2}[0-9]{1,}))$"),
           as.character("CODON"),
           as.character(alteration_type)
         )) |>
     dplyr::mutate(
-      variant = dplyr::if_else(
-        stringr::str_detect(variant,"FS"),
-        stringr::str_replace(variant,"FS","fs"),
-        as.character(variant)
+      variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_alias,"FS"),
+        stringr::str_replace(variant_alias,"FS","fs"),
+        as.character(variant_alias)
       )
     ) |>
     dplyr::mutate(
-      variant = dplyr::if_else(
-        stringr::str_detect(variant,"DEL") &
-          !stringr::str_detect(variant, "DELETION"),
-        stringr::str_replace(variant,"DEL","del"),
-        as.character(variant)
+      variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_alias,"DEL") &
+          !stringr::str_detect(variant_alias, "DELETION|DELETERIOUS"),
+        stringr::str_replace(variant_alias,"DEL","del"),
+        as.character(variant_alias)
       )
     ) |>
     dplyr::mutate(
-      variant = dplyr::if_else(
-        stringr::str_detect(variant,"INS") &
-          !stringr::str_detect(variant,"INSERTION"),
-        stringr::str_replace(variant,"INS","ins"),
-        as.character(variant)
+      variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_alias,"INS") &
+          !stringr::str_detect(variant_alias,"INSERTION"),
+        stringr::str_replace(variant_alias,"INS","ins"),
+        as.character(variant_alias)
       )
     ) |>
     dplyr::mutate(
-      variant = dplyr::if_else(
-        stringr::str_detect(variant,"TER|ter") &
-          !stringr::str_detect(tolower(variant),"alternative|internal|promoter|deleterious"),
-        stringr::str_replace(variant,"ter|TER","Ter"),
-        as.character(variant)
+      variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_alias,"TER|ter") &
+          !stringr::str_detect(
+            tolower(variant_alias), 
+            "alternative|alteration|heterozygosity|terminal|internal|promoter|deleterious"),
+        stringr::str_replace(variant_alias,"ter|TER","Ter"),
+        as.character(variant_alias)
       )
     ) |>
     dplyr::mutate(
-      variant = dplyr::if_else(
-        stringr::str_detect(variant,"DUP") &
-          !stringr::str_detect(variant,"DUPLICATION"),
-        stringr::str_replace(variant,"DUP","dup"),
-        as.character(variant)
+      variant_alias = dplyr::if_else(
+        stringr::str_detect(variant_alias,"DUP") &
+          !stringr::str_detect(variant_alias,"DUPLICATION"),
+        stringr::str_replace(variant_alias,"DUP","dup"),
+        as.character(variant_alias)
       )
-    )
+    ) |>
+    dplyr::filter(variant_alias != "p.=" &
+                    !stringr::str_detect(variant_alias, "^p\\.\\(") &
+                    !stringr::str_detect(variant_alias, "ENSP|ENST") &
+                    !stringr::str_detect(variant_alias, "SPLICE"))
 
   
   aa_dict <- get_amino_acid_dictionary()
@@ -601,91 +1013,355 @@ load_civic_biomarkers <- function(datestamp = '20211217',
     aa <- aa_dict[i,"three_letter_uc"]
     aa_three_lc <- aa_dict[i, "three_letter"]
     
-    if (nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0) {
-      expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                             stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
-        stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                                                    stringr::str_detect(expanded_variant_set$variant, aa),]$variant,
+    if (nrow(variants_expanded[['mut']][!is.na(variants_expanded[['mut']]$variant_alias) & 
+                                 stringr::str_detect(variants_expanded[['mut']]$variant_alias,aa),]) > 0) {
+      variants_expanded[['mut']][!is.na(variants_expanded[['mut']]$variant_alias) & 
+                             stringr::str_detect(variants_expanded[['mut']]$variant_alias, aa),]$variant_alias <-
+        stringr::str_replace_all(variants_expanded[['mut']][!is.na(variants_expanded[['mut']]$variant_alias) & 
+                                                    stringr::str_detect(variants_expanded[['mut']]$variant_alias, aa),]$variant_alias,
                              aa,
                              aa_three_lc)
     }
   }
   
+  variants_expanded[['mut']] <- variants_expanded[['mut']] |>
+    dplyr::mutate(alias_type = "hgvsp") |>
+    dplyr::mutate(alias_type = dplyr::case_when(
+      stringr::str_detect(variant_alias, "^rs[0-9]{1,}$") ~ "dbsnp",
+      stringr::str_detect(variant_alias, "^c\\.[0-9]{1,}") ~ "hgvsc",
+      stringr::str_detect(variant_alias, "MUTATION|COPY|ALTERATION") ~ "other",
+      TRUE ~ as.character(alias_type)
+    )) |>
+    dplyr::left_join(variant_coordinates, 
+                     by = "variant_id", 
+                     multiple = "all",
+                     relationship = "many-to-many") |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      !is.na(vcf_coord),
+      paste(variant_alias, vcf_coord, sep=","),
+      as.character(variant_alias)
+    )) |>
+    tidyr::separate_rows(
+      variant_alias, sep = ","
+    ) |>
+    dplyr::select(-vcf_coord) |>
+    dplyr::distinct() |>
+    dplyr::mutate(alias_type = dplyr::if_else(
+      stringr::str_detect(variant_alias, "^grch37"),
+      "genomic_grch37",
+      as.character(alias_type)
+    )) |>
+    dplyr::mutate(alias_type = dplyr::if_else(
+      stringr::str_detect(variant_alias, "^grch38"),
+      "genomic_grch38",
+      as.character(alias_type)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(alias_type, "^genomic_grch37"),
+      stringr::str_replace(variant_alias, "grch37:",""),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(alias_type, "^genomic_grch38"),
+      stringr::str_replace(variant_alias, "grch38:",""),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(alteration_type = dplyr::if_else(
+      stringr::str_detect(alias_type, "^genomic"),
+      "MUT",
+      as.character(alteration_type)
+    )) |>
+    dplyr::filter(
+      symbol != "TERT" |
+        (symbol == "TERT" &
+           !stringr::str_detect(variant_alias, "Cys|^p\\.") &
+           alteration_type != "CODON")) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      symbol == "TERT" & variant_alias == "-146C>T",
+      paste(variant_alias, "grch37:5_1295250_G_A,grch38:5_1295135_G_A", sep=","),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      symbol == "MET" & variant_alias == "EXON 14 SKIPPING MUTATION",
+      paste(
+        variant_alias, 
+        "c.3028+1G>T",
+        "c.3028+1G>C",
+        "c.3028+1G>A",
+        "c.3028+2T>C",
+        "c.3028+2T>G", 
+        sep=","),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      symbol == "TERT" & variant_alias == "-124C>T",
+      paste(variant_alias, "grch37:5_1295228_G_A,grch38:5_1295113_G_A", sep=","),
+      as.character(variant_alias)
+    )) |>
+    tidyr::separate_rows(
+      variant_alias, sep = ","
+    ) |>
+    
+    dplyr::mutate(alias_type = dplyr::if_else(
+      stringr::str_detect(variant_alias, "^grch37"),
+      "genomic_grch37",
+      as.character(alias_type)
+    )) |>
+    dplyr::mutate(alias_type = dplyr::if_else(
+      stringr::str_detect(variant_alias, "^grch38"),
+      "genomic_grch38",
+      as.character(alias_type)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(alias_type, "^genomic_grch37"),
+      stringr::str_replace(variant_alias, "grch37:",""),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(alias_type, "^genomic_grch38"),
+      stringr::str_replace(variant_alias, "grch38:",""),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(alteration_type = dplyr::if_else(
+      stringr::str_detect(alias_type, "^genomic"),
+      "MUT",
+      as.character(alteration_type)
+    )) |>
 
-  variant_set_other <- as.data.frame(variantSummary |>
-    dplyr::filter(!stringr::str_detect(alteration_type,"MUT")) |>
-    dplyr::select(variant_id, variant_types,
-                  variant, alteration_type,
-                  gene2) |>
-    dplyr::rename(variant_type = variant_types,
-                  symbol = gene2) |>
-    dplyr::filter(!stringr::str_detect(variant,"PHOSPHO")) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "INSerTION","INSERTION")) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "CONSerVED","CONSERVED")) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "POLYMORPHisM","POLYMORPHISM")) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "PHILAdelPHIA","PHILADELPHIA")) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "ProMOTER","PROMOTER")) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "delETERIOUS","DELETERIOUS"))
-  )
-  attr(variant_set_other,"groups") <- NULL
+    dplyr::mutate(alias_type = dplyr::if_else(
+      stringr::str_detect(variant_alias, "^c\\."),
+      "hgvsc",
+      as.character(alias_type)
+    )) |>
   
-  
-
-  variant_evidence_full <-
-    clinicalEvidenceSummary |>
-    dplyr::select(-variant) |>
-    dplyr::inner_join(
-      dplyr::bind_rows(expanded_variant_set, variant_set_other),
-      multiple = "all") |>
-    dplyr::rename(therapeutic_context = therapies) |>
-    dplyr::mutate(variant = stringr::str_replace_all(
-      variant, "delETERIOUS","DELETERIOUS")) |>
-    dplyr::select(-c(rating)) |>
-    dplyr::mutate(evidence_id = paste0("EID",evidence_id)) |>
-    dplyr::mutate(biomarker_source_db = "civic",
-                  biomarker_entity = T)
-
-  biomarkers_all <- variant_evidence_full |>
-    dplyr::select(evidence_id,
-                  evidence_url,
-                  variant_id,
-                  variant_type,
-                  variant,
-                  alteration_type,
-                  symbol,
-                  therapeutic_context,
-                  disease_ontology_id,
-                  cancer_type,
-                  molecule_chembl_id,
-                  dplyr::everything()
-    )
-
-  biomarkers_all <- map_biomarker_phenotypes(
-    biomarkers_all, cache_dir = cache_dir) |>
-    dplyr::select(-do_cancer_slim) |>
+    dplyr::mutate(variant_exon = dplyr::if_else(
+      stringr::str_detect(variant_alias, "EXON"),
+      stringr::str_replace_all(
+        variant_alias, 
+        "EXON |( (FRAMESHIFT|OVEREXPRESSION|((SKIPPING )?MUTATION)|DELETION|INSerTION))",""),
+      as.character(NA)
+    )) |>
+    dplyr::mutate(variant_exon = dplyr::if_else(
+      !is.na(variant_exon) & 
+        variant_consequence == "exon_variant",
+      stringr::str_replace_all(
+        variant_exon,"18-21",
+        "18|19|20|21"),
+      as.character(variant_exon))
+    ) |>
+    dplyr::mutate(variant_exon = dplyr::if_else(
+      !is.na(variant_exon) & 
+        variant_consequence == "exon_variant",
+      stringr::str_replace_all(
+        variant_exon,
+        "1-2","1|2"),
+      as.character(variant_exon))
+    ) |>
+    dplyr::mutate(variant_exon = dplyr::if_else(
+      !is.na(variant_exon) & 
+        variant_consequence == "exon_variant",
+      stringr::str_replace_all(
+        variant_exon,
+        "10 OR 21","10|21"),
+      as.character(variant_exon))
+    ) |>
+    dplyr::mutate(variant_exon = dplyr::if_else(
+      !is.na(variant_exon) & 
+        variant_consequence == "exon_variant",
+      stringr::str_replace_all(
+        variant_exon,
+        "10 AND 21","10&21"),
+      as.character(variant_exon))
+    ) |>
+    dplyr::filter(is.na(variant_exon) | variant_exon != "9 AND 20") |>
     dplyr::distinct()
+  
+  
+  variants_expanded[['other']]  <- as.data.frame(
+    variantSummary |>
+      dplyr::filter(!stringr::str_detect(alteration_type,"MUT")) |>
+      dplyr::select(variant_id, variant, variant_consequence,
+                    variant_alias, alteration_type,
+                    gene2) |>
+      dplyr::mutate(variant_alias = dplyr::if_else(
+        nchar(variant_alias) > 0,
+        paste(variant, variant_alias, sep=","),
+        as.character(variant)
+      )) |>
+      tidyr::separate_rows(variant_alias, sep = ",") |>
+      dplyr::select(-variant) |>
+      dplyr::rename(symbol = gene2) |>
+      dplyr::filter(alteration_type != "PHOSPHO" & 
+                      alteration_type != "METHYL") |>
+      dplyr::mutate(variant_alias = stringr::str_replace(
+        variant_alias,
+        "NUCLEAR |P16 |V7 |CD44S |(( )?E[0-9]{1,}-E[0-9]{1,})",
+        ""
+      )) |>
+      dplyr::mutate(symbol = stringr::str_replace(
+        symbol,
+        "(( )?E[0-9]{1,}-E[0-9]{1,})",
+        ""
+      )) |>
+      dplyr::mutate(variant_alias = stringr::str_replace_all(
+        variant_alias, "INSerTION","INSERTION")) |>
+      dplyr::mutate(variant_alias = stringr::str_replace_all(
+        variant_alias, "CONSerVED","CONSERVED")) |>
+      dplyr::mutate(variant_alias = stringr::str_replace_all(
+        variant_alias, "POLYMORPHisM","POLYMORPHISM")) |>
+      dplyr::mutate(variant_alias = stringr::str_replace_all(
+        variant_alias, "PHILAdelPHIA","PHILADELPHIA")) |>
+      dplyr::mutate(variant_alias = stringr::str_replace_all(
+        variant_alias, "ProMOTER","PROMOTER")) |>
+      dplyr::mutate(variant_alias = stringr::str_replace_all(
+        variant_alias, "delETERIOUS","DELETERIOUS")) |>
+      dplyr::mutate(symbol = dplyr::if_else(
+        alteration_type == "TRANSLOCATION_FUSION" &
+          stringr::str_detect(variant_alias,"-") &
+          nchar(variant_consequence) == 0,
+        as.character(variant_alias),
+        as.character(symbol)
+      )) |>
+      dplyr::mutate(
+        alias_type = "other"
+      ) |>
+      dplyr::mutate(variant_exon = dplyr::if_else(
+        stringr::str_detect(variant_alias, "EXON"),
+        stringr::str_replace_all(
+          variant_alias, "( )?EXON |AND |( (FRAMESHIFT|OVEREXPRESSION|(SKIPPING )?MUTATION|DELETION|INSERTION))",""),
+        as.character(NA)
+      ))
+  )
+  attr(variants_expanded[['other']],"groups") <- NULL
+  
+  biomarker_items <- list()
+  biomarker_items[['variant']] <- 
+    dplyr::bind_rows(variants_expanded[['mut']], variants_expanded[['other']]) |>
+    dplyr::mutate(alteration_type = dplyr::if_else(
+      stringr::str_detect(variant_alias, "^((p\\.)?[A-Z][a-z]{2}[0-9]{1,})$"),
+      "CODON",
+      as.character(alteration_type)
+    )) |>
+    dplyr::mutate(variant_alias = stringr::str_replace_all(
+      variant_alias, "INSerTION","INSERTION")) |>
+    dplyr::select(variant_id, variant_alias, alias_type, dplyr::everything()) |>
+    dplyr::rename(gene = symbol) |>
+    dplyr::left_join(
+      dplyr::select(gene_alias$records, alias, symbol, entrezgene),
+      by = c("gene" = "alias")
+    ) |>
+    dplyr::filter(
+      !stringr::str_detect(variant_alias, "DOUBLE|^[0-9]{2,}ins")) |>
+    dplyr::mutate(variant_consequence = dplyr::case_when(
+      nchar(variant_consequence) == 0 & stringr::str_detect(
+        variant_alias, "delins([A-Z]{1,4})+$") ~ "inframe_insertion",
+      nchar(variant_consequence) == 0 & stringr::str_detect(
+        variant_alias, "ins([A-Z]{1,4})+$") ~ "inframe_insertion",
+      nchar(variant_consequence) == 0 & stringr::str_detect(
+        variant_alias, "del([A-Z]{1,4})+$") ~ "inframe_deletion",
+      nchar(variant_consequence) == 0 & stringr::str_detect(
+        variant_alias, "fs") ~ "frameshift_variant",
+      nchar(variant_consequence) == 0 & stringr::str_detect(
+        variant_alias, "^MUTATION$") ~ "protein_altering_variant",
+      nchar(variant_consequence) == 0 & 
+        alias_type == "hgvsp" ~ "missense_variant",
+      TRUE ~ as.character(variant_consequence)
+    )) |>
+    dplyr::distinct()
+  
+  biomarker_items[['clinical']] <- 
+    clinicalEvidenceSummary |> 
+    dplyr::full_join(
+      molecularProfileSummary, by = "molecular_profile_id",
+      multiple = "all", relationship = "many-to-many") |> 
+    dplyr::select(molecular_profile_id, molecular_profile_name, 
+                  molecular_profile_summary, 
+                  variant_id, dplyr::everything()) |>
+    dplyr::rename(therapeutic_context = therapies) |>
+    dplyr::mutate(evidence_id = paste0("EID",evidence_id)) |>
+    dplyr::mutate(biomarker_source = "civic",
+                  biomarker_source_datestamp = datestamp,
+                  biomarker_entity = T) |>
+    dplyr::inner_join(dplyr::select(
+      biomarker_items[['variant']], variant_id), 
+      by = "variant_id",
+      multiple = "all", relationship = "many-to-many") |>
+    dplyr::distinct() |>
+    dplyr::arrange(evidence_level, molecular_profile_id)
+  
+  biomarker_items[['clinical']] <- map_biomarker_phenotypes(
+    biomarker_items[['clinical']], 
+    cache_dir = cache_dir) |>
+    dplyr::select(-do_cancer_slim)
+  
+  biomarker_items <- get_literature_references(biomarker_items)
+  if(!is.list(biomarker_items)){
+    lgr::lgr$error("literature missing ")
+    return(biomarker_items)
+  }
+  
+  
+  biomarker_items[['clinical']] <- biomarker_items[['clinical']] |>
+    dplyr::mutate(molecular_profile_type = "Any") |>
+    dplyr::select(
+      biomarker_source,
+      biomarker_source_datestamp,
+      biomarker_entity,
+      molecular_profile_id,
+      molecular_profile_name,
+      molecular_profile_summary,
+      molecular_profile_type,
+      variant_id,
+      source_id,
+      evidence_id,
+      variant_origin,
+      primary_site,
+      cancer_type,
+      disease_ontology_id,
+      do_name,
+      efo_id,
+      efo_name,
+      cui,
+      cui_name,
+      dplyr::everything()
+    )
+  
+  biomarker_items[['variant']] <- as.data.frame(
+    biomarker_items[['variant']] |>
+      dplyr::mutate(biomarker_source = "civic",
+                    biomarker_source_datestamp = datestamp) |>
+      dplyr::select(
+        biomarker_source,
+        biomarker_source_datestamp,
+        variant_id,
+        variant_alias,
+        alteration_type,
+        alias_type,
+        variant_consequence,
+        variant_exon,
+        gene,
+        symbol,
+        entrezgene,
+        dplyr::everything()
+      )
+  )
 
-
-  return(biomarkers_all)
+  return(biomarker_items)
 
 }
 
 
 load_cgi_biomarkers <- function(compound_synonyms = NULL,
+                                datestamp = '20221027',
                                 cache_dir = NA) {
 
   aa_dict <- get_amino_acid_dictionary()
-  
+  gene_alias <- geneOncoX::get_alias(
+    cache_dir = cache_dir
+  )
   cancer_type_abbreviations <-
     read.table(
-      file = "data-raw/biomarkers/cgi/cancer_subtypes.tsv",
+      file = file.path(cache_dir, "cgi_cancer_subtypes.tsv"),
       sep = "\t", header = T,
       stringsAsFactors = F, quote = "", 
       na.strings = "",fill = T) |>
@@ -700,287 +1376,429 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
   # 3) involved in toxicity
   # 4) curated from abstracts etc (not PMIDs or guidelines)
   # 5) Non-malignant/Non-cancer conditions
-  cgi_biomarker_pr_variant <- as.data.frame(
-    read.table(file = "data-raw/biomarkers/cgi/cgi_biomarkers_per_variant.tsv", sep = "\t",
-               header = T, stringsAsFactors = F,
-               na.strings = c("","[]"), fill = T, quote = "") |>
-      dplyr::select(-c(Assay.type, Curation.date, Curator,
-                       TCGI.included, Targeting, region, strand)) |>
+  
+  ## NEW
+  cgi_biomarkers <- as.data.frame(
+    readr::read_tsv(
+      file.path(cache_dir, "cgi_biomarkers_20221017.tsv"),
+      col_names = T, show_col_types = F) |>
       janitor::clean_names() |>
-      dplyr::distinct() |>
-      dplyr::select(alteration_type,
-                    association, source,
-                    biomarker, gene, comments,
-                    drug_full_name,
-                    evidence_level,
-                    primary_tumor_acronym,
-                    primary_tumor_type,
-                    individual_mutation,
-                    info, g_dna) |>
-      dplyr::mutate(variant_id = dplyr::row_number()) |>
-      dplyr::mutate(gene = dplyr::case_when(
-        gene == "MLL" ~ "KMT2A",
-        gene == "MLL2" ~ "KMT2D",
-        TRUE ~ as.character(gene)
-      )) |>
-      dplyr::mutate(variant_origin = "Somatic") |>
-      dplyr::mutate(variant_origin = dplyr::if_else(
-        !is.na(comments) & 
-          stringr::str_detect(tolower(comments),"germline"),
-        "Germline",
-        as.character(variant_origin)
-      )) |>
-      ## Ignore composite biomarkers for now
-      dplyr::filter(!stringr::str_detect(alteration_type,";")) |>
       dplyr::mutate(
-        alteration_type = dplyr::case_when(
-          alteration_type == "EXPR" &
-            stringr::str_detect(
-              toupper(biomarker),"OVER") ~ "EXP_OVER",
-          alteration_type == "EXPR" &
-            stringr::str_detect(
-              toupper(biomarker),"UNDE") ~ "EXP_UNDER",
-          alteration_type == "EXPR" &
-            !stringr::str_detect(
-              toupper(biomarker),"OVER|UNDE") ~ "EXP",
-          alteration_type == "FUS" ~ "TRANSLOCATION_FUSION",
-          TRUE ~ as.character(alteration_type)
-        )) |>
-
+        biomarker = 
+          stringr::str_replace_all(
+            biomarker,
+            "\\.",""
+          )) |>
+      dplyr::select(-c(curator, curation_date, targeting,
+                       drug_family, drug_status, drug, tcgi_included,
+                       metastatic_tumor_type, 
+                       primary_tumor_type_full_name, assay_type)) |>
+      dplyr::distinct() |>
+      dplyr::mutate(biomarker = stringr::str_replace_all(
+        biomarker, "12,13,59,61,117,146",
+        "G12,G13,A59,Q61,K117,A146")) |>
+      dplyr::mutate(alteration_type = stringr::str_replace(
+        alteration_type, "EXPR", "EXP"
+      )) |>
+      dplyr::mutate(alteration_type = stringr::str_replace(
+        alteration_type, "FUS", "TRANSLOCATION_FUSION"
+      )) |>
+      dplyr::mutate(biomarker = stringr::str_replace_all(
+        biomarker, "\\*","X")) |>
+      dplyr::mutate(biomarker = stringr::str_replace_all(
+        biomarker, "618,620,634,768,791,891,918",
+        "C618,C620,C634,E768,Y791,S891,M918")) |>
+      dplyr::mutate(biomarker = stringr::str_replace_all(
+        biomarker, "12,13","G12,G13")) |>
+      dplyr::mutate(biomarker = stringr::str_replace(
+        biomarker, "undexpression","underexpression")) |>
+      dplyr::mutate(biomarker = stringr::str_replace_all(
+        biomarker, ",537,538,",",Y537,D538,")) |>
+      dplyr::rename(
+        molecular_profile = biomarker
+      ) |>
+      dplyr::mutate(molecular_profile = stringr::str_replace_all(
+        molecular_profile, ";|(, )", ","
+      )) |>
+      dplyr::mutate(molecular_profile = stringr::str_replace_all(
+        molecular_profile, " (\\+|-)$", ""
+      )) |>
+      dplyr::filter(
+        !stringr::str_detect(source, "^(ENA|ESMO|ASCO|AACR)")
+      ) |>
       tidyr::separate_rows(
-        primary_tumor_acronym, sep = ";") |>
-      dplyr::filter(
-        !stringr::str_detect(
-          association,"Toxicity")) |>
-      dplyr::filter(
-        !stringr::str_detect(
-          source,  "^ENA|ASCO|AACR|ESMO|http")) |>
-      dplyr::filter(
-        primary_tumor_acronym != 'SM' &
-          primary_tumor_acronym != 'AA' &
-          primary_tumor_acronym != 'HES' &
-          primary_tumor_acronym != 'WM') |>
-      dplyr::rename(citation_id = source) |>
+        primary_tumor_type, sep = ";") |>
       dplyr::left_join(
         cancer_type_abbreviations,
-        by = c("primary_tumor_acronym" = "cgi_abbreviation"),
+        by = c("primary_tumor_type" = "cgi_abbreviation"),
         multiple = "all") |>
-      dplyr::distinct() |>
-      tidyr::separate(individual_mutation, c('symbol','alteration'), sep = ":") |>
-      dplyr::mutate(symbol = dplyr::if_else(
-        is.na(symbol) & !is.na(gene),
-        gene,
-        as.character(symbol))) |>
-      dplyr::mutate(
-        eitem_consequence =
-          dplyr::if_else(stringr::str_detect(toupper(biomarker), "AMPLIFICATION") &
-                           alteration_type == "CNA",
-                         "gain",
-                         as.character(NA))) |>
-      dplyr::mutate(
-        eitem_consequence =
-          dplyr::if_else(stringr::str_detect(toupper(biomarker), "DELETION") &
-                           alteration_type == "CNA",
-                         "loss",
-                         as.character(eitem_consequence))) |>
-      dplyr::mutate(
-        eitem_consequence =
-          dplyr::if_else(stringr::str_detect(biomarker,"(inframe )?insertion") &
-                           alteration_type == "MUT",
-                         "inframe_insertion",
-                         as.character(eitem_consequence))) |>
-      dplyr::mutate(
-        eitem_consequence =
-          dplyr::if_else(stringr::str_detect(biomarker,"(inframe )?deletion") &
-                           alteration_type == "MUT",
-                         "inframe_deletion",
-                         as.character(eitem_consequence))) |>
-      dplyr::mutate(
-        eitem_exon =
-          dplyr::if_else(stringr::str_detect(toupper(biomarker),"EXON [0-9]{1,}") &
-                           alteration_type == "MUT",
-                         stringr::str_match(toupper(biomarker),"EXON [0-9]{1,}"),
-                         as.character(NA))) |>
-      dplyr::mutate(eitem_exon =
-                      stringr::str_replace(eitem_exon,"EXON ","")) |>
-      #dplyr::mutate(biomarker)
-      #dplyr::filter(!stringr::str_detect(alteration_type,";|BIA")) |>
-      dplyr::mutate(evidence_type = 'Predictive',
-                    therapeutic_context = drug_full_name,
-                    clinical_significance = NA) |>
-      dplyr::mutate(
-        clinical_significance =
-          dplyr::case_when(
-            association == "Resistant" ~ "Resistance or Non-response",
-            association == "No Responsive" ~ "Resistance or Non-response",
-            association == "Responsive" ~ "Sensitivity",
-            TRUE ~ as.character("Other"))) |>
-      dplyr::rename(evidence_level_raw = evidence_level) |>
-      dplyr::mutate(mapping_rank = 1) |>
-      dplyr::mutate(
-        alteration = dplyr::if_else(
-          !is.na(biomarker) & stringr::str_detect(biomarker,"oncogenic mutation"),
-          "MUTATION",
-          as.character(alteration)
-        )
-      ) |>
-      # dplyr::mutate(
-      #   biomarker_mapping =
-      #     dplyr::if_else(alteration_type == "MUT" & alteration != "MUTATION",
-      #                    as.character("exact"),
-      #                    as.character("gene"))) |>
-      # dplyr::mutate(
-      #   biomarker_mapping =
-      #     dplyr::if_else(!is.na(eitem_exon),
-      #                    as.character("exon"),
-      #                    as.character(biomarker_mapping))
-      # ) |>
+      dplyr::mutate(molecular_profile_id = dplyr::row_number()) |>
+      dplyr::mutate(molecular_profile_type = dplyr::if_else(
+        stringr::str_detect(molecular_profile, " \\+ "),
+        "Combo",
+        "Any"
+      )) |>
+      dplyr::mutate(molecular_profile_name = molecular_profile) |>
+      tidyr::separate_longer_delim(molecular_profile, delim = " + ")
+  )
+      
+  combo_index <- cgi_biomarkers |>
+    dplyr::group_by(molecular_profile_id) |>
+    dplyr::reframe(combo_index = dplyr::row_number()) |>
+    dplyr::select(-molecular_profile_id)
+  
+  cgi_biomarkers <- as.data.frame(
+    cgi_biomarkers |>
+    dplyr::bind_cols(combo_index) |>                               
+    dplyr::mutate(molecular_profile_type = dplyr::if_else(
+      molecular_profile_type == "Combo",
+      paste(
+        molecular_profile_type, combo_index, sep="_"),
+      as.character(molecular_profile_type)
+    )) |>
+    dplyr::select(-combo_index) |>
+    dplyr::mutate(alteration2 = 
+                    stringr::str_replace_all(
+                      stringr::str_match(
+                        molecular_profile, "\\([A-Z0-9]+(,[A-Z0-9]+){0,}\\)")[,1],
+                      "\\)|\\(","")
+    ) |>
+    dplyr::mutate(alteration_type = dplyr::case_when(
+      stringr::str_detect(molecular_profile_type, "Combo") &
+        stringr::str_detect(molecular_profile, " amplification") ~ "CNA",
+      stringr::str_detect(molecular_profile_type, "Combo") &
+        stringr::str_detect(molecular_profile, " deletion") &
+        !stringr::str_detect(molecular_profile, "inframe") ~ "CNA",
+      stringr::str_detect(molecular_profile_type, "Combo") &
+        stringr::str_detect(molecular_profile, " fusion") ~ "TRANSLOCATION_FUSION",
+      stringr::str_detect(molecular_profile_type, "Combo") &
+        stringr::str_detect(molecular_profile, "overexpression") ~ "EXP_OVER",
+      stringr::str_detect(molecular_profile_type, "Combo") &
+        stringr::str_detect(molecular_profile, " expression") ~ "EXP",
+      stringr::str_detect(molecular_profile_type, "Combo") &
+        stringr::str_detect(alteration_type,"MUT") & 
+        stringr::str_detect(molecular_profile, "oncogenic|\\(") ~ "MUT",
+      TRUE ~ as.character(alteration_type)
+    )) |>
+    tidyr::separate(gene, c("gene1","gene2"), sep = ";") |>
+    dplyr::mutate(gene = dplyr::if_else(
+      !is.na(gene1) & !is.na(gene2) & startsWith(molecular_profile, gene2),
+      as.character(gene2),
+      as.character(gene1)
+    )) |>
+    dplyr::select(-c(gene1,gene2)) |>
+    dplyr::select(molecular_profile, gene, dplyr::everything()) |>
+    dplyr::mutate(alteration_type = dplyr::case_when(
+      alteration_type == "BIA" ~ "MUT_LOF_BIALLELIC",
+      stringr::str_detect(
+        molecular_profile, "wildtype") ~ "WT",
+      stringr::str_detect(
+        molecular_profile, "oncogenic") ~ "MUT_ONC",
+      stringr::str_detect(
+        molecular_profile, "overexpression")  ~ "EXP_OVER",
+      stringr::str_detect(
+        molecular_profile, "underexpression") ~ "EXP_UNDER",
+      stringr::str_detect(
+        molecular_profile, " fusion$") ~ "TRANSLOCATION_FUSION",
+      TRUE ~ as.character(alteration_type)
+    )) |>
+    dplyr::mutate(variant_consequence = dplyr::case_when(
+      alteration_type == "WT" ~ as.character(NA),
+      alteration_type == "CNA" & 
+        stringr::str_detect(
+          alteration,":amp") ~ "transcript_amplification",
+      alteration_type == "CNA" & 
+        stringr::str_detect(
+          alteration,":del") ~ "transcript_ablation",
+      alteration_type == "EXP_OVER" ~ "transcript_amplification",
+      alteration_type == "TRANSLOCATION_FUSION" ~ "transcript_fusion",
+      alteration_type == "EXP_UNDER" ~ "transcript_ablation",
+      alteration_type == "MUT_LOF_BIALLELIC" ~ "loss_of_function_variant",
+      alteration_type == "MUT_ONC" ~ "protein_altering_variant",
+      (alteration_type == "MUT" | alteration_type == "MUT_ONC") &
+        !stringr::str_detect(molecular_profile,"inframe|splice|insertion|deletion") ~ "missense_variant",
+      (alteration_type == "MUT" | alteration_type == "MUT_ONC") &
+        stringr::str_detect(molecular_profile,"splice donor") ~ "splice_donor_variant",
+      (alteration_type == "MUT" | alteration_type == "MUT_ONC") &
+        stringr::str_detect(molecular_profile,"splice acceptor") ~ "splice_acceptor_variant",
+      (alteration_type == "MUT" | alteration_type == "MUT_ONC") &
+        stringr::str_detect(molecular_profile,"inframe") &
+        stringr::str_detect(molecular_profile,"insertion") &
+        stringr::str_detect(molecular_profile, "deletion") ~ "inframe_deletion,inframe_insertion",
+      (alteration_type == "MUT" | alteration_type == "MUT_ONC") &
+        stringr::str_detect(molecular_profile,"inframe") &
+        stringr::str_detect(molecular_profile, "deletion") ~ "inframe_deletion",
+      molecular_profile == "FLT3-ITD" ~ "inframe_insertion",
+      molecular_profile == "PDGFRA exon 18 mutations" ~ "inframe_deletion,inframe_insertion,missense_variant",
+      (alteration_type == "MUT" | alteration_type == "MUT_ONC") &
+        stringr::str_detect(molecular_profile,"inframe") &
+        stringr::str_detect(molecular_profile, "insertion") ~ "inframe_insertion",
+      (alteration_type == "MUT") &
+        stringr::str_detect(molecular_profile, " exon ") &
+        stringr::str_detect(alteration, "inframe_insertion") ~ "inframe_insertion",
+      (alteration_type == "MUT") &
+        stringr::str_detect(molecular_profile, " exon ") &
+        stringr::str_detect(alteration, "inframe_deletion") ~ "inframe_deletion",
+      TRUE ~ as.character(NA)
+    )) |>
+    dplyr::rename(
+      variant_alias = alteration2
+    ) |>
+    dplyr::mutate(variant_alias = dplyr::case_when(
+      alteration_type == "EXP" ~ "EXPRESSION",
+      stringr::str_detect(molecular_profile, "wildtype") ~ "WILDTYPE",
+      is.na(variant_alias) & 
+        (alteration_type == "MUT" | 
+           alteration_type == "MUT_ONC" |
+           alteration_type == "MUT_LOF_BIALLELIC") ~ "MUTATION",
+      alteration_type == "CNA" & 
+        variant_consequence == "transcript_amplification" ~ "AMPLIFICATION",
+      alteration_type == "CNA" & 
+        variant_consequence == "transcript_ablation" ~ "DELETION",
+      alteration_type == "TRANSLOCATION_FUSION" ~ "FUSION",
+      alteration_type == "EXP_UNDER" & 
+        variant_consequence == "transcript_ablation" ~ "UNDEREXPRESSION",
+      alteration_type == "EXP_OVER" & 
+        variant_consequence == "transcript_amplification" ~ "OVEREXPRESSION",
+      TRUE ~ as.character(variant_alias)
+    )) |>
+    dplyr::mutate(gene = dplyr::if_else(
+      alteration_type == "TRANSLOCATION_FUSION" &
+        stringr::str_detect(molecular_profile, "-"),
+      stringr::str_replace(
+        stringr::str_replace(molecular_profile, " fusion",""),
+        "ABL1-BCR","BCR-ABL1"), 
+      as.character(gene))
+    ) |>
+    dplyr::mutate(gene = dplyr::case_when(
+      gene == "MLL2" ~ "KMT2D",
+      TRUE ~ as.character(gene)
+    )) |>
+    dplyr::mutate(variant_origin = "Somatic") |>
+    dplyr::mutate(variant_origin = dplyr::if_else(
+      !is.na(comments) & 
+        stringr::str_detect(tolower(comments),"germline"),
+      "Germline",
+      as.character(variant_origin)
+    )) |>
+    dplyr::mutate(evidence_type = 'Predictive',
+                  therapeutic_context = drug_full_name,
+                  clinical_significance = NA) |>
+    dplyr::mutate(
+      clinical_significance =
+        dplyr::case_when(
+          association == "Resistant" ~ "Resistance or Non-response",
+          association == "No Responsive" ~ "Resistance or Non-response",
+          association == "Responsive" ~ "Sensitivity",
+          stringr::str_detect(association, "Toxicity") ~ "Toxicity",
+          TRUE ~ as.character("Other"))) |>
+    dplyr::rename(evidence_level_raw = evidence_level) |>
+    dplyr::mutate(variant_consequence = dplyr::if_else(
+      endsWith(variant_alias, "X"),
+      "stop_gained",
+      as.character(variant_consequence)
+    )) |>
+    dplyr::mutate(mapping_rank = 1) |>
     dplyr::mutate(
       evidence_level =
-        dplyr::if_else(stringr::str_detect(evidence_level_raw,"guidelines"),
-                       "A: FDA/NCCN/ELN guidelines",
-                       as.character(NA))) |>
-      dplyr::mutate(
-        evidence_level =
-          dplyr::if_else(stringr::str_detect(evidence_level_raw,"Late trials"),
-                         "B1: Clinical evidence: late trials",
-                         as.character(evidence_level))) |>
-      dplyr::mutate(
-        evidence_level =
-          dplyr::if_else(stringr::str_detect(evidence_level_raw,"Early trials"),
-                         "B2: Clinical evidence: early trials",
-                         as.character(evidence_level))) |>
-      dplyr::mutate(
-        evidence_level =
-          dplyr::if_else(stringr::str_detect(evidence_level_raw,"Case report"),
-                         "C: Case study",
-                         as.character(evidence_level))) |>
-      dplyr::mutate(
-        evidence_level =
-          dplyr::if_else(stringr::str_detect(evidence_level_raw,"Pre-clinical"),
-                         "D: Preclinical evidence",
-                         as.character(evidence_level))) |>
-      dplyr::filter(!is.na(evidence_level_raw)) |>
-      dplyr::select(-c(association, evidence_level_raw,
-                       primary_tumor_acronym, drug_full_name, gene)) |>
-      dplyr::select(-c(info, g_dna)) |>
+        dplyr::if_else(
+          stringr::str_detect(evidence_level_raw,"guidelines"),
+          "A: FDA/NCCN/ELN guidelines",
+          as.character(NA))) |>
+    dplyr::mutate(
+      evidence_level =
+        dplyr::if_else(
+          stringr::str_detect(evidence_level_raw,"Late trials"),
+          "B1: Clinical evidence: late trials",
+          as.character(evidence_level))) |>
+    dplyr::mutate(
+      evidence_level =
+        dplyr::if_else(
+          stringr::str_detect(evidence_level_raw,"Early trials"),
+          "B2: Clinical evidence: early trials",
+          as.character(evidence_level))) |>
+    dplyr::mutate(
+      evidence_level =
+        dplyr::if_else(
+          stringr::str_detect(evidence_level_raw,"Case report"),
+          "C: Case study",
+          as.character(evidence_level))) |>
+    dplyr::mutate(
+      evidence_level =
+        dplyr::if_else(
+          stringr::str_detect(evidence_level_raw,"Pre-clinical"),
+          "D: Preclinical evidence",
+          as.character(evidence_level))) |>
+    dplyr::filter(!is.na(evidence_level_raw)) |>
+    dplyr::select(-comments) |>
+    dplyr::mutate(alteration = dplyr::if_else(
+      molecular_profile == "KIT mutation in exon 9,11,13,14 or 17",
+      "KIT:449-514,550-592,627-664,664-714,788-828",
+      as.character(alteration)
+    )) |>
+    dplyr::mutate(alteration = dplyr::if_else(
+      stringr::str_detect(molecular_profile, " exon |-ITD$"),
+      stringr::str_replace_all(
+        alteration, 
+        "KIT:|([A-Z0-9]{3,}::consequence::(skipping_mutation|(inframe_(insertion|variant|deletion))):)",
+        ""
+      ),
+      as.character(alteration)
+    )) |>
+    dplyr::mutate(alteration = dplyr::if_else(
+      stringr::str_detect(molecular_profile, " exon |-ITD$"),
+      stringr::str_replace_all(
+        alteration, "::(inframe_insertion|missense_variant):", ""),
+      as.character(alteration)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(molecular_profile, " exon |-ITD$") &
+        !is.na(alteration),
+      as.character(alteration),
+      as.character(variant_alias)
+    )) |>
+    tidyr::separate_longer_delim(variant_alias, delim = ",") |>
+    dplyr::distinct() |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(variant_alias, "-"),
+      paste0("aa_region:", variant_alias),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      stringr::str_detect(
+        molecular_profile, "^(IL7R inframe insertion \\(237)"),
+      "aa-region:237-255",
+      as.character(variant_alias)
+    )) |>
+    dplyr::left_join(
+      dplyr::select(gene_alias$records, 
+                    alias, symbol, entrezgene),
+      by = c("gene" = "alias"), multiple = "all",
+      relationship = "many-to-many"
+    )
+  )
+      
+  unique_variants <- as.data.frame(
+    cgi_biomarkers  |>
+      dplyr::filter(!is.na(variant_alias) &
+                      !is.na(gene) &
+                      !is.na(alteration_type)) |>
+      dplyr::select(gene, symbol, entrezgene, variant_alias, 
+                    alteration_type, variant_consequence) |>
+      dplyr::arrange(symbol, alteration_type, variant_alias) |>
       dplyr::distinct() |>
-      dplyr::mutate(evidence_id = dplyr::row_number())|>
-      dplyr::mutate(evidence_id = paste0("CGI_",evidence_id)) |>
-      dplyr::mutate(evidence_type = "Predictive") |>
-      dplyr::distinct()
+      dplyr::mutate(variant_id = dplyr::row_number())
   )
 
+  cgi_variants <- data.frame()
+  for (i in 1:nrow(unique_variants)) {
 
-  all_mut_entries <- as.data.frame(
-    cgi_biomarker_pr_variant  |>
-      dplyr::filter(!is.na(alteration) &
-                      alteration != "MUTATION" &
-                      alteration_type == "MUT") |>
-      dplyr::mutate(
-        alteration =
-          stringr::str_replace(alteration,
-                               "\\*$","X")) |>
-      dplyr::select(evidence_id, alteration)
-  )
-
-  all_mut_entries_expanded <- data.frame()
-  for (i in 1:nrow(all_mut_entries)) {
-
-    alt <- all_mut_entries[i,"alteration"]
+    alt <- unique_variants[i,"variant_alias"]
     terms <- expand_hgvs_terms(alt, aa_dict = aa_dict)
     for (t in terms) {
-      df <- data.frame('evidence_id' = all_mut_entries[i,"evidence_id"],
-                       'alteration' = t,
-                       stringsAsFactors = F)
-      all_mut_entries_expanded <- all_mut_entries_expanded |>
+      df <- data.frame(
+        'variant_id' = 
+          unique_variants[i,"variant_id"],
+        'variant_alias' = t,
+        'gene' = unique_variants[i,"gene"],
+        'entrezgene' = unique_variants[i,"entrezgene"],
+        'symbol' = unique_variants[i,"symbol"],
+        'variant_consequence' = unique_variants[i,"variant_consequence"],
+        'alteration_type' = unique_variants[i,"alteration_type"],
+        stringsAsFactors = F)
+      cgi_variants <- cgi_variants |>
         dplyr::bind_rows(df)
     }
   }
-
-  cgi_biomarker_other <- cgi_biomarker_pr_variant |>
-    dplyr::filter(is.na(alteration) |
-                    alteration == "MUTATION" |
-                    (alteration != "MUTATION" & alteration_type != "MUT"))
-
-  cgi_biomarker_muts <-
-    cgi_biomarker_pr_variant |>
-    dplyr::filter(!is.na(alteration) &
-                    alteration != "MUTATION" &
-                    alteration_type == "MUT") |>
-    dplyr::select(-alteration) |>
-    dplyr::inner_join(all_mut_entries_expanded,
-                      by = "evidence_id", multiple = "all")
-
-
-  cgi_biomarkers_all <- cgi_biomarker_muts |>
-    dplyr::bind_rows(cgi_biomarker_other) |>
-    dplyr::distinct() |>
+  
+  cgi_variants <- cgi_variants |>
+    dplyr::mutate(alias_type = "hgvsp") |>
+    dplyr::mutate(alias_type = dplyr::case_when(
+      stringr::str_detect(variant_alias, "aa") ~ "aa_region",
+      stringr::str_detect(variant_alias, "^(MUT|WT|EXP|FUS|AMP|DEL)") ~ "other",
+      TRUE ~ as.character(alias_type)
+    )) |>
+    dplyr::mutate(variant_exon = NA) |>
+    dplyr::mutate(biomarker_source = "cgi") |>
+    dplyr::mutate(biomarker_source_datestamp = datestamp)  |>
     dplyr::mutate(
       alteration_type =
         dplyr::if_else(
-          !is.na(alteration_type) & !is.na(alteration) & stringr::str_detect(alteration,"^(([A-Z]{1}[0-9]{1,})|([A-Z]{1}[a-z]{2}[0-9]{1,}))$"),
+          !is.na(alteration_type) & !is.na(variant_alias) & 
+            stringr::str_detect(
+              variant_alias, 
+              "^(([A-Z]{1}[0-9]{1,})|([A-Z]{1}[a-z]{2}[0-9]{1,}))$"),
           as.character("CODON"),
           as.character(alteration_type)
         )) |>
-    dplyr::rename(variant = alteration) |>
-    dplyr::select(symbol,
-                  variant,
-                  variant_id,
-                  alteration_type,
-                  evidence_type,
-                  citation_id,
-                  therapeutic_context,
-                  clinical_significance,
-                  evidence_id,
-                  variant_origin,
-                  disease_ontology_id,
-                  primary_tumor_type,
-                  evidence_level) |>
-    dplyr::mutate(evidence_direction = NA,
-                  variant_type = NA) |>
-    dplyr::mutate(variant_type = dplyr::case_when(
-      stringr::str_detect(alteration_type,"MUT|CODON") ~ "missense_variant",
-      stringr::str_detect(alteration_type,"CNA") ~ "transcript_amplification",
-      stringr::str_detect(alteration_type,"EXP") ~ "transcript_amplification",
-      TRUE ~ as.character(NA)
-    )) |>
-    dplyr::rename(cancer_type = primary_tumor_type)
+    dplyr::select(
+      biomarker_source,
+      biomarker_source_datestamp,
+      variant_id,
+      variant_alias,
+      alteration_type,
+      alias_type,
+      variant_consequence,
+      variant_exon,
+      gene,
+      symbol,
+      entrezgene,
+    )
+    
 
+  cgi_clinical <- cgi_biomarkers |>
 
-  cgi_biomarkers_all <- cgi_biomarkers_all |>
+    ## get variant id's per molecular profile
+    dplyr::inner_join(
+      dplyr::select(
+        cgi_variants, entrezgene, variant_id, 
+        variant_consequence, variant_alias,
+        alteration_type),
+      multiple = "all", relationship = "many-to-many"
+    ) |>
+    
+    ## add all variant aliases
+    dplyr::select(-variant_alias) |>
+    dplyr::distinct() |>
+    dplyr::left_join(
+      dplyr::select(cgi_variants, entrezgene, variant_id, 
+                    variant_consequence, variant_alias, alias_type,
+                    alteration_type),
+      multiple = "all", relationship = "many-to-many")  |>
+    dplyr::select(-c(entrezgene, variant_consequence, variant_alias,
+                     alias_type, gene, symbol, alteration_type,
+                     alteration)) |>
+    dplyr::distinct() |>
     dplyr::mutate(therapeutic_context = dplyr::if_else(
-      stringr::str_detect(therapeutic_context,
-                          "(ib|ide|ole|ant|stat|ine|us|one|mab|in|el|[0-9])( |  )\\("),
-      stringr::str_replace(therapeutic_context,
-                           "( |  )\\(.*\\)( )?$",""),
+      stringr::str_detect(
+        therapeutic_context,
+        "(ib|ide|ole|ant|stat|ine|us|one|mab|in|el|[0-9])( |  )\\("),
+      stringr::str_replace(
+        therapeutic_context,
+        "( |  )\\(.*\\)( )?$",""),
       as.character(therapeutic_context)
     ))
-
+  
 
   therapeutic_contexts <- as.data.frame(
-    cgi_biomarkers_all |>
-      dplyr::select(evidence_id, therapeutic_context) |>
+    cgi_clinical |>
+      dplyr::select(molecular_profile_id, therapeutic_context) |>
       dplyr::filter(!is.na(therapeutic_context) &
                       nchar(therapeutic_context) > 0) |>
       tidyr::separate_rows(therapeutic_context, sep = " \\+ ") |>
       dplyr::mutate(therapeutic_context = tolower(therapeutic_context)) |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
-                      drugname_lc, 
+                      alias_lc, 
                       drug_name, 
                       molecule_chembl_id),
-        by = c("therapeutic_context" = "drugname_lc"), multiple = "all"
+        by = c("therapeutic_context" = "alias_lc"), 
+        multiple = "all", relationship = "many-to-many"
       ) |>
-      # dplyr::left_join(oncoPharmaDB::compound_synonyms,
-      #                  by = c("drugs" = "alias")) |>
       dplyr::filter(!is.na(drug_name)) |>
-      # dplyr::left_join(oncoPharmaDB::compound_synonyms,
-      #                  by = c("therapeutic_context" = "alias")) |>
-      # dplyr::filter(!is.na(nci_concept_display_name)) |>
-      dplyr::select(evidence_id, molecule_chembl_id) |>
+      dplyr::select(molecular_profile_id, molecule_chembl_id) |>
       dplyr::distinct() |>
-      dplyr::group_by(evidence_id) |>
+      dplyr::group_by(molecular_profile_id) |>
       dplyr::summarise(molecule_chembl_id = paste(
         unique(sort(molecule_chembl_id)), collapse="|"),
         .groups = "drop"
@@ -991,36 +1809,105 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       ))
   )
 
-  cgi_biomarkers_all <- cgi_biomarkers_all |>
-    dplyr::left_join(therapeutic_contexts, by = "evidence_id", multiple = "all") |>
+  cgi_clinical <- cgi_clinical |>
+    dplyr::left_join(
+      therapeutic_contexts, by = "molecular_profile_id", 
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::mutate(evidence_url = "https://www.cancergenomeinterpreter.org/biomarkers") |>
-    dplyr::mutate(biomarker_source_db = "cgi") |>
+    dplyr::mutate(biomarker_source = "cgi") |>
+    dplyr::mutate(biomarker_source_datestamp = datestamp) |>
     dplyr::mutate(evidence_description = NA,
-                  biomarker_entity = T)
+                  evidence_id = paste0("CGI", molecular_profile_id),
+                  molecular_profile_summary = NA,
+                  rating = NA,
+                  biomarker_entity = T) |>
+    dplyr::select(-c(association, evidence_level_raw,
+                     primary_tumor_type, drug_full_name)) |>
+    dplyr::rename(cancer_type = disease_name,
+                  citation_id = source)
 
-  biomarkers_all <- cgi_biomarkers_all |>
-    dplyr::select(evidence_id,
-                  evidence_url,
-                  variant_id,
-                  variant_type,
-                  variant,
-                  alteration_type,
-                  symbol,
-                  therapeutic_context,
-                  disease_ontology_id,
-                  cancer_type,
-                  molecule_chembl_id,
-                  dplyr::everything())
-
-  biomarkers_all <- map_biomarker_phenotypes(
-    biomarkers_all, cache_dir = cache_dir) |>
+  cgi_clinical <- map_biomarker_phenotypes(
+    biomarkers_all = cgi_clinical,
+    cache_dir = cache_dir) |>
     dplyr::select(-do_cancer_slim) |>
     dplyr::distinct()
+  
+  biomarker_items <- list()
+  
+  # literature_references <- as.data.frame(
+  #   cgi_clinical |> 
+  #   dplyr::select(citation_id, evidence_id) |> 
+  #   #dplyr::rename(source_id = citation_id) |>
+  #   tidyr::separate_rows(citation_id, sep=";") |> 
+  #   dplyr::mutate(citation_id = stringr::str_trim(citation_id)) |> 
+  #   dplyr::filter(
+  #     !stringr::str_detect(
+  #       tolower(citation_id),"asco|aacr|abstr|suppl|confex|jci|blood|annonc|caris")) |> 
+  #   dplyr::distinct() |>
+  #   dplyr::mutate(citation_id = dplyr::case_when(
+  #     citation_id == "PMC3638050" ~ "PMID:22038996",
+  #     citation_id == "PMC3936420" ~ "PMID:24265155",
+  #     TRUE ~ as.character(stringr::str_replace(citation_id,"PMID: ","PMID:"))
+  #   )) |>
+  #   dplyr::filter(!stringr::str_detect(citation_id, "^[0-9]{1,}$")) |>
+  #   dplyr::mutate(citation_id = dplyr::case_when(
+  #     stringr::str_detect(citation_id, "^FDA") ~ "FDA",
+  #     stringr::str_detect(citation_id, "NCCN") ~ "NCCN",
+  #     TRUE ~ as.character(citation_id)
+  #   )) |>
+  #   dplyr::mutate(source = dplyr::case_when(
+  #     stringr::str_detect(citation_id, "^FDA") ~ "FDA",
+  #     stringr::str_detect(citation_id, "NCCN") ~ "NCCN",
+  #     stringr::str_detect(citation_id, "^EMA") ~ "EMA",
+  #     stringr::str_detect(citation_id, "^NCT") ~ "clinicaltrials.gov",
+  #     TRUE ~ as.character("PubMed")
+  #   )) |>
+  #   dplyr::mutate(citation_id = stringr::str_replace(
+  #     citation_id, "PMID:",""
+  #   )) |>
+  #   dplyr::group_by(source, source_id) |>
+  #   dplyr::summarise(evidence_id = paste(
+  #     unique(sort(evidence_id)), collapse=";"
+  #   ), .groups = "drop")
+  # )
+  # 
+  # biomarker_items <- get_literature_references(biomarker_items)
+  # 
+  biomarker_items[['variant']] <- cgi_variants
+  biomarker_items[['clinical']] <- cgi_clinical
+  biomarker_items[['clinical']]$molecular_profile <- NULL
+  
+  
+  biomarker_items <- get_literature_references(biomarker_items)
+  biomarker_items[['clinical']] <- biomarker_items[['clinical']] |>
+    dplyr::select(
+      biomarker_source,
+      biomarker_source_datestamp,
+      biomarker_entity,
+      molecular_profile_id,
+      molecular_profile_name,
+      molecular_profile_summary,
+      molecular_profile_type,
+      variant_id,
+      source_id,
+      evidence_id,
+      variant_origin,
+      primary_site,
+      cancer_type,
+      disease_ontology_id,
+      do_name,
+      efo_id,
+      efo_name,
+      cui,
+      cui_name,
+      dplyr::everything()
+    ) |>
+    dplyr::distinct()
 
-  return(biomarkers_all)
+  return(biomarker_items)
 }
 
-map_biomarker_phenotypes <- function(biomarkers_all,
+map_biomarker_phenotypes <- function(biomarkers_all = NULL,
                                      cache_dir = NA) {
 
   cancer_pheno_map <- 
@@ -1043,7 +1930,9 @@ map_biomarker_phenotypes <- function(biomarkers_all,
     dplyr::select(cui, cui_name)
 
   biomarkers_all_phenotypes <- biomarkers_all |>
-    dplyr::left_join(omap, by = "disease_ontology_id", multiple = "all")
+    dplyr::left_join(
+      omap, by = "disease_ontology_id", 
+      multiple = "all", relationship = "many-to-many")
 
   missing_do_phenotypes <- biomarkers_all_phenotypes |>
     dplyr::filter(is.na(cui)) |>
@@ -1052,13 +1941,17 @@ map_biomarker_phenotypes <- function(biomarkers_all,
     dplyr::inner_join(
       cancer_aux_pheno_maps$records$do,
       #oncoPhenoMap::auxiliary_maps$do,
-      by = c("disease_ontology_id" = "do_id"), multiple = "all") |>
-    dplyr::left_join(umls_terms, by = "cui", multiple = "all") |>
+      by = c("disease_ontology_id" = "do_id"), 
+      multiple = "all", relationship = "many-to-many") |>
+    dplyr::left_join(
+      umls_terms, by = "cui", 
+      multiple = "all", relationship = "many-to-many") |>
     dplyr::left_join(dplyr::select(
       cancer_aux_pheno_maps$records$efo$efo2xref,
       #oncoPhenoMap::auxiliary_maps$efo$efo2xref,
       cui, efo_id, efo_name
-    ), by = "cui", multiple = "all") |>
+    ), by = "cui", multiple = "all",  
+    relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::mutate(primary_site = dplyr::case_when(
       do_name == "cancer" ~ as.character(NA),
@@ -1337,7 +2230,7 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
     dplyr::filter(alteration_type != "CNA") |>
     dplyr::distinct()
 
-  expanded_variant_set <- data.frame()
+  variants_expanded[['mut']] <- data.frame()
 
   for (i in unique(variantSummary$evidence_id)) {
     vrows <- variantSummary[variantSummary$evidence_id == i,]
@@ -1368,15 +2261,15 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
           'alteration_type' = alteration_type,
           'variant_type' = variant_type,
           stringsAsFactors = F)
-        expanded_variant_set <- dplyr::bind_rows(
-          expanded_variant_set, df
+        variants_expanded[['mut']] <- dplyr::bind_rows(
+          variants_expanded[['mut']], df
         )
       }
     }
 
   }
 
-  expanded_variant_set <- expanded_variant_set |>
+  variants_expanded[['mut']] <- variants_expanded[['mut']] |>
     dplyr::mutate(
       alteration_type =
         dplyr::if_else(
@@ -1431,12 +2324,12 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
     aa <- aa_dict[i,"three_letter_uc"]
     aa_three_lc <- aa_dict[i, "three_letter"]
   
-    if (nrow(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                                 stringr::str_detect(expanded_variant_set$variant,aa),]) > 0) {
-      expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                             stringr::str_detect(expanded_variant_set$variant,aa),]$variant <-
-        stringr::str_replace(expanded_variant_set[!is.na(expanded_variant_set$variant) & 
-                                                    stringr::str_detect(expanded_variant_set$variant, aa),]$variant,
+    if (nrow(variants_expanded[['mut']][!is.na(variants_expanded[['mut']]$variant) & 
+                                 stringr::str_detect(variants_expanded[['mut']]$variant,aa),]) > 0) {
+      variants_expanded[['mut']][!is.na(variants_expanded[['mut']]$variant) & 
+                             stringr::str_detect(variants_expanded[['mut']]$variant,aa),]$variant <-
+        stringr::str_replace(variants_expanded[['mut']][!is.na(variants_expanded[['mut']]$variant) & 
+                                                    stringr::str_detect(variants_expanded[['mut']]$variant, aa),]$variant,
                              aa,
                              aa_three_lc)
     }
@@ -1447,7 +2340,7 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
   pmkb_phenotype_mapped_expanded <- pmkb_phenotype_mapped |>
     dplyr::filter(alteration_type != "CNA") |>
     dplyr::select(-c(variant, alteration_type, variant_type)) |>
-    dplyr::left_join(expanded_variant_set,
+    dplyr::left_join(variants_expanded[['mut']],
                      by = c("symbol", "evidence_id"), multiple = "all") |>
     dplyr::distinct() |>
     dplyr::bind_rows(
@@ -1549,21 +2442,29 @@ load_custom_fusion_db <- function() {
       dplyr::distinct()
   )
 
-  custom_translocations <- other_translocations |>
+  biomarker_items <- list()
+  
+  biomarker_items[['variant']] <- other_translocations |>
     dplyr::bind_rows(other_translocations_lc) |>
     dplyr::distinct() |>
     dplyr::rename(variant_id = variant,
-                  variant = alias) |>
-    dplyr::mutate(variant_type = "transcript_fusion",
-                  alteration_type = "TRANSLOCATION_FUSION")
+                  variant_alias = alias,
+                  gene = symbol) |>
+    dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION") |>
+    
+    dplyr::mutate(alias_type = "other") |>
+    dplyr::select(variant_id, variant_alias, alias_type,
+                  gene, alteration_type)
 
+  return(biomarker_items)
 }
 
 load_mitelman_db <- function(cache_dir = NA) {
 
 
   phenotypes_morph <- read.table(
-    file = "data-raw/biomarkers/mitelmandb/KODER.TXT.DATA",
+    file = file.path(
+      cache_dir, "mitelmandb", "KODER.TXT.DATA"),
     sep = "\t", stringsAsFactors = F, header = T, fill = T) |>
     dplyr::filter(KodTyp == "MORPH" & nchar(Kod) > 0)
 
@@ -1572,7 +2473,8 @@ load_mitelman_db <- function(cache_dir = NA) {
                       stringsAsFactors = F )
 
   pmid_data <- read.table(
-    file = "data-raw/biomarkers/mitelmandb/REF.TXT.DATA",
+    file = file.path(
+      cache_dir, "mitelmandb", "REF.TXT.DATA"),
     sep = "\t", stringsAsFactors = F, header = T, fill = T,
     quote = "") |>
     dplyr::select(RefNo, Pubmed) |>
@@ -1582,33 +2484,30 @@ load_mitelman_db <- function(cache_dir = NA) {
     dplyr::rename(citation_id = Pubmed)
 
   mbca_data <- read.table(
-    file = "data-raw/biomarkers/mitelmandb/MBCA.TXT.DATA",
+    file = file.path(
+      cache_dir, "mitelmandb", "MBCA.TXT.DATA"),
     sep = "\t", stringsAsFactors = F, header = T) |>
     dplyr::filter(stringr::str_detect(GeneShort,"::")) |>
     dplyr::rename(variant = GeneShort) |>
-    # dplyr::mutate(
-    #   variant = stringr::str_replace_all(GeneShort,"::","-")) |>
     dplyr::rename(karyotype = KaryShort) |>
     dplyr::select(MolClin, RefNo, InvNo, Morph, Topo,
                   variant, karyotype) |>
     tidyr::separate_rows(variant, sep = ",") |>
-    dplyr::left_join(pmid_data, by = "RefNo", multiple = "all") |>
-    dplyr::left_join(morph, by = "Morph", multiple = "all") |>
+    dplyr::left_join(pmid_data, by = "RefNo", 
+                     multiple = "all", 
+                     relationship = "many-to-many") |>
+    dplyr::left_join(morph, by = "Morph", 
+                     multiple = "all", 
+                     relationship = "many-to-many") |>
     dplyr::filter(stringr::str_detect(variant,"::")) |>
     dplyr::mutate(variant = stringr::str_replace(
       variant, "\\+", "")) |>
-    #dplyr::filter(stringr::str_detect(variant,"-")) |>
-    #dplyr::filter(!stringr::str_detect(variant,"(-|\\+)$")) |>
-
-    #dplyr::mutate(evidence_id = seq(1:nrow(.))) |>
-    #{\(x) dplyr::mutate(evidence_id = seq(1:nrow(x)))}() |>
     dplyr::mutate(evidence_id = dplyr::row_number()) |>
     dplyr::mutate(evidence_id = paste0("MITDB_",evidence_id)) |>
     dplyr::filter(stringr::str_count(variant,",") ==
                     stringr::str_count(karyotype,",")) |>
     tidyr::separate_rows(c(variant,karyotype),
                          sep = ",") |>
-    #dplyr::filter(!stringr::str_detect(variant,"\\+")) |>
     dplyr::select(variant, karyotype, cancer_type,
                   citation_id, evidence_id) |>
     dplyr::distinct() |>
@@ -1617,8 +2516,6 @@ load_mitelman_db <- function(cache_dir = NA) {
     ))
 
   evidence_id <- nrow(mbca_data) + 1
-  #i <- 1
-  #all_translocation_variants <- data.frame()
 
   mbca_data$alias <- paste(
     mbca_data$variant,
@@ -1646,7 +2543,6 @@ load_mitelman_db <- function(cache_dir = NA) {
                'variant' = 'BCR::ABL',
                'evidence_url' = "https://mitelmandatabase.isb-cgc.org/",
                'evidence_id' = paste0('MITDB_',evidence_id),
-               'evidence_description' = NA,
                'cancer_type' = NA,
                'citation_id' = NA,
                'biomarker_entity' = T,
@@ -1667,11 +2563,6 @@ load_mitelman_db <- function(cache_dir = NA) {
       dplyr::mutate(biomarker_entity = T) |>
       dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION",
                     variant_origin = "somatic",
-                    molecule_chembl_id = NA,
-                    evidence_level = NA,
-                    clinical_significance = NA,
-                    evidence_type = NA,
-                    evidence_direction = NA,
                     variant_type = "transcript_fusion",
                     therapeutic_context = NA,
                     evidence_url = "https://mitelmandatabase.isb-cgc.org/",
@@ -1717,7 +2608,10 @@ load_mitelman_db <- function(cache_dir = NA) {
       as.character(cancer_type)
     )) |>
     dplyr::mutate(cancer_type_lc = tolower(cancer_type)) |>
-    dplyr::left_join(umls_aliases, by = c("cancer_type_lc" = "cui_name"), multiple = "all") |>
+    dplyr::left_join(umls_aliases, 
+                     by = c("cancer_type_lc" = "cui_name"), 
+                     multiple = "all", 
+                     relationship = "many-to-many") |>
     dplyr::filter(!stringr::str_detect(cancer_type_lc,"nonneoplastic"))
 
   missing <- mitelman_db |>
@@ -1730,12 +2624,17 @@ load_mitelman_db <- function(cache_dir = NA) {
       cancer_type_lc,
       ", (nos|special type|, cutaneous type|dedifferentiated|aberrant translocation)$","")
     ) |>
-    dplyr::left_join(umls_aliases,
-                     by = c("cancer_type_lc" = "cui_name"), multiple = "all")
-
+    dplyr::left_join(
+      umls_aliases,
+      by = c("cancer_type_lc" = "cui_name"), 
+      multiple = "all", 
+      relationship = "many-to-many")
+  
   mitelman_db_final <-
     dplyr::bind_rows(
-      dplyr::filter(mitelman_db, !is.na(cui) & !is.na(cancer_type)),
+      dplyr::filter(
+        mitelman_db, !is.na(cui) & 
+          !is.na(cancer_type)),
       missing
     ) |>
     dplyr::select(-cancer_type_lc)
@@ -1743,7 +2642,10 @@ load_mitelman_db <- function(cache_dir = NA) {
 
   mitelman <-
     mitelman_db_final |>
-    dplyr::left_join(ontology_maps$records$do, by = "cui", multiple = "all") |>
+    dplyr::left_join(
+      ontology_maps$records$do, 
+      by = "cui", multiple = "all", 
+      relationship = "many-to-many") |>
     dplyr::select(-do_cancer_slim) |>
     dplyr::mutate(do_id = dplyr::if_else(
       is.na(do_id) & !is.na(cui) & cui == "C0007138",
@@ -1777,7 +2679,10 @@ load_mitelman_db <- function(cache_dir = NA) {
     )) |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
-    dplyr::left_join(ontology_maps$records$efo$efo2xref, by = "cui", multiple = "all") |>
+    dplyr::left_join(
+      ontology_maps$records$efo$efo2xref, 
+      by = "cui", multiple = "all", 
+      relationship = "many-to-many") |>
     dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
     dplyr::filter(do_name != "malignant adenoma") |>
     dplyr::rename(disease_ontology_id = do_id) |>
@@ -1785,9 +2690,21 @@ load_mitelman_db <- function(cache_dir = NA) {
     dplyr::distinct()  |>
     dplyr::filter(efo_id != "MONDO:0015667")
 
-
-  ## REMAIN match against oncoPhenoMap
-
-
-  return(mitelman)
+  
+  biomarker_items <- list()
+  biomarker_items[['clinical']] <- mitelman
+  
+  biomarker_items[['variant']] <- biomarker_items[['clinical']] |>
+    dplyr::select(variant_id, variant, alteration_type, symbol) |>
+    dplyr::mutate(alias_type = "other") |>
+    dplyr::rename(gene = symbol) |>
+    dplyr::rename(variant_alias = variant) |>
+    dplyr::select(variant_id, variant_alias, alias_type,
+                  gene, alteration_type) |>
+    dplyr::distinct()
+  
+  biomarker_items <- 
+    get_literature_references(biomarker_items)
+  
+  return(biomarker_items)
 }

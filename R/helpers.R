@@ -405,7 +405,8 @@ get_drug_records <- function(cache_dir = NA,
 }
 
 
-#' Function that retrieves pharmOncoX data from Google Drive
+#' Function that retrieves pharmOncoX biomarker data (CIViC, CGI, MitellmanDB) 
+#' from Google Drive
 #'
 #' @param cache_dir Local directory for data download
 #' @param force_download Logical indicating if local cache should force downloaded
@@ -435,7 +436,7 @@ get_biomarkers <- function(cache_dir = NA,
   
   
   biomarker_datasets <- list()
-  file_maps <- c('biomarkers_curated')
+  file_maps <- c('biomarkers')
   
   for (elem in file_maps) {
     
@@ -456,15 +457,12 @@ get_biomarkers <- function(cache_dir = NA,
     if (file.exists(fname_local) & force_download == F) {
       biomarker_datasets[[elem]] <- readRDS(fname_local)
       biomarker_datasets[[elem]][['fpath']] <- fname_local
-      if (!is.null(biomarker_datasets[[elem]][['records']]) & 
+      if (!is.null(biomarker_datasets[[elem]][['data']]) & 
          !is.null(biomarker_datasets[[elem]][['metadata']])) {
         lgr::lgr$info(paste0(
           "Reading from cache_dir = '", 
           cache_dir, "', argument force_download = F"))
         lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
-        lgr::lgr$info(paste0(
-          "Retrieved n = ", 
-          nrow(biomarker_datasets[[elem]][['records']]), " records"))
         
       }
       
@@ -487,7 +485,7 @@ get_biomarkers <- function(cache_dir = NA,
       if (md5checksum_remote == md5checksum_local) {
         biomarker_datasets[[elem]] <- readRDS(fname_local)
         biomarker_datasets[[elem]]$fpath <- fname_local
-        if (!is.null(biomarker_datasets[[elem]][['records']]) &
+        if (!is.null(biomarker_datasets[[elem]][['data']]) &
            !is.null(biomarker_datasets[[elem]][['metadata']])) {
           
           lgr::lgr$info(paste0(
@@ -495,9 +493,6 @@ get_biomarkers <- function(cache_dir = NA,
             cache_dir, "'), argument force_download = F"))
           lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
           lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
-          lgr::lgr$info(paste0(
-            "Retrieved ", 
-            nrow(biomarker_datasets[[elem]][['records']]), " records"))
           
         }
       }else{
@@ -510,9 +505,9 @@ get_biomarkers <- function(cache_dir = NA,
     }
   }
   
-  biomarker_data <- biomarker_datasets[['biomarkers_curated']]
+  #biomarker_data <- biomarker_datasets[['biomarkers']]
   
-  return(biomarker_data)
+  return(biomarker_datasets[['biomarkers']])
   
 }
 

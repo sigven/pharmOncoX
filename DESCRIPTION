@@ -2,7 +2,7 @@ Package: pharmOncoX
 Type: Package
 Title: Annotated targeted and non-targeted anticancer drugs
 Version: 1.1.9
-Date: 2023-02-06
+Date: 2023-04-26
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -10,7 +10,7 @@ Authors@R:
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050")))
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
-Description: This data package collects aticancer drug information from multiple resources,
+Description: This data package collects anticancer drug information from multiple resources,
     including Open Targets Platform/ChEMBL, NCI Thesaurus, and PubChem. The main dataset
     contains a list of all anticancer drugs per indication/tumor type (where this is provided).
     which can be queried with a range of parameters, including clinical development phase, approval
