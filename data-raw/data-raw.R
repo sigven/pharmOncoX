@@ -28,10 +28,6 @@ lgr::lgr$appenders$console$set_layout(
   lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
 
-
-nci_ftp_base <- paste0("https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/archive/",
-                       nci_db_release,
-                       "_Release/")
 path_data_raw <-
   file.path(here::here(), "data-raw")
 path_data_tmp_processed <-
@@ -71,50 +67,20 @@ gene_info <- dplyr::bind_rows(
 
 
 
-nci_thesaurus_files <- list()
-nci_thesaurus_files[['flat']] <- 
-  paste0("Thesaurus_", nci_db_release,".FLAT.zip")
-nci_thesaurus_files[['owl']] <- 
-  paste0("Thesaurus_", nci_db_release,".OWL.zip")
-nci_thesaurus_files[['inf_owl']] <- 
-  paste0("ThesaurusInf_", nci_db_release,".OWL.zip")
-
-
-options(timeout = 50000)
-for (elem in c('flat','owl','inf_owl')) {
-  remote_file <- paste0(nci_ftp_base, nci_thesaurus_files[[elem]])
-  local_file <- file.path(path_data_raw,"nci_thesaurus", 
-                          nci_thesaurus_files[[elem]])
-  if (!file.exists(local_file)) {
-    download.file(url = remote_file, destfile = local_file, quiet = T)
-    system(paste0('unzip -d ',
-                  file.path(path_data_raw, "nci_thesaurus"), 
-                  ' -o -u ',local_file))
-  }
-}
-
-antineo_agents_url <-
-  'https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Drug_or_Substance/Antineoplastic_Agent.txt'
-antineo_agents_local <-
-  file.path(path_data_raw,"nci_thesaurus","Antineoplastic_Agent.txt")
-if (!file.exists(antineo_agents_local)) {
-  download.file(url = antineo_agents_url, 
-                destfile = antineo_agents_local, quiet = T)
-}
-
+drug_sets <- list()
 
 ####---- Cancer drugs: NCI + DGIdb -----####
 
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
-nci_antineo_all <- get_nci_drugs(
+drug_sets[['nci']] <- get_nci_drugs(
   nci_db_release = nci_db_release,
   overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
 #### -- Open Targets Platform - drugs ---####
-## Get all targeted anticancer drugs from Open Targets Platform
-ot_drugs <-
+## Get all targeted anticancer/other drugs from Open Targets Platform
+drug_sets[['otp']] <-
   get_opentargets_cancer_drugs(
     path_data_raw = path_data_raw,
     ot_version = opentargets_version)
@@ -125,27 +91,26 @@ ot_drugs <-
 ## 2) By name (if molecule chembl id does not provide any cross-ref)
 ## 3) Remove ambiguous names/ids
 ##
-ot_nci_drugs <- merge_nci_opentargets(
-  ot_drugs = ot_drugs,
-  path_data_raw = path_data_raw,
-  nci_antineo_all = nci_antineo_all)
+drug_sets[['nci_otp']] <- merge_nci_opentargets(
+  drug_sets = drug_sets,
+  path_data_raw = path_data_raw)
 
 
 ####-- Cancer drugs: Custom/curated target match ----####
-drug_df <- map_curated_targets(
+drug_sets[['nci_otp_curated']] <- map_curated_targets(
   gene_info = gene_info,
   path_data_raw = path_data_raw,
-  drug_df = ot_nci_drugs
+  drug_df = drug_sets[['nci_otp']]
 )
 
-####-- Cancer drug categories ---####
-drug_df <- assign_drug_category(
-  drug_df = drug_df,
+####-- Cancer drugs classified into categories (ATC) ---####
+drug_sets[['nci_otp_curated_classified']] <- assign_drug_category(
+  drug_df = drug_sets[['nci_otp_curated']],
   path_data_raw = path_data_raw
 )
 
 drug_index_map <- clean_final_drug_list(
-  drug_df = drug_df
+  drug_df = drug_sets[['nci_otp_curated_classified']]
 )
 
 ####--- Cancer drug aliases ----#####
@@ -162,11 +127,12 @@ compound_synonyms <- drug_index_map[['id2alias']] |>
   dplyr::mutate(alias_lc = tolower(alias)) |>
   dplyr::left_join(
     drug_index_map[['id2name']], by = "drug_id",
-    multiple = "all") |>
+    multiple = "all", relationship = "many-to-many") |>
   dplyr::left_join(
     dplyr::select(drug_index_map[['id2basic']],
                   drug_id, molecule_chembl_id),
-    by = "drug_id", multiple = "all") |>
+    by = "drug_id", multiple = "all",
+    relationship = "many-to-many") |>
   dplyr::select(
     drug_id,
     drug_name,
@@ -203,8 +169,10 @@ raw_biomarkers[['mitelmandb']] <- load_mitelman_db(
 # )
 raw_biomarkers[['custom_fusions']] <- load_custom_fusion_db()
 
-raw_biomarkers[['custom_fusions']]$variant <- raw_biomarkers[['custom_fusions']]$variant |>
-  dplyr::anti_join(raw_biomarkers[["mitelmandb"]][['variant']], by = "variant_alias")
+raw_biomarkers[['custom_fusions']]$variant <- 
+  raw_biomarkers[['custom_fusions']]$variant |>
+  dplyr::anti_join(
+    raw_biomarkers[["mitelmandb"]][['variant']], by = "variant_alias")
 
 biomarkers <- list()
 biomarkers[['data']] <- raw_biomarkers

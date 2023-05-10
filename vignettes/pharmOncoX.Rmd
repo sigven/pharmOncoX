@@ -47,7 +47,7 @@ cache_dir <- tempdir()
 
 drugs <- get_drugs(
   cache_dir = cache_dir,
-  drug_is_targeted = T,
+  drug_targeted_agent = T,
 	drug_target = c('BRAF'))
 
 ## Number of drug records
@@ -63,18 +63,18 @@ colnames(drugs$records)
 
 ## Get BRAF-targeted drugs, Open Targets Platform only, list per drug only
 
-```{r braf_drugs, echo = T, eval = T, results = "hide"}
+```{r braf_inhibitors, echo = T, eval = T, results = "hide"}
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  drug_is_targeted = T,
+  drug_targeted_agent = T,
+  drug_action_inhibition = T,
 	drug_target = c('BRAF'), 
-  source_opentargets_only = T, 
+  drug_source_opentargets = T, 
   output_resolution = "drug" )
 
-drugs$records <- 
+drugs$records <- drugs$records |>
   dplyr::select(
-    drugs$records,
     -c("drug_alias",
        "disease_main_group",
        "drug_clinical_id")) |>
@@ -83,7 +83,7 @@ drugs$records <-
       disease_indication, "\\|",", ")
     )
 
-dt_drugtable1 <- DT::datatable(
+dt_drugtable_braf_inhibitors <- DT::datatable(
   drugs$records,
   escape = FALSE,
   extensions = c("Buttons", "Responsive"), 
@@ -97,24 +97,31 @@ dt_drugtable1 <- DT::datatable(
 
 <br>
 
-```{r dt1, echo = F, eval = T}
-dt_drugtable1
+```{r dt_braf_inhibitors, echo = F, eval = T}
+dt_drugtable_braf_inhibitors
 ```
 
 <br><br>
 
 ## Get immune checkpoint inhibitors, list per drug-target entry
 
-```{r immune_checkpoint_inhibitors, echo = T, eval = T, results = "hide"}
+```{r ici, echo = T, eval = T, results = "hide"}
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  is_immune_checkpoint_inhibitor = T,
+  drug_source_opentargets = F,
+  drug_classified_cancer = T,
    output_resolution = "drug2target")
 
-drugs$records <- 
+drugs$records <- drugs$records |>
+  dplyr::filter(
+    ((!is.na(atc_level3) & 
+      atc_level3 == "PD-1/PDL-1 inhibitors") |
+     (!is.na(target_symbol) &
+      target_symbol == "CTLA4" |
+      target_symbol == "TIGIT"))
+  ) |>
   dplyr::select(
-    drugs$records,
     -c("drug_alias",
        "disease_main_group",
        "drug_clinical_id")) |>
@@ -131,7 +138,7 @@ drugs$records <-
     dplyr::everything()
   )
 
-dt_drugtable2 <- DT::datatable(
+dt_drugtable_ici <- DT::datatable(
   drugs$records,
   escape = FALSE,
   extensions = c("Buttons", "Responsive"), 
@@ -144,25 +151,31 @@ dt_drugtable2 <- DT::datatable(
 
 <br>
 
-```{r dt2, echo = F, eval = T}
-dt_drugtable2
+```{r dt_ici, echo = F, eval = T}
+dt_drugtable_ici
 ```
 
 <br><br>
 
 ## Get immune checkpoint inhibitors indicated for tumor subtypes within "Colon/Rectum", list per drug-target entry
 
-```{r immune_colon, echo = T, eval = T, results = "hide"}
+```{r ici_colon, echo = T, eval = T, results = "hide"}
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  is_immune_checkpoint_inhibitor = T,
   output_resolution = "drug2target", 
+  drug_source_opentargets = T,
   drug_indication_main = "Colon/Rectum")
 
-drugs$records <- 
+drugs$records <- drugs$records |>
+  dplyr::filter(
+     ((!is.na(atc_level3) & 
+      atc_level3 == "PD-1/PDL-1 inhibitors") |
+     (!is.na(target_symbol) &
+      target_symbol == "CTLA4" |
+      target_symbol == "TIGIT"))
+  ) |>
   dplyr::select(
-    drugs$records,
     -c("drug_alias",
        "disease_main_group",
        "drug_clinical_id")) |>
@@ -179,7 +192,7 @@ drugs$records <-
     dplyr::everything()
   )
 
-dt_drugtable3 <- DT::datatable(
+dt_drugtable_ici_colon <- DT::datatable(
   drugs$records,
   escape = FALSE,
   extensions = c("Buttons", "Responsive"), 
@@ -193,8 +206,8 @@ dt_drugtable3 <- DT::datatable(
 
 <br>
 
-```{r dt3, echo = F, eval = T}
-dt_drugtable3
+```{r dt_ici_colon, echo = F, eval = T}
+dt_drugtable_ici_colon
 ```
 
 <br><br>
@@ -205,12 +218,15 @@ dt_drugtable3
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  is_antimetabolite = T,
   output_resolution = "drug")
 
-drugs$records <- 
+drugs$records <- drugs$records |>
+  dplyr::filter(
+    stringr::str_detect(
+      atc_level2, "ANTIMETABOLITES"
+    )
+  ) |>
   dplyr::select(
-    drugs$records,
     -c("drug_alias",
        "disease_main_group",
        "drug_clinical_id")) |>
@@ -219,7 +235,7 @@ drugs$records <-
       disease_indication, "\\|",", ")
     )
 
-dt_drugtable4 <- DT::datatable(
+dt_drugtable_metabolites <- DT::datatable(
   drugs$records,
   escape = FALSE,
   extensions = c("Buttons", "Responsive"), 
@@ -233,8 +249,51 @@ dt_drugtable4 <- DT::datatable(
 
 <br>
 
-```{r dt4, echo = F, eval = T}
-dt_drugtable4
+```{r dt_metabolites, echo = F, eval = T}
+dt_drugtable_metabolites
+```
+
+<br><br>
+
+## Get taxanes
+
+```{r taxanes, echo = T}
+
+drugs <- get_drugs(
+  cache_dir = cache_dir, 
+  output_resolution = "drug")
+
+drugs$records <- drugs$records |>
+  dplyr::filter(
+    stringr::str_detect(
+      atc_level3, "Taxanes"
+    )
+  ) |>
+  dplyr::select(
+    -c("drug_alias",
+       "disease_main_group",
+       "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|",", ")
+    )
+
+dt_drugtable_taxanes <- DT::datatable(
+  drugs$records,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+
+```
+
+<br>
+
+```{r dt_taxanes, echo = F, eval = T}
+dt_drugtable_taxanes
 ```
 
 <br><br>

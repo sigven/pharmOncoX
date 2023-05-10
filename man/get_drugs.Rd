@@ -6,112 +6,84 @@
 \usage{
 get_drugs(
   cache_dir = NA,
-  force_download = F,
-  exclude_salt_forms = T,
-  exclude_adc = T,
-  drug_is_targeted = F,
-  drug_is_approved = F,
+  force_download = FALSE,
+  exclude_salt_forms = TRUE,
+  exclude_adc = TRUE,
+  drug_targeted_agent = FALSE,
+  drug_is_approved = FALSE,
   drug_target = NULL,
   drug_action_type = NULL,
   drug_indication_main = NULL,
-  source_opentargets_only = F,
-  drug_has_blackbox_warning = F,
-  drug_approved_later_than = 1939,
+  drug_source_opentargets = FALSE,
+  drug_cancer_indication = TRUE,
+  drug_classified_cancer = TRUE,
+  drug_has_blackbox_warning = FALSE,
+  drug_approval_year = 1939,
   drug_minimum_phase_any_indication = 0,
   output_resolution = "drug2target2indication",
-  inhibitor_only = F,
-  is_alkylating_agent = F,
-  is_angiogenesis_inhibitor = F,
-  is_anthracycline = F,
-  is_antimetabolite = F,
-  is_ar_antagonist = F,
-  is_bet_inhibitor = F,
-  is_hedgehog_antagonist = F,
-  is_hdac_inhibitor = F,
-  is_hormone_therapy = F,
-  is_iap_inhibitor = F,
-  is_immune_checkpoint_inhibitor = F,
-  is_kinase_inhibitor = F,
-  is_monoclonal_antibody = F,
-  is_parp_inhibitor = F,
-  is_platinum_compound = F,
-  is_proteasome_inhibitor = F,
-  is_topoisomerase_inhibitor = F,
-  is_tubulin_inhibitor = F
+  drug_action_inhibition = F
 )
 }
 \arguments{
 \item{cache_dir}{local cache directory for data retrieval}
 
-\item{force_download}{force download data from remote repository even if data exists in cache}
+\item{force_download}{force download data from remote repository even if
+data exists in cache}
 
 \item{exclude_salt_forms}{exclude salt forms of drugs}
 
 \item{exclude_adc}{exclude antibody-drug conjugates (ADCs)}
 
-\item{drug_is_targeted}{logical indicating if resulting drug records should contain drugs with known drug targets only}
+\item{drug_targeted_agent}{logical indicating if resulting drug records
+should only contain drugs that are considered targeted agents
+(i.e. not chemotherapeutic drugs/immunosuppressants)}
 
-\item{drug_is_approved}{logical indicating if resulting drug records should contain approved drugs only}
+\item{drug_is_approved}{logical indicating if resulting drug records
+should contain approved drugs only}
 
-\item{drug_target}{character vector with drug targets (gene symbols) for drug records included in results}
+\item{drug_target}{character vector with drug targets (gene symbols)
+for drug records included in results}
 
-\item{drug_action_type}{character vector with drug action types to include in drug record list -
-possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST","BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
+\item{drug_action_type}{character vector with drug action types to
+include in drug record list -
+possible values "INHIBITOR","AGONIST","MODULATOR","ANTAGONIST",
+"BLOCKER","ACTIVATOR","BINDING AGENT","OPENER",
 "STABILISER","CROSS-LINKING AGENT",DISRUPTING AGENT","OTHER"}
 
-\item{drug_indication_main}{character vector with main tumor types for which drug(s) are indicated
-possible values "Adrenal Gland","Biliary Tract","Bladder/Urinary Tract","Bone","Breast","Cervix","CNS/Brain",
-"Colon/Rectum","Esophagus/Stomach","Eye","Head and Neck","Kidney","Liver","Lung","Lymphoid","Myeloid","Ovary/Fallopian Tube",
-"Pancreas","Penis","Peripheral Nervous System","Peritoneum","Pleura","Prostate","Skin","Soft Tissue","Testis","Thymus",
+\item{drug_indication_main}{character vector with main tumor types for
+which drug(s) are indicated. Possible values: "Adrenal Gland","Biliary Tract",
+"Bladder/Urinary Tract","Bone","Breast","Cervix","CNS/Brain",
+"Colon/Rectum","Esophagus/Stomach","Eye","Head and Neck","Kidney",
+"Liver","Lung","Lymphoid","Myeloid","Ovary/Fallopian Tube",
+"Pancreas","Penis","Peripheral Nervous System","Peritoneum",
+"Pleura","Prostate","Skin","Soft Tissue","Testis","Thymus",
 "Thyroid","Uterus","Vulva/Vagina"}
 
-\item{source_opentargets_only}{logical indicating if resulting drug records should contain drug records from Open Targets Platform only}
+\item{drug_source_opentargets}{logical indicating if resulting drug records
+should contain drug records from Open Targets Platform/ChEMBL only}
 
-\item{drug_has_blackbox_warning}{logical indicating if resulting drug records should contain drugs with black box warnings only}
+\item{drug_cancer_indication}{logical indicating if resulting drug records
+should be for those indicated for cancer conditions only (from approved
+conditions, found in clinical trials etc.)}
 
-\item{drug_approved_later_than}{only include records for drugs approved later than this date (year)}
+\item{drug_classified_cancer}{logical indicating if resulting drug
+records should be for those classified only in the "L" class of ATC (
+"ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS") only}
 
-\item{drug_minimum_phase_any_indication}{only include drug records that are in a clinical phase (any indication) greater or equal than this phase}
+\item{drug_has_blackbox_warning}{logical indicating if resulting drug
+records should contain drugs with black box warnings only}
 
-\item{output_resolution}{dictate output record resolution ('drug','drug2target','drug2target2indication')}
+\item{drug_approval_year}{only include records for drugs approved
+later than this date (year)}
 
-\item{inhibitor_only}{logical indicating to return only drugs with inhibitory mechanism-of-action}
+\item{drug_minimum_phase_any_indication}{only include drug records that
+are in a clinical phase (any indication) greater or equal than this phase}
 
-\item{is_alkylating_agent}{logical indicating if only this drug class is to be considered}
+\item{output_resolution}{dictate output record resolution
+('drug','drug2target','drug2target2indication')}
 
-\item{is_angiogenesis_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_anthracycline}{logical indicating if only this drug class is to be considered}
-
-\item{is_antimetabolite}{logical indicating if only this drug class is to be considered}
-
-\item{is_ar_antagonist}{logical indicating if only this drug class is to be considered}
-
-\item{is_bet_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_hedgehog_antagonist}{logical indicating if only this drug class is to be considered}
-
-\item{is_hdac_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_hormone_therapy}{logical indicating if only this drug class is to be considered}
-
-\item{is_iap_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_immune_checkpoint_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_kinase_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_monoclonal_antibody}{logical indicating if only this drug class is to be considered}
-
-\item{is_parp_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_platinum_compound}{logical indicating if only this drug class is to be considered}
-
-\item{is_proteasome_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_topoisomerase_inhibitor}{logical indicating if only this drug class is to be considered}
-
-\item{is_tubulin_inhibitor}{logical indicating if only this drug class is to be considered}
+\item{drug_action_inhibition}{logical indicating to only return drug records
+with inhibitory mechanism-of-action}
 }
 \value{
 The \code{records} data frame contains the following columns (only selected columns
@@ -122,52 +94,61 @@ will be shown based on the value of \code{output_resolution})
 \item \emph{drug_name} - primary drug name (upper case, NCI Thesaurus)
 \item \emph{drug_type} - type of drug molecule (Antibody, small molecule etc)
 \item \emph{molecule_chembl_id} - ChEMBL compound identifier
-\item \emph{drug_action_type} - main action elicited by drug (antagonist, inhibitor, stabiliser etc)
-\item \emph{drug_alias} - collection of unambiguous drug aliases (separated by '|')
-\item \emph{nci_concept_definition} - detailed description of drug mechanism-of-action (NCI Thesaurus)
-\item \emph{opentargets} - logical - drug is found in the Open Targets Platform resource
-\item \emph{is_salt} - logical - drug record represents a salt form (excluded by default)
-\item \emph{is_adc} - logical - drug record represents an antibody-drug conjugate (ADC - excluded by default)
-\item \emph{drug_blacbox_warning} - logical indicating if drug has blackbox warning
+\item \emph{drug_action_type} - main action elicited by drug
+(antagonist, inhibitor, stabiliser etc)
+\item \emph{drug_alias} - collection of unambiguous drug aliases
+(separated by '|')
+\item \emph{nci_concept_definition} - detailed description of drug
+mechanism-of-action (NCI Thesaurus)
+\item \emph{opentargets} - logical - drug is found in the Open Targets
+Platform resource
+\item \emph{is_salt} - logical - drug record represents a salt form
+(excluded by default)
+\item \emph{is_adc} - logical - drug record represents an
+antibody-drug conjugate (ADC - excluded by default)
+\item \emph{drug_blacbox_warning} - logical indicating if drug has
+blackbox warning
 \item \emph{nci_t} - NCI thesaurus identifier
-\item \emph{immune_checkpoint_inhibitor} - logical indicating if drug is an immune checkpoint inhibitor
-\item \emph{topoisomerase_inhibitor} - logical indicating if drug is a topoisomerase inhibitor
-\item \emph{iap_inhibitor} - logical indicating if drug is an IAP inhibitor
-\item \emph{tubulin_inhibitor} - logical indicating if drug is a tubulin inhibitor
-\item \emph{kinase_inhibitor} - logical indicating if drug is a kinase inhibitor
-\item \emph{hdac_inhibitor} - logical indicating if drug is a HDAC inhibitor
-\item \emph{parp_inhibitor} - logical indicating if drug is a PARP inhibitor
-\item \emph{bet_inhibitor} - logical indicating if drug is a BET inhibitor
-\item \emph{ar_antagonist} - logical indicating if drug is an androgen receptor antagonist
-\item \emph{monoclonal_antibody} - logical indicating if drug is an antibody
-\item \emph{antimetabolite} - logical indicating if drug is an antimetabolite
-\item \emph{angiogenesis_inhibitor} - logical indicating if drug is an angiogenesis inhibitor
-\item \emph{alkylating_agent} - logical indicating if drug is an alkylating agent
-\item \emph{platinum_compound} - logical indicating if drug is a platinum compound
-\item \emph{anthracycline} - logical indicating if drug is an anthracycline
-\item \emph{proteasome_inhibitor} - logical indicating if drug is a proteasome inhibitor
-\item \emph{hormone_therapy} - logical indicating if drug is a hormone therapy
-\item \emph{hedgehog_antagonist} - logical indicating if drug is a hedgehog pathway antagonist
-\item \emph{fda_epc_category} - FDA Established Pharmacologic Class (EPC) text phrase
 \item \emph{target_symbol} - gene symbol of drug target
 \item \emph{target_entrezgene} - Entrez gene identifier of drug target
 \item \emph{target_genename} - gene name/description of drug target
 \item \emph{target_ensembl_gene_id} - Ensembl gene identifier of drug target
-\item \emph{target_type} - type of drug target (single protein, protein family etc.)
-\item \emph{drug_max_phase_indication} - maximum clinical phase for drug (given indication)
-\item \emph{drug_approved_indication} - logical indicating if drug has an approved indication
+\item \emph{target_type} - type of drug target (single protein, protein
+family etc.)
+\item \emph{drug_max_phase_indication} - maximum clinical phase for drug
+(given indication)
+\item \emph{drug_approved_indication} - logical indicating if drug has
+an approved indication
+\item \emph{drug_frac_cancer_indications} - fraction of drug indications that
+are for cancers
+\item \emph{drug_approved_noncancer} - logical indicating if drug
+is approved for a non-cancer disease
+\item \emph{drug_n_indications} - number of indications for the
+given drug (from approved indications, clinical trials etc)
 \item \emph{drug_year_first_approval} - year drug was first approved
-\item \emph{drug_max_ct_phase} - maximum clinical phase for drug (any indication)
-\item \emph{disease_efo_id} - EFO (Experimental Factor Ontology) identifier for drug indication
-\item \emph{disease_efo_label} - EFO (Experimental Factor Ontology) label for drug indication
-\item \emph{primary_site} - primary tumor site/type (obtained through https://github.com/sigven/oncoPhenoMap)
-\item \emph{drug_clinical_source} - underlying source for drug entry (DailyMed, clinicaltrials.gov, FDA etc.)
-\item \emph{drug_clinical_id} - drug clinical identifier (clinicaltrials.gov, DailyMed, FDA etc.)
+\item \emph{drug_max_ct_phase} - maximum clinical phase for drug
+(any indication)
+\item \emph{disease_efo_id} - EFO (Experimental Factor Ontology)
+identifier for drug indication
+\item \emph{disease_efo_label} - EFO (Experimental Factor Ontology)
+label for drug indication
+\item \emph{primary_site} - primary tumor site/type (obtained through
+https://github.com/sigven/oncoPhenoMap)
+\item \emph{drug_clinical_id} - drug clinical identifier
+(clinicaltrials.gov, DailyMed, FDA etc.)
+\item \emph{drug_clinical_source} - underlying source for drug entry
+(DailyMed, clinicaltrials.gov, FDA etc.)
+\item \emph{atc_code_level1} - drug identifier ATC (level 1)
+\item \emph{atc_level1} - drug label ATC (level 1)
+\item \emph{atc_code_level1} - drug identifier ATC (level 2)
+\item \emph{atc_level2} - drug label ATC (level 2)
+\item \emph{atc_code_level3} - drug identifier ATC (level 3)
+\item \emph{atc_level3} - drug label ATC (level 3)
 }
 }
 \description{
-Downloads preprocessed datasets to a local cache directory and returns a selected set of drugs
-based on various criteria set by the user.
+Downloads preprocessed datasets to a local cache directory and returns a
+selected set of drugs based on various criteria set by the user.
 
 The dataset comes as a \code{list} object, with two elements:
 \itemize{

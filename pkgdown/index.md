@@ -4,34 +4,18 @@
 
 **pharmOncoX** provides access to targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. 
 
-The data is largely based on drug-target-indication associations provided by the [Open Targets Platform](https://targetvalidation.org) ([Ochoa et al., Nucleic Acids Res., 2021](https://doi.org/10.1093/nar/gkaa1027)). Associations retrieved from Open Targets Platform are limited to cancer-relevant indications only (as provided in [sigven/phenOncoX](https://github.com/sigven/phenOncoX)). Drug-target associations from the Open Targets Platform have furthermore been integrated with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), where we append non-targeted cancer drugs (chemotherapies etc.), and various drug regimens.
-Furthermore, we provide anti-cancer drugs in **pharmOncoX** with the following tentative drug categories/types (not necessarily mutually exclusive), indicative of their mechanism-of-action:
+The data is largely based on drug-target-indication associations provided by the [Open Targets Platform](https://targetvalidation.org) ([Ochoa et al., Nucleic Acids Res., 2021](https://doi.org/10.1093/nar/gkaa1027)). Associations retrieved from Open Targets Platform are integrated with cancer-relevant indications/conditions (as provided in [sigven/phenOncoX](https://github.com/sigven/phenOncoX)), allowing the user to retrieve drugs indicated for main tumor types (e.g. `Lung`, `Colon/Rectum` etc.) 
 
-* Alkylating agents
-* Angiogenesis inhibitors
-* Anthracyclines
-* Antimetabolites
-* AR antagonists
-* BET inhibitors
-* Hedgehog antagonists
-* HDAC inhibitors
-* Hormone therapies
-* IAP inhibitors
-* Immune checkpoint inhibitors
-* Kinase inhibitors
-* Monoclonal antibodies
-* PARP inhibitors
-* Platinum compounds
-* Proteasome inhibitors
-* Topoisomerase inhibitors
-* Tubulin inhibitors
+Drug-target associations from the Open Targets Platform have furthermore been integrated and appended with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), showing also non-targeted cancer drugs (chemotherapeutic agents etc.), and various drug regimens.
 
-Currently (as of January 2023), `pharmOncoX` is built upon the following 
+We provide anti-cancer drugs in **pharmOncoX** with drug class labeling from [Anatomical Therapeutic Chemical (ATC) Classification System](https://www.whocc.no/atc_ddd_index/), enabling a filtering of drugs according to their main mechanisms of action.
+
+Currently (as of late April 2023), `pharmOncoX` is built upon the following 
 releases of external databases:
 
- - Open Targets Platform (2022.11)
+ - Open Targets Platform (2023.02)
  - ChEMBL (v31)
- - NCI Thesaurus (23.01e)
+ - NCI Thesaurus (23.04d)
 
 ### Getting started
 

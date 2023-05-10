@@ -8,17 +8,19 @@ get_literature_references <- function(biomarker_items){
   biomarker_items[['literature']] <- as.data.frame(
     biomarker_items[['clinical']] |>
       dplyr::filter(!is.na(citation_id)) |>
-      
       tidyr::separate_rows(citation_id, sep=";") |> 
-      dplyr::mutate(citation_id = stringr::str_trim(citation_id)) |> 
+      dplyr::mutate(
+        citation_id = stringr::str_trim(citation_id)) |> 
       dplyr::filter(
         !stringr::str_detect(
-          tolower(citation_id),"asco|aacr|abstr|suppl|confex|jci|blood|annonc|caris")) |> 
+          tolower(citation_id),
+          "asco|aacr|abstr|suppl|confex|jci|blood|annonc|caris")) |> 
       dplyr::distinct() |>
       dplyr::mutate(citation_id = dplyr::case_when(
         citation_id == "PMC3638050" ~ "PMID:22038996",
         citation_id == "PMC3936420" ~ "PMID:24265155",
-        TRUE ~ as.character(stringr::str_replace(citation_id,"PMID: ","PMID:"))
+        TRUE ~ as.character(
+          stringr::str_replace(citation_id,"PMID: ","PMID:"))
       )) |>
       dplyr::filter(!stringr::str_detect(citation_id, "^[0-9]{1,5}$")) |>
       dplyr::filter(citation_id != "PMID:238900088" &
@@ -415,8 +417,10 @@ expand_hgvs_terms <- function(var, aa_dict) {
 load_civic_biomarkers <- function(
     datestamp = '20211217',
     compound_synonyms = NULL,
-    hg38_fasta = "/Users/sigven/research/DB/hg38/hg38.fa",
-    crossmap_chainfile_dir = "/Users/sigven/research/DB/chainFiles",
+    hg38_fasta = 
+      "/Users/sigven/research/DB/hg38/hg38.fa",
+    crossmap_chainfile_dir = 
+      "/Users/sigven/research/DB/chainFiles",
     cache_dir = NA) {
   
 
@@ -1295,9 +1299,11 @@ load_civic_biomarkers <- function(
     dplyr::select(-do_cancer_slim)
   
   biomarker_items <- get_literature_references(biomarker_items)
-  if(!is.list(biomarker_items)){
-    lgr::lgr$error("literature missing ")
-    return(biomarker_items)
+  if(is.data.frame(biomarker_items)){
+    if(unique(colnames(biomarker_items) == c("source","source_id")) == T){
+      lgr::lgr$error("literature missing ")
+      return(biomarker_items)
+    }
   }
   
   

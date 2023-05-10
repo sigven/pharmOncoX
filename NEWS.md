@@ -1,3 +1,24 @@
+# Version 1.3.0 (May 10th 2023)
+
+* Updated NCI Thesaurus (23.04d release)
+* Drugs are now provided with [ATC](https://www.whocc.no/atc_ddd_index/) classification labels
+* Major changes/revision to input arguments in `get_drugs()`
+   - all arguments for filtering towards specific inhibitors etc are now removed (e.g. `is_alkylating_agent`,`is_angiogenesis_inhibitor` etc.), such filtering can be performed by the user, e.g. by considering the drug class labels from ATC or the drug targets
+   - Other naming changes to arguments for `get_drugs()`
+       * `drug_is_targeted` -> `drug_targeted_agent`
+       * `inhibitor_only` -> `drug_action_inhibition`
+       * `drug_approved_later_than` -> `drug_approval_year`
+       * `source_opentargets_only` -> `drug_source_opentargets`
+   - The `drug_targeted_agent` option has been improved basd on ATC labeling
+   - New arguments for `get_drugs()`:
+       * `drug_cancer_indication` - logical indicating if resulting drug records 
+should be for those indicated for cancer conditions only (i.e. from approved 
+conditions, listed in clinical trials etc.) - defaults to TRUE
+       * `drug_classified_cancer` - logical indicating if resulting drug 
+records should be for those classified only in the "L" class of ATC (
+"ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS") - defaults to TRUE
+       
+       
 # Version 1.2.0 (April 26th 2023)
 
 * Using [sigven/phenOncoX](https://github.com/sigven/phenOncoX) v0.5.8

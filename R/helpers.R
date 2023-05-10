@@ -9,9 +9,12 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
 
 
   onco_drugs <- 
-    get_drugs(drug_is_targeted = T,
-                   cache_dir = cache_dir,
-                  source_opentargets_only = T)
+    get_drugs(drug_targeted_agent = T,
+              cache_dir = cache_dir,
+              drug_classified_cancer = TRUE,
+              drug_cancer_indication = TRUE,
+              drug_action_inhibition = TRUE,
+              drug_source_opentargets = TRUE)
     
     
   targeted_onco_inhibitors <- as.data.frame(
@@ -43,10 +46,10 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
         as.integer(0),
         as.integer(.data$drug_max_phase_indication)
       )) |>
-      dplyr::rename(symbol = .data$target_symbol,
-                    genename = .data$target_genename) |>
+      dplyr::rename(symbol = target_symbol,
+                    genename = target_genename) |>
       tidyr::separate_rows(
-        .data$drug_clinical_id, sep = ",") |>
+        drug_clinical_id, sep = ",") |>
       dplyr::group_by(.data$symbol,
                       .data$genename,
                       .data$molecule_chembl_id,
@@ -75,9 +78,9 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
         num_clinical_id =
           stringr::str_count(.data$drug_clinical_id, pattern = "|")) |>
       dplyr::rename(drug_indication_label =
-                      .data$disease_efo_label,
+                      disease_efo_label,
                     drug_indication_id =
-                      .data$disease_efo_id) |>
+                      disease_efo_id) |>
       dplyr::mutate(primary_site = dplyr::if_else(
         !is.na(.data$primary_site) &
           .data$primary_site == "Other/Unknown"
@@ -99,21 +102,15 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
       dplyr::filter(
         !stringr::str_detect(
           tolower(.data$drug_name),"^yttrium")) |>
-      dplyr::mutate(
-        moa_inhibition =
-          dplyr::if_else(
-            stringr::str_detect(
-              .data$drug_action_type,
-              "CROSS-LINKING AGENT|BINDING AGENT|ANTAGONIST|BLOCKER|INHIBITOR") |
-              (.data$drug_action_type == "OTHER" &
-                 stringr::str_detect(
-                   .data$drug_name,"mab$"
-              )),
-            as.logical(TRUE),
-            as.logical(FALSE))) |>
+      dplyr::mutate(approved_indication = dplyr::if_else(
+        !is.na(approved_indication) &
+          stringr::str_detect(
+            approved_indication,"\\|"),
+        as.logical(TRUE),
+        as.logical(approved_indication)
+      )) |>     
       dplyr::select(-"genename") |>
       dplyr::distinct() |>
-      dplyr::filter(.data$moa_inhibition == T) |>
       dplyr::select(c("primary_site",
                     "molecule_chembl_id",
                     "symbol",
@@ -148,19 +145,21 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
     targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- data.frame()
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- data.frame()
     
-    #if (t != "Any") {
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
                       .data$drug_max_phase_indication > 2) |>
-      dplyr::distinct()
-    #}
+      dplyr::distinct() |>
+      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     .data$symbol)
     
     targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
                       .data$drug_max_phase_indication <= 2) |>
-      dplyr::distinct()
+      dplyr::distinct() |>
+      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     .data$symbol)
     
     targeted_drugs_per_site[[t]][['off_label']]  <- 
       targeted_onco_inhibitors |>
@@ -174,7 +173,9 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
       dplyr::anti_join(
         targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
         by = c("molecule_chembl_id","drug_name","symbol")) |>
-      dplyr::distinct()
+      dplyr::distinct() |>
+      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     .data$symbol)
     
     other_any_phase <- 
       targeted_drugs_non_site_specific |>
@@ -189,7 +190,8 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
         by = c("molecule_chembl_id","drug_name","symbol"))
     
     targeted_drugs_per_site[[t]][['other_any_phase']] <- other_any_phase |>
-      dplyr::arrange(.data$symbol, .data$drug_max_phase_indication)
+      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication), 
+                     .data$symbol)
     
     lgr::lgr$info(
       paste0(
@@ -394,9 +396,11 @@ get_drug_records <- function(cache_dir = NA,
                      by = "drug_id")  |>
     dplyr::left_join(drug_aliases_collapsed, by = "drug_id") |>
     dplyr::left_join(drug_datasets[['drug_map_target']][['records']],
-                     by = "drug_id") |>
+                     by = "drug_id", multiple = "all",
+                     relationship = "many-to-many") |>
     dplyr::left_join(drug_datasets[['drug_map_indication']][['records']],
-                     by = "drug_id")
+                     by = "drug_id", multiple = "all",
+                     relationship = "many-to-many")
 
   drug_data[['metadata']] <- drug_datasets[['drug_map_name']][['metadata']]
 
