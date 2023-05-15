@@ -2264,14 +2264,14 @@ clean_final_drug_list <- function(drug_df = NULL){
         !is.na(molecule_chembl_id) &
         molecule_chembl_id == "CHEMBL1433",
       "DOXYCYCLINE",
-      as.character(drug_name))) |>
-    dplyr::mutate(drug_name = dplyr::if_else(
-      drug_name == "Sunitinib Malate" &
-        !is.na(molecule_chembl_id) &
-        molecule_chembl_id == "CHEMBL535",
-      "Sunitinib",
-      as.character(drug_name))) |>
-    dplyr::distinct()
+      as.character(drug_name)))
+    # dplyr::mutate(drug_name = dplyr::if_else(
+    #   drug_name == "Sunitinib Malate" &
+    #     !is.na(molecule_chembl_id) &
+    #     molecule_chembl_id == "CHEMBL535",
+    #   "Sunitinib",
+    #   as.character(drug_name))) |>
+    # dplyr::distinct()
 
 
   drug_action_types <- as.data.frame(
@@ -2394,12 +2394,55 @@ clean_final_drug_list <- function(drug_df = NULL){
       drug_name,
       as.character(nci_cd_name)
     )) |>
-    dplyr::filter(!is.na(nci_cd_name))
+    dplyr::filter(!is.na(nci_cd_name)) |>
+    dplyr::mutate(drug_name_final = dplyr::case_when(
+      !is.na(drug_name) & 
+        !is.na(nci_cd_name) & 
+        tolower(nci_cd_name) != tolower(drug_name) &
+        stringr::str_detect(
+          tolower(nci_cd_name),"(ib|mab|in)$") &
+        stringr::str_detect(
+          drug_name, "[0-9]{1,}") ~ nci_cd_name,
+      !is.na(drug_name) & 
+        !is.na(nci_cd_name) & 
+        tolower(nci_cd_name) != tolower(drug_name) &
+        !stringr::str_detect(
+          tolower(nci_cd_name),"(ib|mab|in)$") &
+        stringr::str_detect(
+          drug_name, "[0-9]{1,}") ~ drug_name,
+      !is.na(drug_name) & 
+        !is.na(nci_cd_name) & 
+        tolower(nci_cd_name) == tolower(drug_name) ~ 
+        stringr::str_to_title(tolower(nci_cd_name)),
+      
+      # !is.na(drug_name) & 
+      #   !is.na(nci_cd_name) & 
+      #   tolower(nci_cd_name) != tolower(drug_name) &
+      #   stringr::str_detect(
+      #     tolower(nci_cd_name,"(ib|mab|in)$")
+      #   ) &
+      #   stringr::str_detect(
+      #     drug_name, "[0-9]{1,}") ~ nci_cd_name,
+      
+      is.na(drug_name) & !is.na(nci_cd_name) ~ nci_cd_name,
+      TRUE ~ as.character(
+        stringr::str_to_title(tolower(drug_name))
+      )
+    )) |>
+    dplyr::filter(
+      !(drug_name_final == "CFI-400945" &
+          molecule_chembl_id == "CHEMBL3408947") &
+        !(drug_name_final == "Relebactam" &
+            molecule_chembl_id == "CHEMBL3112741") &
+        !(drug_name_final == "SR16234" &
+            molecule_chembl_id == "CHEMBL3545210")
+    )
 
 
   pharmaoncox$drug_name <- NULL
-  pharmaoncox$drug_name <- pharmaoncox$nci_cd_name
+  pharmaoncox$drug_name <- pharmaoncox$drug_name_final
   pharmaoncox$nci_cd_name <- NULL
+  pharmaoncox$drug_name_final <- NULL
   pharmaoncox$nci_concept_synonym <- NULL
 
   blackbox_warnings <- as.data.frame(pharmaoncox |>
@@ -2668,8 +2711,7 @@ clean_final_drug_list <- function(drug_df = NULL){
       atc_code_level2,
       atc_level2,
       atc_code_level3,
-      atc_level3
-    ) |>
+      atc_level3) |>
       dplyr::distinct())
   
   
@@ -2694,57 +2736,24 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     get_chembl_pubchem_compound_xref(
       datestamp = chembl_pubchem_datestamp,
       path_data_raw = path_data_raw)
-
-  non_ambiguous_synonyms <- as.data.frame(
+  
+  drugAliasPrimary <- 
+    drug_index_map[['id2name']] |>
+    dplyr::select(drug_id, drug_name) |>
+    dplyr::mutate(alias = drug_name) |>
+    dplyr::select(-drug_name) |>
+    dplyr::mutate(alias_source = "primaryName")
+  
+  
+  drugAliasNCI <- as.data.frame(
     drug_index_map[['id2synonym']] |>
       dplyr::select(drug_id, nci_concept_synonym_all) |>
       tidyr::separate_rows(nci_concept_synonym_all, sep="\\|") |>
       dplyr::distinct() |>
-      dplyr::rename(nci_concept_synonym = nci_concept_synonym_all) |>
-      dplyr::group_by(nci_concept_synonym) |>
-      dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
-      dplyr::filter(n == 1 & nchar(nci_concept_synonym) >= 4)
+      dplyr::rename(alias = nci_concept_synonym_all) |>
+      dplyr::filter(nchar(alias) > 3) |>
+      dplyr::mutate(alias_source = "nci")
   )
-
-  ## Drug alias to NCI concept display name (primary name)
-  antineopharma_synonyms <-
-    drug_index_map[['id2synonym']] |>
-    dplyr::select(drug_id, nci_concept_synonym_all) |>
-    tidyr::separate_rows(nci_concept_synonym_all, sep="\\|") |>
-    dplyr::distinct() |>
-    dplyr::rename(nci_concept_synonym = nci_concept_synonym_all) |>
-    dplyr::inner_join(
-      non_ambiguous_synonyms, 
-      by = "nci_concept_synonym", 
-      multiple = "all", relationship = "many-to-many") |>
-    dplyr::rename(alias = nci_concept_synonym) |>
-    dplyr::select(-n) |>
-    dplyr::left_join(
-      dplyr::select(drug_index_map[['id2basic']],
-                    drug_id, molecule_chembl_id),
-      by = "drug_id", multiple = "all",
-      relationship = "many-to-many") |>
-    dplyr::distinct()
-
-  ## include also the primary name among aliases
-  tmp <- drug_index_map[['id2name']] |>
-    dplyr::select(drug_id, drug_name) |>
-    dplyr::mutate(alias = drug_name) |>
-    dplyr::select(-drug_name) |>
-    dplyr::left_join(
-      dplyr::select(
-        drug_index_map[['id2basic']], 
-        drug_id, molecule_chembl_id),
-      by = "drug_id", multiple = "all",
-      relationship = "many-to-many"
-    ) |>
-    dplyr::distinct()
-
-  antineopharma_synonyms <- antineopharma_synonyms |>
-    dplyr::bind_rows(tmp) |>
-    dplyr::arrange(drug_id) |>
-    dplyr::distinct()
-
 
   ## Extend aliases with those found in PubChem
 
@@ -2768,7 +2777,7 @@ expand_drug_aliases <- function(drug_index_map = NULL,
                     pattern = "CID-Synonym-filtered_",
                     full.names = T))
 
-  antineopharma_synonyms_pubchem <- data.frame()
+  drugAliasPubchem <- data.frame()
   for(f in pubchem_synonym_files){
     synonym_data <- as.data.frame(readr::read_tsv(
       f, col_names = c('pubchem_cid','alias'),
@@ -2784,122 +2793,76 @@ expand_drug_aliases <- function(drug_index_map = NULL,
     
     if(nrow(pubchem_alias_df) > 0){
       pubchem_alias_df <- pubchem_alias_df |>
-        dplyr::select(-pubchem_cid)
-      antineopharma_synonyms_pubchem <-
-        antineopharma_synonyms_pubchem |>
+        dplyr::select(-c(pubchem_cid, molecule_chembl_id)) |>
+        dplyr::mutate(alias_source = "pubchem")
+      drugAliasPubchem <-
+        drugAliasPubchem |>
         dplyr::bind_rows(pubchem_alias_df)
     }
     rm(synonym_data)
   }
-
-  # antineopharma_synonyms_pubchem <- antineopharma_synonyms_pubchem |>
-  #   dplyr::left_join(drug_index_map[['id2name']])
-
-
-  ## Only include drug aliases that are unambiguous
-  unambiguous_drug_aliases <- antineopharma_synonyms |>
-    dplyr::bind_rows(antineopharma_synonyms_pubchem) |>
-    dplyr::left_join(
-      drug_index_map[['id2name']], 
-      by = "drug_id",
-      multiple = "all",
-      relationship = "many-to-many") |>
-    dplyr::filter(!(alias == "nab-paclitaxel" &
-                      drug_name == "Paclitaxel")) |>
-    dplyr::select(alias, drug_name) |>
-    dplyr::distinct() |>
-    dplyr::group_by(alias) |>
-    dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
-    dplyr::filter(n == 1) |>
-    dplyr::select(alias)
-
-  compound_synonyms <-
-    dplyr::bind_rows(
-      antineopharma_synonyms, 
-      antineopharma_synonyms_pubchem) |>
-    dplyr::left_join(
-      drug_index_map[['id2name']], 
-      by = "drug_id", multiple = "all",
-      relationship = "many-to-many") |>
-    dplyr::distinct() |>
-    dplyr::inner_join(
-      unambiguous_drug_aliases, 
-      by = "alias", multiple = "all",
-      relationship = "many-to-many") |>
-    dplyr::distinct()  |>
-    dplyr::mutate(alias = dplyr::if_else(
-      alias == "nab-paclitaxel" & drug_name == "Paclitaxel",
-      "paclitaxel",
-      as.character(alias)
-    )) |>
-    dplyr::filter(nchar(alias) > 3) |>
-    dplyr::filter(!is.na(alias)) |>
-    dplyr::mutate(
-      alias = stringi::stri_enc_toascii(alias)
-    ) |>
-    dplyr::mutate(
-      drug_name =
-        stringi::stri_enc_toascii(drug_name)
-    ) |>
-    dplyr::arrange(drug_id) |>
-    dplyr::select(-c(molecule_chembl_id, drug_name)) |>
-    dplyr::distinct() |>
-    dplyr::mutate(
-      alias_lc = tolower(alias)) |> 
-    
-    ## remove aliases that co-incide with ordinary
-    ## english words
-    dplyr::left_join(
-      words::words, 
-      by = c("alias_lc" = "word"),
-      multiple = "all", relationship = "many-to-many") |> 
-    dplyr::filter(
-      is.na(word_length) |
-        (!is.na(word_length) &
-           word_length > 6 & 
-           stringr::str_detect(
-             alias_lc,
-             paste0(
-               "(one|ol|id(e)?|oid|",
-               "trel|ine|ile||ins|inl|ils|opa|phen|",
-               "xel|tal|rapy|lite(s)?|",
-               "tomy|ase|ole|pam|fan|fen|yl|ane|ose|",
-               "ium|(ph|z)ene|yde|lan|tam|fam|xal|",
-               "strogen|gen|nal|xan|cine|ene|gon|ram|",
-               "glycan|prim|vir|yte(s)?|ate(s)?)$")
-           )
-        )) |>
-    dplyr::filter(alias_lc != "medium" & 
-                    alias_lc != "serum" &
-                    alias_lc != "bypass" &
-                    alias_lc != "molecule" &
-                    alias_lc != "feces" &
-                    alias_lc != "fiber" &
-                    alias_lc != "start" &
-                    alias_lc != "specimen" &
-                    alias_lc != "maintenance" &
-                    alias_lc != "cinnamon" &
-                    alias_lc != "terminator" &
-                    alias_lc != "prevail" &
-                    alias_lc != "antagonist" &
-                    alias_lc != "agonist" &
-                    alias_lc != "marshal" &
-                    alias_lc != "sheriff" &
-                    alias_lc != "stipend" &
-                    alias_lc != "sprinkle" &
-                    alias_lc != "calculus" &
-                    alias_lc != "reactive" &
-                    alias_lc != "seaweed" &
-                    alias_lc != "mustang" &
-                    alias_lc != "mustard" &
-                    alias_lc != "other" &
-                    alias_lc != "freeze" &
-                    alias_lc != "transplantation" &
-                    alias_lc != "hydrochloride") |>
-    dplyr::select(-c(word_length,alias_lc)) |>
-    dplyr::distinct()
   
-  return(compound_synonyms)
+  drugAliasAll <- as.data.frame(drugAliasPrimary |>
+    dplyr::bind_rows(drugAliasNCI) |>
+    dplyr::bind_rows(drugAliasPubchem) |>
+    dplyr::filter(nchar(alias) > 3) |>
+    tidyr::separate_rows(alias, sep = "\\|") |>
+    dplyr::distinct() |>
+    dplyr::left_join(drug_index_map[['id2name']],
+                     by = "drug_id") |>
+      
+    ## avoid drug aliases for a particular drug that are identical 
+    ## to the primary drug name of another drug
+    dplyr::filter(
+      !(tolower(alias) != tolower(drug_name) &
+          tolower(alias) %in% tolower(drugAliasPrimary$alias))) |>
+      
+    ## consider unambiguous drug aliases only
+    dplyr::group_by(alias) |>
+    dplyr::summarise(
+      alias_source = paste(unique(alias_source), collapse="|"),
+      drug_id = paste(unique(drug_id), collapse=","),
+      .groups = "drop") |>
+      dplyr::filter(!stringr::str_detect(drug_id,",")) |>
+      dplyr::distinct() |>
+      dplyr::mutate(
+        alias = stringi::stri_enc_toascii(alias)
+      ) |>
+      dplyr::mutate(
+        alias_lc = tolower(alias)) |> 
+      
+      ## remove aliases that co-incide with ordinary
+      ## english words
+      dplyr::left_join(
+        words::words, 
+        by = c("alias_lc" = "word"),
+        multiple = "all", relationship = "many-to-many") |> 
+      dplyr::filter(
+        is.na(word_length) |
+          (!is.na(word_length) &
+             word_length > 6 & 
+             stringr::str_detect(
+               alias_lc,
+               paste0(
+                 "(one|ol|id(e)?|oid|",
+                 "trel|ine|ile||ins|inl|ils|opa|phen|",
+                 "xel|tal|rapy|lite(s)?|",
+                 "tomy|ase|ole|pam|fan|fen|yl|ane|ose|",
+                 "ium|(ph|z)ene|yde|lan|tam|fam|xal|",
+                 "strogen|gen|nal|xan|cine|ene|gon|ram|",
+                 "glycan|prim|vir|yte(s)?|ate(s)?)$")
+             )
+          )) |>
+      dplyr::select(-c(word_length,alias_lc)) |>
+      dplyr::distinct() |>
+      dplyr::select(drug_id, alias, alias_source) |>
+      dplyr::mutate(
+        drug_id = as.integer(drug_id)
+      )
+      
+  )
+
+  return(drugAliasAll)
 
 
 }

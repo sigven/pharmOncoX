@@ -1,3 +1,7 @@
+# Version 1.3.1 (May 15th 2023)
+
+* Fixed a bug in parsing of drugs from Open Targets Platform
+
 # Version 1.3.0 (May 10th 2023)
 
 * Updated NCI Thesaurus (23.04d release)

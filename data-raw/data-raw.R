@@ -140,7 +140,9 @@ compound_synonyms <- drug_index_map[['id2alias']] |>
     alias_lc,
     molecule_chembl_id
   ) |>
-  dplyr::filter(alias != molecule_chembl_id) |>
+  dplyr::filter(
+    is.na(molecule_chembl_id) |
+    alias != molecule_chembl_id) |>
   dplyr::distinct()
   
 

@@ -298,6 +298,49 @@ dt_drugtable_taxanes
 
 <br><br>
 
+## Get platinum compounds
+
+```{r platins, echo = T}
+
+drugs <- get_drugs(
+  cache_dir = cache_dir, 
+  output_resolution = "drug")
+
+drugs$records <- drugs$records |>
+  dplyr::filter(
+    stringr::str_detect(
+      atc_level3, "Platinum compounds"
+    )
+  ) |>
+  dplyr::select(
+    -c("drug_alias",
+       "disease_main_group",
+       "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|",", ")
+    )
+
+dt_drugtable_platins <- DT::datatable(
+  drugs$records,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+
+```
+
+<br>
+
+```{r dt_platins, echo = F, eval = T}
+dt_drugtable_platins
+```
+
+<br><br>
+
 # Session Info
 
 \vspace{5pt}
