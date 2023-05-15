@@ -1,9 +1,6 @@
-# Version 1.3.2 (May 15th 2023)
+# Version 1.3.3 (May 15th 2023)
 
-* Added more missing drugs (primary indication non-cancer)
-
-# Version 1.3.1 (May 15th 2023)
-
+* Added additional drug entries (primary indication non-cancer)
 * Fixed a bug in parsing of drugs from Open Targets Platform
 
 # Version 1.3.0 (May 10th 2023)

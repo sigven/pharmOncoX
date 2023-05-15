@@ -362,12 +362,12 @@ get_opentargets_cancer_drugs <-
     dplyr::filter(
       !is.na(drug_action_type)
     ) |>
-    dplyr::filter(
-      !stringr::str_detect(
-        tolower(drug_action_type),
-        "allosteric|modulator|substrate|releasing|opener"
-      )
-    ) |>
+    # dplyr::filter(
+    #   !stringr::str_detect(
+    #     tolower(drug_action_type),
+    #     "allosteric|modulator|substrate|releasing|opener"
+    #   )
+    # ) |>
     dplyr::filter(
       drug_type != "Cell" &
         drug_type != "Enzyme" &
