@@ -2364,10 +2364,15 @@ clean_final_drug_list <- function(drug_df = NULL){
 
   pharmaoncox_cancer_no_indication <- pharmaoncox |>
     dplyr::filter(is.na(disease_efo_id))
+  
+  pharmaoncox_non_cancer <- pharmaoncox |>
+    dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id) &
+                    drug_cancer_relevance == "by_other_condition_otp")
 
   pharmaoncox_cancer_NOS <- as.data.frame(
     pharmaoncox |>
-      dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id)) |>
+      dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id) &
+                      drug_cancer_relevance != "by_other_condition_otp") |>
       dplyr::mutate(disease_efo_id = "EFO:0000311",
                     disease_efo_label = "cancer",
                     cui = "C0006826",
@@ -2386,6 +2391,7 @@ clean_final_drug_list <- function(drug_df = NULL){
 
 
   pharmaoncox <- pharmaoncox_cancer_no_indication |>
+    dplyr::bind_rows(pharmaoncox_non_cancer) |>
     dplyr::bind_rows(pharmaoncox_cancer_specific) |>
     dplyr::bind_rows(pharmaoncox_cancer_NOS) |>
     dplyr::arrange(nci_cd_name) |>
@@ -2414,16 +2420,6 @@ clean_final_drug_list <- function(drug_df = NULL){
         !is.na(nci_cd_name) & 
         tolower(nci_cd_name) == tolower(drug_name) ~ 
         stringr::str_to_title(tolower(nci_cd_name)),
-      
-      # !is.na(drug_name) & 
-      #   !is.na(nci_cd_name) & 
-      #   tolower(nci_cd_name) != tolower(drug_name) &
-      #   stringr::str_detect(
-      #     tolower(nci_cd_name,"(ib|mab|in)$")
-      #   ) &
-      #   stringr::str_detect(
-      #     drug_name, "[0-9]{1,}") ~ nci_cd_name,
-      
       is.na(drug_name) & !is.na(nci_cd_name) ~ nci_cd_name,
       TRUE ~ as.character(
         stringr::str_to_title(tolower(drug_name))
@@ -2544,20 +2540,20 @@ clean_final_drug_list <- function(drug_df = NULL){
       by = "drug_name", multiple = "all") |>
     
     ## remove non-cancer drugs
-    dplyr::filter(
-      !(disease_efo_label == "cancer" & 
-        !stringr::str_detect(
-          nci_concept_definition,
-          "antineoplastic|anti(-)?tumor|cancer") & 
-        !stringr::str_detect(
-          target_genename, paste0(
-            "^CD|heat shock|ADP-ribose|kinase|growth factor|tubulin|",
-            "histone|T cell immuno|TNF receptor|activin A|androgen receptor|",
-            "BCL2 apoptosis|bromodomain|cytotoxic T-lymphocyte|",
-            "estrogen receptor|polycomb repressive complex|",
-            "tyrosine phosphatase|isocitrate dehydro|oncogene|",
-            "cell death|cell adhesion|DNA topo|WNT signaling|",
-            "apoptosis|adenosine A2")))) |>
+    # dplyr::filter(
+    #   !(disease_efo_label == "cancer" & 
+    #     !stringr::str_detect(
+    #       nci_concept_definition,
+    #       "antineoplastic|anti(-)?tumor|cancer") & 
+    #     !stringr::str_detect(
+    #       target_genename, paste0(
+    #         "^CD|heat shock|ADP-ribose|kinase|growth factor|tubulin|",
+    #         "histone|T cell immuno|TNF receptor|activin A|androgen receptor|",
+    #         "BCL2 apoptosis|bromodomain|cytotoxic T-lymphocyte|",
+    #         "estrogen receptor|polycomb repressive complex|",
+    #         "tyrosine phosphatase|isocitrate dehydro|oncogene|",
+    #         "cell death|cell adhesion|DNA topo|WNT signaling|",
+    #         "apoptosis|adenosine A2")))) |>
     dplyr::filter(!((!is.na(molecule_chembl_id) &
                        molecule_chembl_id == "CHEMBL1742994") &
                       drug_name == "Brentuximab vedotin")) |>
@@ -2714,8 +2710,6 @@ clean_final_drug_list <- function(drug_df = NULL){
       atc_level3) |>
       dplyr::distinct())
   
-  
-
   # tmp <- drug_maps$id2name |>
   #   dplyr::left_join(drug_maps$id2basic) |>
   #   dplyr::left_join(drug_maps$id2target) |>
