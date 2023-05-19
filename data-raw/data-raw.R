@@ -146,14 +146,8 @@ compound_synonyms <- drug_index_map[['id2alias']] |>
   dplyr::distinct()
   
 
-rm(drug_df)
-
 
 ##################### BIOMARKERS ###############################
-
-# gene_info <- get_gene_info_ncbi(
-#   path_data_raw = file.path(here::here(), "data-raw"),
-#   update = T)
 
 raw_biomarkers <- list()
 raw_biomarkers[['civic']] <-
@@ -166,9 +160,6 @@ raw_biomarkers[['cgi']] <- load_cgi_biomarkers(
   cache_dir = file.path(path_data_raw, "biomarkers"))
 raw_biomarkers[['mitelmandb']] <- load_mitelman_db(
   cache_dir = file.path(path_data_raw, "biomarkers"))
-# raw_biomarkers[['pmkb']] <- load_pmkb_biomarkers(
-#   cache_dir = path_data_raw
-# )
 raw_biomarkers[['custom_fusions']] <- load_custom_fusion_db()
 
 raw_biomarkers[['custom_fusions']]$variant <- 

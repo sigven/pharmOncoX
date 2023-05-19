@@ -415,7 +415,7 @@ expand_hgvs_terms <- function(var, aa_dict) {
 }
 
 load_civic_biomarkers <- function(
-    datestamp = '20211217',
+    datestamp = '20230518',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -527,11 +527,10 @@ load_civic_biomarkers <- function(
     dplyr::filter(!stringr::str_detect(variant_id, ",")) |>
     dplyr::mutate(variant_id = as.integer(variant_id))
 
-  
   clinicalEvidenceSummary <- as.data.frame(
-    data.table::fread(
+    readr::read_tsv(
       civic_local_fnames[['ClinicalEvidenceSummaries']],
-      select = c(1:25), fill = T)) |>
+      show_col_types = F)) |>
     dplyr::filter(source_type == "PubMed") |>
     dplyr::mutate(citation_id = as.character(citation_id)) |>
     dplyr::select(molecular_profile_id,
@@ -552,6 +551,16 @@ load_civic_biomarkers <- function(
       citation_id == "27577079" ~ "28947956",
       citation_id == "27556863" ~ "28978004",
       TRUE ~ as.character(citation_id)
+    )) |>
+    dplyr::mutate(disease = dplyr::if_else(
+      is.na(disease),
+      "Cancer",
+      as.character(disease)
+    )) |>
+    dplyr::mutate(doid = dplyr::if_else(
+      is.na(doid),
+      "162",
+      as.character(doid)
     )) |>
     dplyr::rename(disease_ontology_id = doid,
                   clinical_significance = significance,
@@ -1283,6 +1292,7 @@ load_civic_biomarkers <- function(
                   variant_id, dplyr::everything()) |>
     dplyr::rename(therapeutic_context = therapies) |>
     dplyr::mutate(evidence_id = paste0("EID",evidence_id)) |>
+    dplyr::filter(evidence_id != "EIDNA") |>
     dplyr::mutate(biomarker_source = "civic",
                   biomarker_source_datestamp = datestamp,
                   biomarker_entity = T) |>
@@ -1295,8 +1305,7 @@ load_civic_biomarkers <- function(
   
   biomarker_items[['clinical']] <- map_biomarker_phenotypes(
     biomarker_items[['clinical']], 
-    cache_dir = cache_dir) |>
-    dplyr::select(-do_cancer_slim)
+    cache_dir = cache_dir)
   
   biomarker_items <- get_literature_references(biomarker_items)
   if(is.data.frame(biomarker_items)){
@@ -1349,6 +1358,11 @@ load_civic_biomarkers <- function(
         symbol,
         entrezgene,
         dplyr::everything()
+      ) |>
+      dplyr::inner_join(
+        dplyr::select(biomarker_items[['clinical']],
+                      variant_id),
+        relationship = "many-to-many"
       )
   )
 
@@ -1833,53 +1847,13 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
                   citation_id = source)
 
   cgi_clinical <- map_biomarker_phenotypes(
-    biomarkers_all = cgi_clinical,
+    biomarkers_clinical = cgi_clinical,
     cache_dir = cache_dir) |>
-    dplyr::select(-do_cancer_slim) |>
     dplyr::distinct()
   
   biomarker_items <- list()
   
-  # literature_references <- as.data.frame(
-  #   cgi_clinical |> 
-  #   dplyr::select(citation_id, evidence_id) |> 
-  #   #dplyr::rename(source_id = citation_id) |>
-  #   tidyr::separate_rows(citation_id, sep=";") |> 
-  #   dplyr::mutate(citation_id = stringr::str_trim(citation_id)) |> 
-  #   dplyr::filter(
-  #     !stringr::str_detect(
-  #       tolower(citation_id),"asco|aacr|abstr|suppl|confex|jci|blood|annonc|caris")) |> 
-  #   dplyr::distinct() |>
-  #   dplyr::mutate(citation_id = dplyr::case_when(
-  #     citation_id == "PMC3638050" ~ "PMID:22038996",
-  #     citation_id == "PMC3936420" ~ "PMID:24265155",
-  #     TRUE ~ as.character(stringr::str_replace(citation_id,"PMID: ","PMID:"))
-  #   )) |>
-  #   dplyr::filter(!stringr::str_detect(citation_id, "^[0-9]{1,}$")) |>
-  #   dplyr::mutate(citation_id = dplyr::case_when(
-  #     stringr::str_detect(citation_id, "^FDA") ~ "FDA",
-  #     stringr::str_detect(citation_id, "NCCN") ~ "NCCN",
-  #     TRUE ~ as.character(citation_id)
-  #   )) |>
-  #   dplyr::mutate(source = dplyr::case_when(
-  #     stringr::str_detect(citation_id, "^FDA") ~ "FDA",
-  #     stringr::str_detect(citation_id, "NCCN") ~ "NCCN",
-  #     stringr::str_detect(citation_id, "^EMA") ~ "EMA",
-  #     stringr::str_detect(citation_id, "^NCT") ~ "clinicaltrials.gov",
-  #     TRUE ~ as.character("PubMed")
-  #   )) |>
-  #   dplyr::mutate(citation_id = stringr::str_replace(
-  #     citation_id, "PMID:",""
-  #   )) |>
-  #   dplyr::group_by(source, source_id) |>
-  #   dplyr::summarise(evidence_id = paste(
-  #     unique(sort(evidence_id)), collapse=";"
-  #   ), .groups = "drop")
-  # )
-  # 
-  # biomarker_items <- get_literature_references(biomarker_items)
-  # 
-  biomarker_items[['variant']] <- cgi_variants
+ 
   biomarker_items[['clinical']] <- cgi_clinical
   biomarker_items[['clinical']]$molecular_profile <- NULL
   
@@ -1909,69 +1883,86 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       dplyr::everything()
     ) |>
     dplyr::distinct()
+  
+  biomarker_items[['variant']] <- as.data.frame(
+    cgi_variants |>
+    dplyr::inner_join(
+      dplyr::select(
+        biomarker_items$clinical,
+        variant_id
+      ), relationship = "many-to-many"
+    )
+  )
 
   return(biomarker_items)
 }
 
-map_biomarker_phenotypes <- function(biomarkers_all = NULL,
+map_biomarker_phenotypes <- function(biomarkers_clinical = NULL,
                                      cache_dir = NA) {
 
-  cancer_pheno_map <- 
-    phenOncoX::get_terms(cache_dir = cache_dir)
-  
-  cancer_aux_pheno_maps <- 
-    phenOncoX::get_aux_maps(cache_dir = cache_dir)
-  
-  omap <- cancer_pheno_map$records |>
-  #omap <- oncoPhenoMap::oncotree_expanded_full |>
+  cancer_term_map <- 
+    phenOncoX::get_terms(cache_dir = cache_dir)$records |>
     dplyr::select(do_id, efo_id, efo_name, do_name,
                   cui, cui_name, primary_site) |>
     dplyr::filter(!is.na(do_id) & !is.na(cui)) |>
     dplyr::rename(disease_ontology_id = do_id) |>
     dplyr::distinct()
+  
+  cancer_aux_pheno_maps <- 
+    phenOncoX::get_aux_maps(cache_dir = cache_dir)
 
-  #umls_terms <- oncoPhenoMap::auxiliary_maps$umls$concept |>
-  umls_terms <- cancer_aux_pheno_maps$records$umls$concept |>
+  umls_terms_all <- 
+    cancer_aux_pheno_maps$records$umls$concept |>
     dplyr::filter(main_term == T) |>
     dplyr::select(cui, cui_name)
+  
+  do_terms_all <- 
+    cancer_aux_pheno_maps$records$do |>
+    dplyr::select(
+      cui, do_id, do_name
+    ) |>
+    dplyr::distinct()
+  
+  efo_terms_all <- 
+    cancer_aux_pheno_maps$records$efo$efo2xref |>
+    dplyr::select(
+      cui, efo_id, efo_name, primary_site) |>
+    dplyr::distinct()
 
-  biomarkers_all_phenotypes <- biomarkers_all |>
+  biomarkers_all_phenotypes <- biomarkers_clinical |>
     dplyr::left_join(
-      omap, by = "disease_ontology_id", 
+      cancer_term_map, by = "disease_ontology_id", 
       multiple = "all", relationship = "many-to-many")
 
+  ## if conditions in biomarkers is not found in phenOncoX terms
+  ## match against individual dictionaries
   missing_do_phenotypes <- biomarkers_all_phenotypes |>
     dplyr::filter(is.na(cui)) |>
     dplyr::select(-c(cui, cui_name, primary_site,
                      efo_id, do_name, efo_name)) |>
     dplyr::inner_join(
-      cancer_aux_pheno_maps$records$do,
-      #oncoPhenoMap::auxiliary_maps$do,
+      do_terms_all,
       by = c("disease_ontology_id" = "do_id"), 
       multiple = "all", relationship = "many-to-many") |>
     dplyr::left_join(
-      umls_terms, by = "cui", 
+      umls_terms_all, by = "cui", 
       multiple = "all", relationship = "many-to-many") |>
-    dplyr::left_join(dplyr::select(
-      cancer_aux_pheno_maps$records$efo$efo2xref,
-      #oncoPhenoMap::auxiliary_maps$efo$efo2xref,
-      cui, efo_id, efo_name
-    ), by = "cui", multiple = "all",  
+    dplyr::left_join(
+      efo_terms_all,
+      by = "cui", multiple = "all",  
     relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::mutate(primary_site = dplyr::case_when(
       do_name == "cancer" ~ as.character(NA),
-      stringr::str_detect(do_name,"brain") ~ "CNS/Brain",
-      stringr::str_detect(do_name,"breast") ~ "Breast",
-      stringr::str_detect(do_name,"colon|rectum") ~ "Colon/Rectum",
-      stringr::str_detect(do_name,"gastric|stomach|esophag") ~ "Esophagus/Stomach",
-      stringr::str_detect(do_name,"prostate") ~ "Prostate",
-      stringr::str_detect(do_name,"pancrea") ~ "Pancreas",
-      stringr::str_detect(do_name,"lung") ~ "Lung",
-      stringr::str_detect(do_name,"ovary|ovarian") ~ "Ovary",
-
-
-      TRUE ~ as.character(NA)
+      is.na(primary_site) & stringr::str_detect(do_name,"brain") ~ "CNS/Brain",
+      is.na(primary_site) & stringr::str_detect(do_name,"breast") ~ "Breast",
+      is.na(primary_site) & stringr::str_detect(do_name,"colon|rectum") ~ "Colon/Rectum",
+      is.na(primary_site) & stringr::str_detect(do_name,"gastric|stomach|esophag") ~ "Esophagus/Stomach",
+      is.na(primary_site) & stringr::str_detect(do_name,"prostate") ~ "Prostate",
+      is.na(primary_site) & stringr::str_detect(do_name,"pancrea") ~ "Pancreas",
+      is.na(primary_site) & stringr::str_detect(do_name,"lung") ~ "Lung",
+      is.na(primary_site) & stringr::str_detect(do_name,"ovary|ovarian") ~ "Ovary",
+      TRUE ~ as.character(primary_site)
     ))
 
   biomarkers_phenotype_mapped <-
