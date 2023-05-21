@@ -1,3 +1,7 @@
+# Version 1.3.5 (May 21st 2023)
+
+* Fixed bug in biomarker alias parsing
+
 # Version 1.3.3 (May 15th 2023)
 
 * Added additional drug entries (primary indication non-cancer)

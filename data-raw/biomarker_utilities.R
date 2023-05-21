@@ -889,7 +889,8 @@ load_civic_biomarkers <- function(
         as.character(variant_consequence)
       )) |>
       dplyr::mutate(variant = dplyr::if_else(
-        stringr::str_detect(variant,"^(GAIN-OF-FUNCTION|N-TERMINAL FRAME SHIFT|FRAMESHIFT|LOSS-OF-FUNCTION|INTERNAL DUPLICATION)"),
+        stringr::str_detect(
+          variant,"^(GAIN-OF-FUNCTION|N-TERMINAL FRAME SHIFT|FRAMESHIFT|LOSS-OF-FUNCTION|INTERNAL DUPLICATION)"),
         "MUTATION",
         as.character(variant)
       )) |>
@@ -899,11 +900,20 @@ load_civic_biomarkers <- function(
         "MUTATION"
       )) |>
       dplyr::mutate(variant_alias = stringr::str_replace(
-        variant_alias, "(ENSP[0-9]{1,}|NP_[0-9]{1,})(\\.[0-9]{1,})?:P\\.","p."
+        variant_alias, 
+        "(ENSP[0-9]{1,}|NP_[0-9]{1,})(\\.[0-9]{1,})?:P\\.","p."
       )) |>
       dplyr::mutate(variant_alias = stringr::str_replace(
-        variant_alias, "(ENST[0-9]{1,}|NM_[0-9]{1,})(\\.[0-9]{1,})?:C\\.","c."
+        variant_alias, 
+        "(ENST[0-9]{1,}|NM_[0-9]{1,})(\\.[0-9]{1,})?:C\\.","c."
       )) |>
+      
+      dplyr::mutate(variant_alias = paste(
+        variant_alias, variant, sep=","
+      )) |>
+      tidyr::separate_rows(
+        variant_alias, sep=","
+      ) |>
       dplyr::filter(
         !stringr::str_detect(variant_alias, "^(NC_)") 
       ) |>
@@ -921,6 +931,13 @@ load_civic_biomarkers <- function(
       dplyr::mutate(variant_alias = stringr::str_replace(
         variant_alias, "IVS2\\+1G>A","c.444+1G>A"
       )) |>
+      dplyr::filter(
+        (!(stringr::str_detect(variant,"H$") &
+             stringr::str_detect(toupper(variant_alias),"TYR$"))) &
+          (!(stringr::str_detect(variant,"Y$") &
+               stringr::str_detect(toupper(variant_alias),"HIS$")))
+        
+      ) |>
       dplyr::distinct()
   )
 
@@ -969,7 +986,9 @@ load_civic_biomarkers <- function(
     dplyr::mutate(
       alteration_type =
         dplyr::if_else(
-          stringr::str_detect(variant_alias,"^(p\\.)?(([A-Z]{1}[0-9]{1,})|([A-Z]{1}[a-z]{2}[0-9]{1,}))$"),
+          stringr::str_detect(
+            variant_alias,
+            "^(p\\.)?(([A-Z]{1}[0-9]{1,})|([A-Z]{1}[a-z]{2}[0-9]{1,}))$"),
           as.character("CODON"),
           as.character(alteration_type)
         )) |>
@@ -1315,7 +1334,6 @@ load_civic_biomarkers <- function(
     }
   }
   
-  
   biomarker_items[['clinical']] <- biomarker_items[['clinical']] |>
     dplyr::mutate(molecular_profile_type = "Any") |>
     dplyr::select(
@@ -1363,7 +1381,8 @@ load_civic_biomarkers <- function(
         dplyr::select(biomarker_items[['clinical']],
                       variant_id),
         relationship = "many-to-many"
-      )
+      ) |>
+      dplyr::distinct()
   )
 
   return(biomarker_items)
