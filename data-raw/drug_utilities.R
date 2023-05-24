@@ -2834,19 +2834,33 @@ expand_drug_aliases <- function(drug_index_map = NULL,
       dplyr::filter(
         is.na(word_length) |
           (!is.na(word_length) &
-             word_length > 6 & 
+             word_length > 7 & 
              stringr::str_detect(
                alias_lc,
                paste0(
                  "(one|ol|id(e)?|oid|",
-                 "trel|ine|ile||ins|inl|ils|opa|phen|",
+                 "trel|ine|ile|ins|inl|ils|opa|phen|",
                  "xel|tal|rapy|lite(s)?|",
-                 "tomy|ase|ole|pam|fan|fen|yl|ane|ose|",
+                 "ase|ole|pam|fan|fen|yl|ane|ose|",
                  "ium|(ph|z)ene|yde|lan|tam|fam|xal|",
                  "strogen|gen|nal|xan|cine|ene|gon|ram|",
                  "glycan|prim|vir|yte(s)?|ate(s)?)$")
              )
           )) |>
+      
+      dplyr::filter(
+        is.na(word_length) | 
+        (!is.na(word_length) &
+        !stringr::str_detect(
+          alias_lc,
+          paste0(
+            "(saccharide$|acetone|crystal|",
+            "medicine|vitamins|bluestone|",
+            "cellulose|cultivate|frontline|",
+            "particulates|phospholipid|",
+            "carbohydrates)"
+        )))
+      ) |>
       dplyr::select(-c(word_length,alias_lc)) |>
       dplyr::distinct() |>
       dplyr::select(drug_id, alias, alias_source) |>
