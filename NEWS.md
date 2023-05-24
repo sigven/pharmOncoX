@@ -1,3 +1,7 @@
+# Version 1.3.6 (May 24th 2023)
+
+* Removed general words from drug alias list
+
 # Version 1.3.5 (May 21st 2023)
 
 * Fixed bug in biomarker alias parsing
