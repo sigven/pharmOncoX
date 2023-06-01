@@ -74,7 +74,7 @@ drug_sets <- list()
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 drug_sets[['nci']] <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -169,7 +169,7 @@ raw_biomarkers[['custom_fusions']]$variant <-
 
 biomarkers <- list()
 biomarkers[['data']] <- raw_biomarkers
-biomarkers[['metadata']] <- rbind(metadata$biomarkers[1:2,], metadata$biomarkers[4,])
+biomarkers[['metadata']] <- metadata$biomarkers
 #rm(biomarkers_all)
 
 ## upload to Google Drive

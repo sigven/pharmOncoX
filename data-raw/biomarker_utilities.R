@@ -239,7 +239,7 @@ get_amino_acid_dictionary <- function() {
 }
 
 
-expand_hgvs_terms <- function(var, aa_dict) {
+expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
   hits <- c()
   
   if (stringr::str_detect(toupper(var),"([A-Z]{3}[0-9]{1,}(([A-Z]{3}) {0,1})([0-9]{1,})?)") &
@@ -372,8 +372,12 @@ expand_hgvs_terms <- function(var, aa_dict) {
   }
   if (stringr::str_detect(var,"^([A-Z]{1}[0-9]{1,}[A-Z]{1})$")) {
     res1 <- paste0('p.', var)
-    res2 <- stringr::str_match(var,"^([A-Z]{1}[0-9]{1,})")[[1]]
-    hits <- c(hits,res1,res2)
+    if(add_codon_markers == TRUE){
+      res2 <- stringr::str_match(var,"^([A-Z]{1}[0-9]{1,})")[[1]]
+      hits <- c(hits,res1,res2)
+    }else{
+      hits <- c(hits, res1)
+    }
   }
   if (stringr::str_detect(var,"FS$")) {
     res <- stringr::str_replace(var,"FS$","fs")
@@ -961,7 +965,7 @@ load_civic_biomarkers <- function(
         #cat(e,'\n')
         clean_aliases <- expand_hgvs_terms(e, aa_dict = aa_dict)
         for (c in clean_aliases) {
-          all_aliases <- unique(c(all_aliases, c))
+         all_aliases <- unique(c(all_aliases, c))
         }
       }
 
@@ -1209,6 +1213,48 @@ load_civic_biomarkers <- function(
     dplyr::distinct()
   
   
+  ## Make sure alteration types for genomic coordinates
+  ## are correct
+  variants_nongenomic <- variants_expanded[['mut']] |>
+    dplyr::filter(
+      !stringr::str_detect(
+        alias_type, "genomic_"
+      )
+    ) |>
+    dplyr::group_by(
+      variant_id
+    ) |>
+    dplyr::summarise(
+      alteration_type =
+        paste(unique(alteration_type), collapse=";")
+    ) |>
+    dplyr::mutate(
+      alteration_type = dplyr::if_else(
+        stringr::str_detect(alteration_type, ";"),
+        stringr::str_replace(
+          alteration_type, ";?CODON;?",""
+        ),
+        as.character(alteration_type)
+      )
+    )
+  
+  
+  variants_expanded_mut1 <- variants_expanded[['mut']] |>
+    dplyr::filter(!stringr::str_detect(
+      alias_type, "genomic"))
+  
+  variants_expanded_mut2 <- variants_expanded[['mut']] |>
+    dplyr::filter(stringr::str_detect(
+      alias_type, "genomic"))
+  variants_expanded_mut2$alteration_type <- NULL
+  variants_expanded_mut2 <- variants_expanded_mut2 |>
+    dplyr::left_join(variants_nongenomic, by = "variant_id")
+  
+  variants_expanded[['mut']] <- variants_expanded_mut1 |>
+    dplyr::bind_rows(variants_expanded_mut2)
+  
+  
+  
   variants_expanded[['other']]  <- as.data.frame(
     variantSummary |>
       dplyr::filter(!stringr::str_detect(alteration_type,"MUT")) |>
@@ -1268,18 +1314,23 @@ load_civic_biomarkers <- function(
   
   biomarker_items <- list()
   biomarker_items[['variant']] <- 
-    dplyr::bind_rows(variants_expanded[['mut']], variants_expanded[['other']]) |>
+    dplyr::bind_rows(
+      variants_expanded[['mut']], 
+      variants_expanded[['other']]) |>
     dplyr::mutate(alteration_type = dplyr::if_else(
-      stringr::str_detect(variant_alias, "^((p\\.)?[A-Z][a-z]{2}[0-9]{1,})$"),
+      stringr::str_detect(
+        variant_alias, "^((p\\.)?[A-Z][a-z]{2}[0-9]{1,})$"),
       "CODON",
       as.character(alteration_type)
     )) |>
     dplyr::mutate(variant_alias = stringr::str_replace_all(
       variant_alias, "INSerTION","INSERTION")) |>
-    dplyr::select(variant_id, variant_alias, alias_type, dplyr::everything()) |>
+    dplyr::select(variant_id, variant_alias, 
+                  alias_type, dplyr::everything()) |>
     dplyr::rename(gene = symbol) |>
     dplyr::left_join(
-      dplyr::select(gene_alias$records, alias, symbol, entrezgene),
+      dplyr::select(gene_alias$records, alias, 
+                    symbol, entrezgene),
       by = c("gene" = "alias")
     ) |>
     dplyr::filter(
@@ -1380,6 +1431,7 @@ load_civic_biomarkers <- function(
       dplyr::inner_join(
         dplyr::select(biomarker_items[['clinical']],
                       variant_id),
+        by = "variant_id",
         relationship = "many-to-many"
       ) |>
       dplyr::distinct()

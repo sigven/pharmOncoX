@@ -7,7 +7,7 @@ citEntry(
   year     = "2023",
   note     = "R package version 1.3.5",
   url      = "https://github.com/sigven/pharmOncoX",
-  textVersion = paste("Nakken S. ","(2022)",
+  textVersion = paste("Nakken S. ","(2023)",
   " pharmOncoX: Targeted and non-targeted anti-cancer drugs and drug regimens.",
   " R package version 1.3.5.",
   " (https://github.com/sigven/pharmOncoX)")

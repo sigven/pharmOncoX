@@ -1,3 +1,8 @@
+# Version 1.3.6 (June 1st 2023)
+
+* Updated NCI Thesaurus (23.04d release)
+* Cleaned biomarker alteration types
+
 # Version 1.3.5 (May 24th 2023)
 
 * Removed general words from drug alias list
