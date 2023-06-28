@@ -1560,6 +1560,17 @@ merge_nci_opentargets <- function(
       as.logical(FALSE),
       as.logical(is_adc)
     )) |>
+    dplyr::mutate(is_adc = dplyr::if_else(
+      is_adc == F &
+      !is.na(nci_cd_name) &
+        stringr::str_detect(
+          tolower(nci_cd_name), "mab ") &
+        stringr::str_detect(
+          tolower(nci_cd_name), "(tin|ine|tan|can|tox)$"
+        ),
+      TRUE,
+      as.logical(is_adc)
+    )) |>
     dplyr::select(nci_cd_name, is_adc) |>
     dplyr::distinct()
 
@@ -2219,10 +2230,34 @@ assign_drug_category <- function(drug_df = NULL,
     drugs_unclassified[, c] <- NULL
   }
   
-  return(dplyr::bind_rows(
+  drug_df <- dplyr::bind_rows(
     drugs_classified_all,
-    drugs_unclassified))
+    drugs_unclassified)
+  
+  drug_df <- remove_duplicate_chembl_ids(
+    drug_df = drug_df
+  )
+  
+  return(drug_df)
 
+}
+
+
+remove_duplicate_chembl_ids <- function(drug_df = NULL){
+  
+  black_list <- 
+    readr::read_tsv(
+      file = "data-raw/drug_name_black_list.txt", 
+      col_names = F, show_col_types = F)
+  
+  black_list$nci_cd_name <- black_list$X1
+  
+  drug_df <- drug_df |> dplyr::anti_join(
+    black_list, by = "nci_cd_name"
+  )
+  
+  return(drug_df)
+  
 }
 
 clean_final_drug_list <- function(drug_df = NULL){
@@ -2288,7 +2323,8 @@ clean_final_drug_list <- function(drug_df = NULL){
   pharmaoncox <- pharmaoncox |>
     dplyr::left_join(
       drug_action_types,
-      by = "nci_cd_name", multiple = "all") |>
+      by = "nci_cd_name", 
+      relationship = "many-to-many") |>
     dplyr::select(drug_name,
                   nci_cd_name,
                   drug_type,
@@ -2311,7 +2347,7 @@ clean_final_drug_list <- function(drug_df = NULL){
   pharmaoncox <- pharmaoncox |>
     dplyr::left_join(drug_max_ct_phase,
                      by = "nci_cd_name",
-                     multiple = "all") |>
+                     relationship = "many-to-many") |>
     dplyr::select(-c(drug_moa)) |>
     dplyr::mutate(nci_concept_synonym2 = dplyr::if_else(
       is.na(nci_concept_synonym_all) & !is.na(drug_synonyms),
@@ -2467,9 +2503,11 @@ clean_final_drug_list <- function(drug_df = NULL){
   pharmaoncox$drug_blackbox_warning <- NULL
   pharmaoncox2 <- pharmaoncox |>
     dplyr::left_join(
-      nci_t_map, by = "drug_name", multiple = "all") |>
+      nci_t_map, by = "drug_name", 
+      relationship = "many-to-many") |>
     dplyr::left_join(
-      blackbox_warnings, by = "drug_name", multiple = "all") |>
+      blackbox_warnings, by = "drug_name", 
+      relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::mutate(drug_action_type = dplyr::if_else(
       drug_action_type == "NA" &
@@ -2537,7 +2575,8 @@ clean_final_drug_list <- function(drug_df = NULL){
   pharmaoncox2 <- pharmaoncox2 |> 
     dplyr::left_join(
       inhibition_moa_df, 
-      by = "drug_name", multiple = "all") |>
+      by = "drug_name", 
+      relationship = "many-to-many") |>
     
     ## remove non-cancer drugs
     # dplyr::filter(
@@ -2711,12 +2750,23 @@ clean_final_drug_list <- function(drug_df = NULL){
       dplyr::distinct())
   
   # tmp <- drug_maps$id2name |>
-  #   dplyr::left_join(drug_maps$id2basic) |>
-  #   dplyr::left_join(drug_maps$id2target) |>
-  #   dplyr::left_join(drug_maps$id2indication) |>
-  #   dplyr::left_join(drug_maps$id2synonym)
-  #
-  #
+  #   dplyr::left_join(
+  #     drug_maps$id2basic, by = "drug_id",
+  #     relationship = "many-to-many") |>
+  #   dplyr::left_join(
+  #     drug_maps$id2target,
+  #     by = "drug_id",
+  #     relationship = "many-to-many") |>
+  #   dplyr::left_join(
+  #     drug_maps$id2indication,
+  #     by = "drug_id",
+  #     relationship = "many-to-many") |>
+  #   dplyr::left_join(
+  #     drug_maps$id2synonym,
+  #     by = "drug_id",
+  #     relationship = "many-to-many")
+  # 
+  # 
   return(drug_maps)
 
 }

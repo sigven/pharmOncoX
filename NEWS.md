@@ -1,6 +1,12 @@
+# Version 1.3.7 (June 28th 2023)
+
+* Updated NCI Thesaurus (23.06d release)
+* Updated biomarker data (CIViC)
+* Updated Open Targets Platform (2023.06)
+
 # Version 1.3.6 (June 1st 2023)
 
-* Updated NCI Thesaurus (23.04d release)
+* Updated NCI Thesaurus (23.05d release)
 * Cleaned biomarker alteration types
 
 # Version 1.3.5 (May 24th 2023)

@@ -198,7 +198,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
         "Found n = ",
         length(unique(
           targeted_drugs_per_site[[t]][['on_label']][['late_phase']]$drug_name)),
-        " targeted drugs for indications with primary site: ",
+        " on-label targeted drugs for primary site: ",
         t))
     
     tmp <- list()

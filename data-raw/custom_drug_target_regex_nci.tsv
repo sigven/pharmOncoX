@@ -3,6 +3,7 @@ Acasunlimab	CD274
 Acasunlimab	TNFRSF9
 Anbenitamab	ERBB2
 Anetumab	MSLN
+KTX-1001	NSD2
 Anti-LGR5 Monoclonal Antibody	LGR5
 Apamistamab	PTPRC
 Garsorasib	KRAS
@@ -335,8 +336,13 @@ ALK2	ACVR1
 Bcr-Abl|BCR-ABL	ABL1
 ROS1	ROS1
 DNMT1	DNMT1
+CTX-712	CLK1
+CTX-712	CLK2
+STC-15	METTL3
+ATI-2231	MAPKAPK2
+NLRP3 Inhibitor	NLRP3
 Epidermal Growth Factor Receptor|Anti-[A-Za-z]{1,}[0-9]{0,}/EGFR|EGFR (.+)?Antagonist	EGFR
-Abivertinib|Alflutinib|Almonertinib|PD-168393|Amivantamab|Depatuxizumab|Hemay022|BPI-15086|Icotinib|Keynatinib|Lazertinib|Mavelertinib|Modotuximab|Naquotinib|Zorifertinib|Tomuzotuximab|Pimurutamab|Rezivertinib	EGFR
+Abivertinib|Alflutinib|Almonertinib|PD-168393|Amivantamab|Depatuxizumab|Hemay022|BPI-15086|Ametumumab|Icotinib|Keynatinib|Lazertinib|Mavelertinib|Modotuximab|Naquotinib|Zorifertinib|Tomuzotuximab|Pimurutamab|Rezivertinib	EGFR
 Galectin-1	LGALS1
 Galectin-3	LGALS3
 CD73	CD73

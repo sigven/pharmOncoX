@@ -113,6 +113,29 @@ drug_index_map <- clean_final_drug_list(
   drug_df = drug_sets[['nci_otp_curated_classified']]
 )
 
+
+### check for chembl id's mapped to different drug names
+dup_chembl_ids <- drug_index_map$id2name |> 
+  dplyr::left_join(drug_index_map$id2basic) |> 
+  dplyr::filter(!is.na(molecule_chembl_id)) |> 
+  dplyr::select(drug_name, molecule_chembl_id) |> 
+  dplyr::distinct() |> 
+  dplyr::group_by(molecule_chembl_id) |> 
+  dplyr::summarise(
+    drug_name = paste(drug_name, collapse="@")) |>
+  dplyr::filter(stringr::str_detect(drug_name,"@")) |> 
+  dplyr::select(molecule_chembl_id)
+
+if(NROW(dup_chembl_ids) > 0){
+  cat("WARNING: Chembl identifiers mapped to different drug names - append to black list")
+  m <- 
+    drug_sets$nci_otp_curated_classified |> 
+    dplyr::inner_join(dup_chembl_ids) |> 
+    dplyr::select(
+      drug_name, molecule_chembl_id, 
+      nci_cd_name, drug_cancer_relevance)
+}
+
 ####--- Cancer drug aliases ----#####
 drug_aliases <- expand_drug_aliases(
   drug_index_map = drug_index_map,
