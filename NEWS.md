@@ -1,3 +1,7 @@
+# Version 1.3.8 (July 5th 2023)
+
+* Cleaned biomarker data (CIViC)
+
 # Version 1.3.7 (June 28th 2023)
 
 * Updated NCI Thesaurus (23.06d release)

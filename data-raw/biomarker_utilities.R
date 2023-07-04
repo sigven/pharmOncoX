@@ -884,7 +884,14 @@ load_civic_biomarkers <- function(
         )
       ) |>
       dplyr::filter(
-        !stringr::str_detect(variant_alias,"SERUM|INTRON|T17 DELETION")
+        !stringr::str_detect(
+          tolower(variant_alias),
+          "serum|intron|T17 deletion|loop|tkd|3'|heterozygosity|mb del|null|initiation|tandem|domain|alternative|mislocali|polymorphism|isoform")
+      ) |>
+      dplyr::filter(
+        !stringr::str_detect(
+          tolower(variant),
+          "serum|intron|T17 deletion|loop|tkd|3'|heterozygosity|mb del|null|initiation|tandem|domain|alternative|mislocali|polymorphism|isoform")
       ) |>
       dplyr::mutate(variant_consequence = dplyr::if_else(
         stringr::str_detect(variant,"^(ACTIVATING|GAIN-OF-FUNCTION)") &
@@ -911,7 +918,7 @@ load_civic_biomarkers <- function(
         variant_alias, 
         "(ENST[0-9]{1,}|NM_[0-9]{1,})(\\.[0-9]{1,})?:C\\.","c."
       )) |>
-      
+
       dplyr::mutate(variant_alias = paste(
         variant_alias, variant, sep=","
       )) |>
@@ -919,7 +926,7 @@ load_civic_biomarkers <- function(
         variant_alias, sep=","
       ) |>
       dplyr::filter(
-        !stringr::str_detect(variant_alias, "^(NC_)") 
+        !stringr::str_detect(variant_alias, "^(NC_|NG_|CM000)") 
       ) |>
       dplyr::mutate(variant_alias = stringr::str_replace(
         variant_alias, "^N/A$",""
@@ -1062,10 +1069,12 @@ load_civic_biomarkers <- function(
   
   variants_expanded[['mut']] <- variants_expanded[['mut']] |>
     dplyr::mutate(alias_type = "hgvsp") |>
+    dplyr::mutate(variant_alias = stringr::str_trim(variant_alias)) |>
     dplyr::mutate(alias_type = dplyr::case_when(
       stringr::str_detect(variant_alias, "^rs[0-9]{1,}$") ~ "dbsnp",
       stringr::str_detect(variant_alias, "^c\\.[0-9]{1,}") ~ "hgvsc",
-      stringr::str_detect(variant_alias, "MUTATION|COPY|ALTERATION") ~ "other",
+      stringr::str_detect(variant_alias, "^EXON ") ~ "exon",
+      stringr::str_detect(variant_alias, "MUTATION|COPY|WILDTYPE|LOSS|ALTERATION") ~ "other",
       TRUE ~ as.character(alias_type)
     )) |>
     dplyr::left_join(variant_coordinates, 
