@@ -15,6 +15,8 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
               drug_cancer_indication = TRUE,
               drug_action_inhibition = TRUE,
               drug_source_opentargets = TRUE)
+  
+  metadata <- onco_drugs$metadata
     
     
   targeted_onco_inhibitors <- as.data.frame(
@@ -254,7 +256,9 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
       )
 
   }
-  return(all_tt_records)
+  
+  
+  return(list('records' = all_tt_records, 'metadata' = metadata))
 
 }
 

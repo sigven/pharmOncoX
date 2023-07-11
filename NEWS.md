@@ -1,3 +1,8 @@
+# Version 1.4.0 (July 11th 2023)
+
+* Updated metadata
+* Updated CIViC
+
 # Version 1.3.8 (July 5th 2023)
 
 * Cleaned biomarker data (CIViC)

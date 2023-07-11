@@ -6,20 +6,20 @@ metadata <- list()
 for (elem in c('compounds','biomarkers')) {
   metadata[[elem]] <- as.data.frame(openxlsx::read.xlsx(
     "data-raw/metadata_pharm_oncox.xlsx", sheet = elem, colNames = T) |>
-      dplyr::mutate(version = dplyr::if_else(
-        is.na(version) &
-          abbreviation == "civic",
+      dplyr::mutate(source_version = dplyr::if_else(
+        is.na(source_version) &
+          source_abbreviation == "civic",
         as.character(stringr::str_replace_all(Sys.Date(),"-","")),
-        as.character(version)
+        as.character(source_version)
       ))
   )
 }
 
 nci_db_release <- 
-  metadata$compounds[metadata$compounds$abbreviation == "nci", "version"]
+  metadata$compounds[metadata$compounds$source_abbreviation == "nci", "source_version"]
 opentargets_version <- 
-  metadata$compounds[metadata$compounds$abbreviation == "opentargets", 
-                     "version"]
+  metadata$compounds[metadata$compounds$source_abbreviation == "opentargets", 
+                     "source_version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
 chembl_pubchem_datestamp <- '20220906'
 
