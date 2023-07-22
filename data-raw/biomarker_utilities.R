@@ -335,7 +335,18 @@ expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
           alt3 <- paste0(seqinr::aaa(aa[1]),
                          codon, seqinr::aaa(aa[2]))
           alt4 <- paste0('p.', alt3)
-          hits <- c(alt1, alt2, alt3, alt4)
+          
+          if(aa[2] == aa[1]){
+            alt5 <-  paste0("p.", seqinr::aaa(aa[1]),
+                            codon, "=")
+            alt6 <- paste0("p.", aa[1],
+                           codon, "=")
+            hits <- c(alt1, alt2, alt3, alt4, alt5, alt6)
+          }else{
+            hits <- c(alt1, alt2, alt3, alt4)
+            
+          }
+          
         }else{
           if (aa[1] == "X" & aa[2] %in% aa_dict$one_letter) {
             alt3 <- paste0("Ter",

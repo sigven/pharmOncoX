@@ -1,3 +1,7 @@
+# Version 1.4.1 (July 23rd 2023)
+
+* Added missing biomarker aliases for synonymous variants
+
 # Version 1.4.0 (July 11th 2023)
 
 * Updated metadata
