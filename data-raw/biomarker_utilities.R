@@ -656,8 +656,13 @@ load_civic_biomarkers <- function(
         variant == "Q157P/R" ~ "Q157P,Q157R",
         variant == "S310F/Y" ~ "S310F,S310Y",
         variant == "S34Y/F" ~ "S34Y,S34F",
-        variant == "S893A/T" ~  "S893A,S893T",
+        variant == "S893A/T" ~ "S893A,S893T",
         TRUE ~ as.character(variant)
+      )) |>
+      dplyr::mutate(variant_aliases = dplyr::if_else(
+        gene == "BRAF" & variant == "V600",
+        paste(variant_aliases, "V640", sep = ","),
+        as.character(variant_aliases)
       )) |>
       tidyr::separate_rows(variant, sep=",") |>
       dplyr::rename(variant_consequence = variant_types) |>
@@ -1778,7 +1783,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
     dplyr::mutate(variant_alias = dplyr::if_else(
       stringr::str_detect(
         molecular_profile, "^(IL7R inframe insertion \\(237)"),
-      "aa-region:237-255",
+      "aa_region:237-255",
       as.character(variant_alias)
     )) |>
     dplyr::left_join(
@@ -1854,7 +1859,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       gene,
       symbol,
       entrezgene,
-    )
+    ) |>
+    dplyr::distinct()
     
 
   cgi_clinical <- cgi_biomarkers |>
@@ -1982,7 +1988,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
         biomarker_items$clinical,
         variant_id
       ), relationship = "many-to-many"
-    )
+    ) |>
+     dplyr::distinct() 
   )
 
   return(biomarker_items)
