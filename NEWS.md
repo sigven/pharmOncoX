@@ -1,3 +1,7 @@
+# Version 1.4.3 (August 7th 2023)
+
+* NCI Thesaurus 23.07e
+
 # Version 1.4.2 (August 1st 2023)
 
 * Added biomarker aliases
