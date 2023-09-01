@@ -1754,7 +1754,7 @@ map_curated_targets <- function(gene_info = NULL,
     # ) |>
     dplyr::filter(
       stringr::str_detect(
-        nci_concept_definition, "antineoplastic"
+        nci_concept_definition, "antineoplastic|tumor|cancer"
       )
     ) |>
     dplyr::select(nci_cd_name,

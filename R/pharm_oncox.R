@@ -144,7 +144,9 @@ get_drugs <- function(
     lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
 
   valid_output_resolutions <- 
-    c("drug","drug2target","drug2target2indication")
+    c("drug",
+      "drug2target",
+      "drug2target2indication")
   valid_drug_action_types <-
     c("INHIBITOR",
       "AGONIST",
@@ -844,6 +846,138 @@ get_drugs <- function(
   return(oncodrugs)
 
 }
+
+
+
+#' Get curated cancer biomarker datasets 
+#' 
+#' @description
+#' Downloads preprocessed datasets to a local cache directory and returns a
+#' curated set of genomic biomarkers from multiple sources 
+#' (CIViC, CGI, MitelmanDB)
+#' 
+#' The dataset comes as a `list` object, with three elements:
+#'
+#' * `metadata` - a data frame with metadata regarding drug resources used
+#' * `data` - a list with four elements ('civic','cgi','mitelmandb','custom_fusions')
+#' * `fpath` - path to cache file
+#'
+#' @param cache_dir Local directory for data download
+#' @param force_download Logical indicating if local cache should force downloaded
+#' (i.e. set to TRUE to re-download even if data exists in cache)
+#'
+#' @return
+#'
+#' Each entry of the source-specific (e.g. 'civic') entry in the `data` list contains 
+#' a list of three data frames:
+#'
+#' \itemize{
+#'   \item \emph{variant} - list of all biomarker variants, extensively populated
+#'   according to variant aliases (identifer - column \strong{variant_id})
+#'   \item \emph{clinical} - cross-references between variants recorded in
+#'   the `variant` data frame and clinical evidence items (identifier - 
+#'   column \strong{evidence_id}) and underlying literature evidence 
+#'   (identifier - column \strong{source_id}) 
+#'   \item \emph{literature} - lists literature for all source_id's listed in
+#'   the `clinical` data frame 
+#' }
+#'
+#' @export
+#'
+get_biomarkers <- function(cache_dir = NA,
+                           force_download = F) {
+  
+  
+  lgr::lgr$appenders$console$set_layout(
+    lgr::LayoutFormat$new(timestamp_fmt = "%Y-%m-%d %T"))
+  
+  if (is.na(cache_dir)) {
+    lgr::lgr$fatal(paste0("Argument cache_dir = '",
+                          cache_dir, "' is not defined"))
+    stop()
+  }
+  
+  if (!dir.exists(cache_dir)) {
+    lgr::lgr$fatal(paste0("Argument cache_dir = '",
+                          cache_dir, "' does not exist"))
+    stop()
+  }
+  
+  
+  biomarker_datasets <- list()
+  file_maps <- c('biomarkers')
+  
+  for (elem in file_maps) {
+    
+    fname_local <- file.path(
+      cache_dir,
+      paste0(elem,"_v",
+             db_id_ref[db_id_ref$name == elem,]$pVersion,
+             '.rds')
+    )
+    
+    fname_gd <- googledrive::as_id(
+      db_id_ref[db_id_ref$name == elem,]$gid)
+    
+    md5checksum_package <-
+      db_id_ref[db_id_ref$name == elem,]$md5Checksum
+    
+    #dat <- NULL
+    if (file.exists(fname_local) & force_download == F) {
+      biomarker_datasets[[elem]] <- readRDS(fname_local)
+      biomarker_datasets[[elem]][['fpath']] <- fname_local
+      if (!is.null(biomarker_datasets[[elem]][['data']]) & 
+          !is.null(biomarker_datasets[[elem]][['metadata']])) {
+        lgr::lgr$info(paste0(
+          "Reading from cache_dir = '", 
+          cache_dir, "', argument force_download = F"))
+        lgr::lgr$info(paste0("Object '",elem,"' sucessfully loaded"))
+        
+      }
+      
+    }else{
+      
+      googledrive::drive_deauth()
+      
+      lgr::lgr$info("Downloading remote dataset from Google Drive to cache_dir")
+      dl <- googledrive::with_drive_quiet(
+        googledrive::drive_download(
+          fname_gd,
+          path = fname_local,
+          overwrite = TRUE)
+      )
+      
+      md5checksum_remote <- dl$drive_resource[[1]]$md5Checksum
+      md5checksum_local <- tools::md5sum(fname_local)
+      names(md5checksum_local) <- NULL
+      
+      if (md5checksum_remote == md5checksum_local) {
+        biomarker_datasets[[elem]] <- readRDS(fname_local)
+        biomarker_datasets[[elem]]$fpath <- fname_local
+        if (!is.null(biomarker_datasets[[elem]][['data']]) &
+            !is.null(biomarker_datasets[[elem]][['metadata']])) {
+          
+          lgr::lgr$info(paste0(
+            "Reading from cache_dir = ' (", 
+            cache_dir, "'), argument force_download = F"))
+          lgr::lgr$info(paste0("Object '", elem, "' sucessfully loaded"))
+          lgr::lgr$info(paste0("md5 checksum is valid: ", md5checksum_remote))
+          
+        }
+      }else{
+        lgr::lgr$error(paste0("md5 checksum of local file (", md5checksum_local,
+                              ") is inconsistent with remote file (",
+                              md5checksum_remote,")"))
+        stop()
+      }
+      
+    }
+  }
+  
+  return(biomarker_datasets[['biomarkers']])
+  
+}
+
 
 
 #' Tidy eval helpers

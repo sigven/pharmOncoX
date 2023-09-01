@@ -2578,10 +2578,10 @@ load_mitelman_db <- function(cache_dir = NA) {
     dplyr::distinct() |>
     dplyr::rename(citation_id = Pubmed)
 
-  mbca_data <- read.table(
+  mbca_data <- readr::read_tsv(
     file = file.path(
       cache_dir, "mitelmandb", "MBCA.TXT.DATA"),
-    sep = "\t", stringsAsFactors = F, header = T) |>
+    show_col_types = F) |>
     dplyr::filter(stringr::str_detect(GeneShort,"::")) |>
     dplyr::rename(variant = GeneShort) |>
     dplyr::rename(karyotype = KaryShort) |>

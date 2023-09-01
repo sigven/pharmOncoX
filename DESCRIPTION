@@ -1,8 +1,8 @@
 Package: pharmOncoX
 Type: Package
-Title: Annotated targeted and non-targeted anticancer drugs
+Title: Molecularly targeted cancer drugs and biomarkers
 Version: 1.4.3
-Date: 2023-08-07
+Date: 2023-09-01
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -10,11 +10,15 @@ Authors@R:
              email = "sigven@ifi.uio.no",
              comment = c(ORCID = "0000-0001-8468-2050")))
 Maintainer: Sigve Nakken <sigven@ifi.uio.no>
-Description: This data package collects anticancer drug information from multiple resources,
-    including Open Targets Platform/ChEMBL, NCI Thesaurus, and PubChem. The main dataset
-    contains a list of all anticancer drugs per indication/tumor type (where this is provided).
-    which can be queried with a range of parameters, including clinical development phase, approval
-    status, drug targets, mechanism-of-action/drug category etc.
+Description: This data package collects anticancer drug information from 
+    multiple resources, including Open Targets Platform/ChEMBL, NCI Thesaurus, 
+    and PubChem. The main dataset contains a list of all molecularly targeted
+    anticancer drugs per indication/tumor type (where this is provided), 
+    which can be queried with a range of parameters, including 
+    clinical development phase, approval status, drug targets, 
+    mechanism-of-action/drug category etc. The package 
+    also allows for the retrieval of curated biomarkers from multiple 
+    freely available resources (CIViC, CGI, Mitelman database).
 License: MIT + file LICENSE
 URL: https://github.com/sigven/pharmOncoX
 BugReports: https://github.com/sigven/pharmOncoX/issues

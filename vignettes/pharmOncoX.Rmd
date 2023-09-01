@@ -10,7 +10,8 @@ vignette: >
 bibliography: '`r system.file("bibliography.bib", package = "pharmOncoX")`'
 nocite: |
   @Kim2021-ye, @Freshour2021-bh, @Sioutos2007-nl, 
-  @Ochoa2021-jc, @Nakken2023-ab
+  @Ochoa2021-jc, @Nakken2023-ab, @Griffith2017-do,
+  @Tamborero2018-aj
 ---
 
 ```{r, include = FALSE}
@@ -339,6 +340,72 @@ dt_drugtable_platins <- DT::datatable(
 dt_drugtable_platins
 ```
 
+<br><br>
+
+# Retrieval of biomarkers
+
+## Reported associations between BRCA1/2 alterations and drug sensitivity
+
+Get evidence from [CIViC](https://civicdb.org) and [CGI](https://www.cancergenomeinterpreter.org/biomarkers) for cancer drug sensitivity of BRCA1/2 alterations (somatically (tumor) or inherited/germline)
+
+```{r biomarkers, echo = T}
+
+biomarkers <- get_biomarkers(
+  cache_dir = cache_dir)
+
+brca1_biomarkers <- list()
+for(source in c('civic','cgi')){
+  brca1_biomarkers[[source]] <- 
+    biomarkers$data[[source]]$variant |> 
+    dplyr::filter(
+      !is.na(symbol) & (symbol == "BRCA1" | symbol == "BRCA2")) |>
+    dplyr::group_by(variant_id, symbol, variant_consequence) |>
+    dplyr::summarise(
+      variant_alias = paste(variant_alias, collapse=", "), 
+      .groups = "drop") |> 
+    dplyr::inner_join(
+      biomarkers$data[[source]]$clinical, by = "variant_id") |>
+    dplyr::select(
+      variant_id, symbol, variant_consequence, variant_alias,
+      biomarker_source, biomarker_source_datestamp,
+      molecular_profile_name, evidence_id, variant_origin,
+      primary_site, evidence_id, source_id,
+      evidence_url, therapeutic_context,
+      evidence_description, evidence_type, evidence_level,
+      clinical_significance) |> 
+    dplyr::distinct() |> 
+    dplyr::rename(literature_id = source_id) |>
+    dplyr::filter(evidence_type == "Predictive") |>
+    dplyr::select(
+      symbol, primary_site,
+      therapeutic_context,
+      molecular_profile_name, 
+      evidence_level,
+      dplyr::everything()
+    )
+}
+
+brca1_biomarkers_all <- 
+  dplyr::bind_rows(brca1_biomarkers[['civic']],
+                   brca1_biomarkers[['cgi']]) |>
+    dplyr::arrange(evidence_level)
+  
+
+dt_brca1_biomarkers <- DT::datatable(
+  brca1_biomarkers_all,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"), 
+  width = "100%",
+  options = list(
+    buttons = c("csv", "excel"), 
+    dom = "Bfrtip")
+)
+```
+<br>
+
+```{r dt_brca_biomarkers, echo = F, eval = T}
+dt_brca1_biomarkers
+```
 <br><br>
 
 # Session Info
