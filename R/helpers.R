@@ -27,7 +27,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
       dplyr::mutate(
         drug_link =
           paste0("<a href='https://www.targetvalidation.org/summary?drug=",
-                 .data$molecule_chembl_id, "' target=\"_blank\">",
+                 .data$molecule_chembl_id, "' target='_blank'>",
                  .data$drug_name, "</a>")) |>
       dplyr::select(c("target_symbol",
                     "target_genename",
@@ -41,7 +41,8 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
                     "drug_action_type",
                     "nci_concept_definition",
                     "drug_name",
-                    "drug_link")) |>
+                    "drug_link",
+                    "atc_level3")) |>
       dplyr::mutate(drug_max_phase_indication = dplyr::if_else(
         is.na(.data$drug_max_phase_indication) |
           .data$drug_max_phase_indication == "",
@@ -59,6 +60,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
                       .data$drug_action_type,
                       .data$primary_site,
                       .data$drug_link,
+                      .data$atc_level3,
                       .data$nci_concept_definition) |>
       dplyr::summarise(
         drug_clinical_id =
@@ -119,6 +121,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
                     "drug_name",
                     "drug_action_type",
                     "drug_link",
+                    "atc_level3",
                     "max_phase",
                     "max_all_phase",
                     "approved_indication",
@@ -257,8 +260,8 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
 
   }
   
-  
-  return(list('records' = all_tt_records, 'metadata' = metadata))
+  return(list('records' = all_tt_records, 
+              'metadata' = metadata))
 
 }
 

@@ -1,3 +1,9 @@
+# Version 1.4.5 (October 6th 2023)
+
+* Updated NCI Thesaurus - 23.09d
+* Updated CIViC data
+* Added drug class (ATC) to `get_on_off_label_drugs()`
+
 # Version 1.4.4 (September 1st 2023)
 
 * Updated NCI Thesaurus - 23.08d
