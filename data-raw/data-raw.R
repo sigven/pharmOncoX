@@ -74,7 +74,7 @@ drug_sets <- list()
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 drug_sets[['nci']] <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -133,7 +133,8 @@ if(NROW(dup_chembl_ids) > 0){
     dplyr::inner_join(dup_chembl_ids) |> 
     dplyr::select(
       drug_name, molecule_chembl_id, 
-      nci_cd_name, drug_cancer_relevance)
+      nci_cd_name, drug_cancer_relevance) |>
+    dplyr::distinct()
 }
 
 ####--- Cancer drug aliases ----#####

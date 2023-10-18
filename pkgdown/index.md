@@ -10,12 +10,12 @@ Drug-target associations from the Open Targets Platform have furthermore been in
 
 We provide anti-cancer drugs in **pharmOncoX** with drug class labeling from [Anatomical Therapeutic Chemical (ATC) Classification System](https://www.whocc.no/atc_ddd_index/), enabling a filtering of drugs according to their main mechanisms of action.
 
-Currently (as of late April 2023), `pharmOncoX` is built upon the following 
+Currently (as of late October 2023), `pharmOncoX` is built upon the following 
 releases of external databases:
 
- - Open Targets Platform (2023.02)
- - ChEMBL (v31)
- - NCI Thesaurus (23.04d)
+ - Open Targets Platform (2023.09)
+ - ChEMBL (v33)
+ - NCI Thesaurus (23.09d)
 
 ### Getting started
 

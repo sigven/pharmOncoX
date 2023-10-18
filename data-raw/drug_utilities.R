@@ -270,7 +270,7 @@ get_chembl_pubchem_compound_xref <- function(datestamp = '20220906',
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_opentargets_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2023.02"){
+           ot_version = "2023.09"){
 
     cancer_terms <- list()
     cancer_terms[['all']] <- phenOncoX::get_terms(
@@ -359,9 +359,16 @@ get_opentargets_cancer_drugs <-
         as.character(drug_cancer_relevance)
       )
     ) |>
-    dplyr::filter(
-      !is.na(drug_action_type)
+    dplyr::mutate(
+      drug_type = dplyr::if_else(
+        drug_type == "unknown",
+        "Unknown",
+        as.character(drug_type)
+      )
     ) |>
+    # dplyr::filter(
+    #   !is.na(drug_action_type)
+    # ) |>
     # dplyr::filter(
     #   !stringr::str_detect(
     #     tolower(drug_action_type),
