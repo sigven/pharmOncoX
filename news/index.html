@@ -6,7 +6,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-K1KDXWGEWK');
 </script></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -16,7 +15,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">pharmOncoX</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.6</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,6 +53,12 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.6" id="version-146-october-18th-2023">Version 1.4.6 (October 18th 2023)<a class="anchor" aria-label="anchor" href="#version-146-october-18th-2023"></a></h2>
+<ul><li>Fixed metadata</li>
+<li>Fixed out-dated version descriptions (GH site)</li>
+<li>Do not exclude compounds with missing drug action type (platins etc.)</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.5" id="version-145-october-6th-2023">Version 1.4.5 (October 6th 2023)<a class="anchor" aria-label="anchor" href="#version-145-october-6th-2023"></a></h2>
 <ul><li>Updated NCI Thesaurus - 23.09d</li>
 <li>Updated CIViC data</li>
@@ -67,90 +72,6 @@
 <li>Updated Mitelman database (20230803)</li>
 <li>
 <code><a href="../reference/get_biomarkers.html">get_biomarkers()</a></code> now exported as a main function</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.4.3" id="version-143-august-7th-2023">Version 1.4.3 (August 7th 2023)<a class="anchor" aria-label="anchor" href="#version-143-august-7th-2023"></a></h2>
-<ul><li>NCI Thesaurus 23.07e</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.4.2" id="version-142-august-1st-2023">Version 1.4.2 (August 1st 2023)<a class="anchor" aria-label="anchor" href="#version-142-august-1st-2023"></a></h2>
-<ul><li>Added biomarker aliases</li>
-<li>Updated CIViC data</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.4.1" id="version-141-july-23rd-2023">Version 1.4.1 (July 23rd 2023)<a class="anchor" aria-label="anchor" href="#version-141-july-23rd-2023"></a></h2>
-<ul><li>Added missing biomarker aliases for synonymous variants</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.4.0" id="version-140-july-11th-2023">Version 1.4.0 (July 11th 2023)<a class="anchor" aria-label="anchor" href="#version-140-july-11th-2023"></a></h2>
-<ul><li>Updated metadata</li>
-<li>Updated CIViC</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.8" id="version-138-july-5th-2023">Version 1.3.8 (July 5th 2023)<a class="anchor" aria-label="anchor" href="#version-138-july-5th-2023"></a></h2>
-<ul><li>Cleaned biomarker data (CIViC)</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.7" id="version-137-june-28th-2023">Version 1.3.7 (June 28th 2023)<a class="anchor" aria-label="anchor" href="#version-137-june-28th-2023"></a></h2>
-<ul><li>Updated NCI Thesaurus (23.06d release)</li>
-<li>Updated biomarker data (CIViC)</li>
-<li>Updated Open Targets Platform (2023.06)</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.6" id="version-136-june-1st-2023">Version 1.3.6 (June 1st 2023)<a class="anchor" aria-label="anchor" href="#version-136-june-1st-2023"></a></h2>
-<ul><li>Updated NCI Thesaurus (23.05d release)</li>
-<li>Cleaned biomarker alteration types</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.5" id="version-135-may-24th-2023">Version 1.3.5 (May 24th 2023)<a class="anchor" aria-label="anchor" href="#version-135-may-24th-2023"></a></h2>
-<ul><li>Removed general words from drug alias list</li>
-<li>Fixed bug in biomarker alias parsing</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.3" id="version-133-may-15th-2023">Version 1.3.3 (May 15th 2023)<a class="anchor" aria-label="anchor" href="#version-133-may-15th-2023"></a></h2>
-<ul><li>Added additional drug entries (primary indication non-cancer)</li>
-<li>Fixed a bug in parsing of drugs from Open Targets Platform</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.0" id="version-130-may-10th-2023">Version 1.3.0 (May 10th 2023)<a class="anchor" aria-label="anchor" href="#version-130-may-10th-2023"></a></h2>
-<ul><li>Updated NCI Thesaurus (23.04d release)</li>
-<li>Drugs are now provided with <a href="https://www.whocc.no/atc_ddd_index/" class="external-link">ATC</a> classification labels</li>
-<li>Major changes/revision to input arguments in <code><a href="../reference/get_drugs.html">get_drugs()</a></code>
-<ul><li>all arguments for filtering towards specific inhibitors etc are now removed (e.g. <code>is_alkylating_agent</code>,<code>is_angiogenesis_inhibitor</code> etc.), such filtering can be performed by the user, e.g. by considering the drug class labels from ATC or the drug targets</li>
-<li>Other naming changes to arguments for <code><a href="../reference/get_drugs.html">get_drugs()</a></code>
-<ul><li>
-<code>drug_is_targeted</code> -&gt; <code>drug_targeted_agent</code>
-</li>
-<li>
-<code>inhibitor_only</code> -&gt; <code>drug_action_inhibition</code>
-</li>
-<li>
-<code>drug_approved_later_than</code> -&gt; <code>drug_approval_year</code>
-</li>
-<li>
-<code>source_opentargets_only</code> -&gt; <code>drug_source_opentargets</code>
-</li>
-</ul></li>
-<li>The <code>drug_targeted_agent</code> option has been improved basd on ATC labeling</li>
-<li>New arguments for <code><a href="../reference/get_drugs.html">get_drugs()</a></code>:
-<ul><li>
-<code>drug_cancer_indication</code> - logical indicating if resulting drug records should be for those indicated for cancer conditions only (i.e. from approved conditions, listed in clinical trials etc.) - defaults to TRUE</li>
-<li>
-<code>drug_classified_cancer</code> - logical indicating if resulting drug records should be for those classified only in the “L” class of ATC ( “ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS”) - defaults to TRUE</li>
-</ul></li>
-</ul></li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.2.0" id="version-120-april-26th-2023">Version 1.2.0 (April 26th 2023)<a class="anchor" aria-label="anchor" href="#version-120-april-26th-2023"></a></h2>
-<ul><li>Using <a href="https://github.com/sigven/phenOncoX" class="external-link">sigven/phenOncoX</a> v0.5.8 for cancer phenotype matching</li>
-<li>Updated NCI Thesaurus (23.03d release)</li>
-<li>New helper function to retrieve drug biomarkers (<code>pharmOncoX:::get_biomarkers</code>)</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.1.9" id="version-119-march-1st-2023">Version 1.1.9 (March 1st 2023)<a class="anchor" aria-label="anchor" href="#version-119-march-1st-2023"></a></h2>
-<ul><li>Updated NCI Thesaurus (23.02d release)</li>
-<li>Updated biomarker data (CIViC)</li>
-<li>Updated Open Targets Platform (2023.02)</li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
