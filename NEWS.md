@@ -1,3 +1,7 @@
+# Version 1.4.7 (November 3rd 2023)
+
+* Fixed corrupt biomarker literature data frame
+
 # Version 1.4.6 (October 18th 2023)
 
 * Fixed metadata
