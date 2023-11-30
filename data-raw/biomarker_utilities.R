@@ -505,7 +505,7 @@ load_civic_biomarkers <- function(
   for(assembly in c('grch37','grch38')){
     skip_lines <- 8
     if(assembly == "grch38"){
-      skip_lines <- 4
+      skip_lines <- 7
     }
     
     variant_coordinates <- as.data.frame(

@@ -1,3 +1,8 @@
+# Version 1.4.8 (November 30th 2023)
+
+* Updated OTP (v2023.12)
+* Updated Mitelman database (20231016)
+
 # Version 1.4.7 (November 3rd 2023)
 
 * Fixed corrupt biomarker literature data frame
