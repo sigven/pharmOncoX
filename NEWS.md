@@ -1,3 +1,8 @@
+# Version 1.4.8 (December 12th 2023)
+
+* Updated NCI Thesaurus - 23.11d
+* Updated CIViC data (20231212)
+
 # Version 1.4.8 (November 30th 2023)
 
 * Updated OTP (v2023.12)
