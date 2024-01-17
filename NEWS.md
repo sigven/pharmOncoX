@@ -1,3 +1,9 @@
+# Version 1.4.10 (January 17th 2024)
+
+* Updated NCI Thesaurus (23.12d)
+* Updated CIViC data (20240114)
+* Revised manual drug classification (building upon ATC)
+
 # Version 1.4.8 (December 12th 2023)
 
 * Updated NCI Thesaurus - 23.11d

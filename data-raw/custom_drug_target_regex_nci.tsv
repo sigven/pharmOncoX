@@ -1,5 +1,10 @@
 pattern	symbol
 Acasunlimab	CD274
+ABD-3001	ALDH1
+ABD-3001	ALDH3
+OATD-02	ARG1
+OATD-02	ARG2
+Glecirasib	KRAS
 Acasunlimab	TNFRSF9
 Anbenitamab	ERBB2
 Anetumab	MSLN
@@ -22,8 +27,6 @@ Izalontamab	ERBB3
 DGK-alpha Inhibitor	DGKH
 DGKalpha Inhibitor	DGKH
 DNA Polymerase Theta Inhibitor	POLQ
-ALDH1/3 Inhibitor ABD-3001	ALDH1
-ALDH1/3 Inhibitor ABD-3001	ALDH3
 Anti-Claudin-18.2|Anti-CLDN18.2 Monoclonal	CLDN18
 Anti-Siglec-15	SIGLEC15
 JAK Inhibitor INCB047986	JAK1

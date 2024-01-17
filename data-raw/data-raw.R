@@ -104,7 +104,7 @@ drug_sets[['nci_otp_curated']] <- map_curated_targets(
 )
 
 ####-- Cancer drugs classified into categories (ATC) ---####
-drug_sets[['nci_otp_curated_classified']] <- assign_drug_category(
+drug_sets[['nci_otp_curated_classified']] <- assign_drug_category2(
   drug_df = drug_sets[['nci_otp_curated']],
   path_data_raw = path_data_raw
 )

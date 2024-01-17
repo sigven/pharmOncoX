@@ -120,6 +120,7 @@ drugs$records <- drugs$records |>
       atc_level3 == "PD-1/PDL-1 inhibitors") |
      (!is.na(target_symbol) &
       target_symbol == "CTLA4" |
+      target_symbol == "LAG3" |
       target_symbol == "TIGIT"))
   ) |>
   dplyr::select(
@@ -174,6 +175,7 @@ drugs$records <- drugs$records |>
       atc_level3 == "PD-1/PDL-1 inhibitors") |
      (!is.na(target_symbol) &
       target_symbol == "CTLA4" |
+      target_symbol == "LAG3" |
       target_symbol == "TIGIT"))
   ) |>
   dplyr::select(
