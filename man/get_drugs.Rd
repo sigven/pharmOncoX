@@ -8,8 +8,8 @@ get_drugs(
   cache_dir = NA,
   force_download = FALSE,
   exclude_salt_forms = TRUE,
-  exclude_adc = TRUE,
-  drug_targeted_agent = FALSE,
+  exclude_adc = FALSE,
+  treatment_category = c("targeted_therapy", "chemo_therapy", "hormone_therapy"),
   drug_is_approved = FALSE,
   drug_target = NULL,
   drug_action_type = NULL,
@@ -34,9 +34,7 @@ data exists in cache}
 
 \item{exclude_adc}{exclude antibody-drug conjugates (ADCs)}
 
-\item{drug_targeted_agent}{logical indicating if resulting drug records
-should only contain drugs that are considered targeted agents
-(i.e. not chemotherapeutic drugs/immunosuppressants)}
+\item{treatment_category}{treatment category ('targeted_therapy','chemo_therapy','hormone_therapy')}
 
 \item{drug_is_approved}{logical indicating if resulting drug records
 should contain approved drugs only}
@@ -144,6 +142,7 @@ https://github.com/sigven/oncoPhenoMap)
 \item \emph{atc_level2} - drug label ATC (level 2)
 \item \emph{atc_code_level3} - drug identifier ATC (level 3)
 \item \emph{atc_level3} - drug label ATC (level 3)
+\item \emph{atc_treatment_category} - treatment category (targeted/chemo/hormone, cancer/other etc)
 }
 }
 \description{

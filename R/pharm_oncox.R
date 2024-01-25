@@ -14,9 +14,7 @@
 #' data exists in cache
 #' @param exclude_salt_forms exclude salt forms of drugs
 #' @param exclude_adc exclude antibody-drug conjugates (ADCs)
-#' @param drug_targeted_agent logical indicating if resulting drug records 
-#' should only contain drugs that are considered targeted agents 
-#' (i.e. not chemotherapeutic drugs/immunosuppressants)
+#' @param treatment_category treatment category ('targeted_therapy','chemo_therapy','hormone_therapy')
 #' @param drug_is_approved logical indicating if resulting drug records 
 #' should contain approved drugs only
 #' @param drug_target character vector with drug targets (gene symbols) 
@@ -113,6 +111,7 @@
 #'   \item \emph{atc_level2} - drug label ATC (level 2)
 #'   \item \emph{atc_code_level3} - drug identifier ATC (level 3)
 #'   \item \emph{atc_level3} - drug label ATC (level 3)
+#'   \item \emph{atc_treatment_category} - treatment category (targeted/chemo/hormone, cancer/other etc)
 #' }
 #'
 #'
@@ -124,8 +123,9 @@ get_drugs <- function(
     cache_dir = NA,
     force_download = FALSE,
     exclude_salt_forms = TRUE,
-    exclude_adc = TRUE,
-    drug_targeted_agent = FALSE,
+    exclude_adc = FALSE,
+    treatment_category = 
+      c("targeted_therapy","chemo_therapy","hormone_therapy"),
     drug_is_approved = FALSE,
     drug_target = NULL,
     drug_action_type = NULL,
@@ -147,6 +147,15 @@ get_drugs <- function(
     c("drug",
       "drug2target",
       "drug2target2indication")
+  
+  valid_treatment_categories <- 
+    c("hormone_therapy",
+      "targeted_therapy",
+      "chemo_therapy")
+  
+  is_valid_treatment_category <- 
+    unique(treatment_category %in% valid_treatment_categories)
+  
   valid_drug_action_types <-
     c("INHIBITOR",
       "AGONIST",
@@ -201,8 +210,8 @@ get_drugs <- function(
        msg = "ERROR: Argument 'drug_approval_year' must be of type 'numeric'")
   arg_validation_messages[[2]] <-
     assertthat::validate_that(
-      drug_approval_year >= 1939 & drug_approval_year <= 2023,
-      msg = "ERROR: Argument 'drug_approval_year' must be larger than 1939 and less than or equal to 2023")
+      drug_approval_year >= 1939 & drug_approval_year <= 2024,
+      msg = "ERROR: Argument 'drug_approval_year' must be larger than 1939 and less than or equal to 2024")
   arg_validation_messages[[3]] <-
     assertthat::validate_that(
       is.logical(drug_is_approved),
@@ -221,18 +230,25 @@ get_drugs <- function(
       msg = "ERROR: Argument 'drug_cancer_indication' must be of type 'logical'")
   arg_validation_messages[[7]] <-
     assertthat::validate_that(
-      is.logical(drug_targeted_agent),
-      msg = "ERROR: Argument 'drug_targeted_agent' must be of type 'logical'")
+      is.character(treatment_category),
+      msg = "ERROR: Argument 'treatment_category' must be of type 'character'")
   arg_validation_messages[[8]] <-
+    assertthat::validate_that(
+      length(is_valid_treatment_category) == 1 &
+        is_valid_treatment_category == T,
+      msg = paste0("ERROR: Argument 'treatment_category' must contain any ",
+      "combination of 'chemo_therapy','hormone_therapy', or 'targeted_therapy'"))
+
+  arg_validation_messages[[9]] <-
     assertthat::validate_that(
       is.logical(drug_has_blackbox_warning),
       msg = "ERROR: Argument 'drug_has_blackbox_warning' must be of type 'logical'")
-  arg_validation_messages[[9]] <-
+  arg_validation_messages[[10]] <-
     assertthat::validate_that(
       output_resolution %in% valid_output_resolutions,
       msg = "ERROR: Argument 'output_resolution' must be either 'drug','drug2target', or 'drug2target2indication'")
 
-  arg_counter <- 10
+  arg_counter <- 11
   if (!is.null(drug_action_type)) {
     arg_counter <- arg_counter + 1
     arg_validation_messages[[arg_counter]] <-
@@ -280,11 +296,6 @@ get_drugs <- function(
   }
 
   if (!is.null(drug_target)) {
-    arg_validation_messages[[arg_counter]] <-
-      assertthat::validate_that(
-        drug_targeted_agent == TRUE,
-        msg = "ERROR: Argument 'drug_targeted_agent' must be set to TRUE when 'drug_target' is non-NULL")
-    arg_counter <- arg_counter + 1
 
     arg_validation_messages[[arg_counter]] <-
       assertthat::validate_that(
@@ -325,33 +336,47 @@ get_drugs <- function(
   }
 
 
-  if (drug_targeted_agent == TRUE) {
-    drug_records <- drug_records |>
-      dplyr::filter(!is.na(.data$target_symbol)) |>
-      
-      ## exclude chemotherapeutic agents/immunosuppressants
-      dplyr::filter(
-        (is.na(.data$atc_level2) | 
-           (!is.na(.data$atc_level2) & !stringr::str_detect(
-             .data$atc_level2, "PLANT ALKALOIDS"
-           ))) &
-          (is.na(.data$atc_level3) |
-             (!is.na(.data$atc_level3) &
-                .data$atc_level3 != "Taxanes" &
-                .data$atc_level3 != "Other immunosuppressants" &
-                .data$atc_level3 != "Other cytotoxic antibiotics" &
-                .data$atc_level3 != "Anthracyclines and related substances" &
-                .data$atc_level3 != "Colony stimulating factors" &
-                !stringr::str_detect(
-                  tolower(.data$atc_level3), "analogues") &
-                .data$atc_level3 != "Interferons" &
-                .data$atc_level3 != "Interleukins" &
-                .data$atc_level3 != "Podophyllotoxin derivatives" &
-                .data$atc_level3 != "Nitrosoureas")) &
-          !stringr::str_detect(
-            .data$target_symbol,"TUBB|TUBA")
-      )
+  ## targeted + chemo + hormone
+  treatment_category_regex <- "(_targeted|hormone|chemo)_therapy$"
+  
+  if("hormone_therapy" %in% treatment_category & 
+     !("chemo_therapy" %in% treatment_category) & 
+      !("targeted_therapy" %in% treatment_category)){
+    treatment_category_regex <- "_hormone_therapy$"
   }
+  if("hormone_therapy" %in% treatment_category & 
+     "chemo_therapy" %in% treatment_category & 
+     !("targeted_therapy" %in% treatment_category)){
+    treatment_category_regex <- "_(hormone|chemo)_therapy$"
+  }
+  if("targeted_therapy" %in% treatment_category & 
+     !("chemo_therapy" %in% treatment_category) & 
+     !("hormone_therapy" %in% treatment_category)){
+    treatment_category_regex <- "_targeted_therapy$"
+  }
+  if("chemo_therapy" %in% treatment_category & 
+     !("targeted_therapy" %in% treatment_category) & 
+     !("hormone_therapy" %in% treatment_category)){
+    treatment_category_regex <- "_chemo_therapy$"
+  }
+  if("targeted_therapy" %in% treatment_category & 
+     "chemo_therapy" %in% treatment_category & 
+     !("hormone_therapy" %in% treatment_category)){
+    treatment_category_regex <- "_(targeted|chemo)_therapy$"
+  }
+  if("targeted_therapy" %in% treatment_category & 
+     "hormone_therapy" %in% treatment_category & 
+     !("chemo_therapy" %in% treatment_category)){
+    treatment_category_regex <- "_(targeted|hormone)_therapy$"
+  }
+  
+  drug_records <- drug_records |>
+    dplyr::filter(
+      !is.na(.data$atc_treatment_category) &
+      stringr::str_detect(
+        .data$atc_treatment_category, 
+        treatment_category_regex))
+
   if (drug_source_opentargets == TRUE) {
     if (nrow(drug_records) > 0) {
       drug_records <- drug_records |>
@@ -363,7 +388,7 @@ get_drugs <- function(
     if (nrow(drug_records) > 0) {
       drug_records <- drug_records |>
         dplyr::filter(stringr::str_detect(
-          drug_cancer_relevance, "by_cancer_condition_otp"
+          .data$drug_cancer_relevance, "by_cancer_"
         ))
     }
   }
@@ -372,10 +397,11 @@ get_drugs <- function(
     if (nrow(drug_records) > 0) {
       drug_records <- drug_records |>
         dplyr::filter(
-          !is.na(atc_code_level1) &
-          stringr::str_detect(
-          atc_code_level1, "^L"
-        ))
+          !is.na(.data$atc_treatment_category) &
+            stringr::str_detect(
+              .data$atc_treatment_category, "cancer_"
+            )
+        )
     }
   }
   
@@ -396,9 +422,10 @@ get_drugs <- function(
         lgr::lgr$info(
           paste0("WARNING: For the conditions listed below, NO drugs were found with a blackbox warning\n"))
         lgr::lgr$info(
-          paste0("Condition 1: Molecularly targeted drugs only: ", drug_targeted_agent, "\n"))
+          paste0("Condition 1: Drug treatment category: ", 
+                 paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(
-          paste0("Condition 2: Open Targets Platform only: ", source_opentargets_only, "\n"))
+          paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info('\n')
       }
     }
@@ -414,9 +441,10 @@ get_drugs <- function(
         paste0("WARNING: For the conditions listed below, NO drugs were found with an approval date greater than or equal to: ",
                  drug_approval_year),"\n")
       lgr::lgr$info(
-        paste0("Condition 1: Molecularly targeted drugs only: ", drug_targeted_agent, "\n"))
+        paste0("Condition 1: Drug treatment category: ", 
+               paste(treatment_category, collapse=", "), "\n"))
       lgr::lgr$info(
-        paste0("Condition 2: Open Targets Platform only: ", source_opentargets_only, "\n"))
+        paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
       lgr::lgr$info(
         paste0("Condition 3: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
 
@@ -439,8 +467,8 @@ get_drugs <- function(
           "with a clinical phase greater or equal than: ",
           drug_minimum_phase_any_indication),"\n")
         lgr::lgr$info(
-          paste0("Condition 1: Molecularly targeted drugs only: ", 
-                 drug_targeted_agent, "\n"))
+          paste0("Condition 1: Drug treatment category: ", 
+                 paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(
           paste0("Condition 2: Open Targets Platform only: ", 
                  drug_source_opentargets, "\n"))
@@ -466,8 +494,8 @@ get_drugs <- function(
       lgr::lgr$info(
         paste0("WARNING: For the conditions listed below, NO approved drugs were found\n"))
       lgr::lgr$info(
-        paste0("Condition 1: Molecularly targeted drugs only: ", 
-               drug_targeted_agent, "\n"))
+        paste0("Condition 1: Drug treatment category: ", 
+               paste(treatment_category, collapse=", "), "\n"))
       lgr::lgr$info(
         paste0("Condition 2: Open Targets Platform only: ", 
                drug_source_opentargets, "\n"))
@@ -496,13 +524,14 @@ get_drugs <- function(
     }
     if (nrow(drug_records) > 0) {
       drug_records <- drug_records |>
+        dplyr::filter(!is.na(.data$target_symbol)) |>
         dplyr::inner_join(
           all_drug_targets, by = "target_symbol")
 
       if (nrow(drug_records) == 0) {
         lgr::lgr$info(paste0("WARNING: For the conditions listed below, NO molecularly targeted drugs were found for the target proteins provided in the 'drug_target' argument: ",
                     paste(all_drug_targets$target_symbol, collapse = ", "),"\n"))
-        lgr::lgr$info(paste0("Condition 1: Molecularly targeted drugs only: ", drug_targeted_agent, "\n"))
+        lgr::lgr$info(paste0("Condition 1: Drug treatment category: ", paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info(paste0("Condition 3: Drugs with approved indications only: ", drug_is_approved, "\n"))
         lgr::lgr$info(paste0("Condition 4: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
@@ -542,7 +571,7 @@ get_drugs <- function(
       if (nrow(drug_records_action_type) == 0) {
         lgr::lgr$info(paste0("WARNING: For the conditions listed below, no drug records were found for the action types provided in the argument 'drug_action_type': "
                    , paste(drug_action_type, collapse = ", ")),"\n")
-        lgr::lgr$info(paste0("Condition 1: Molecularly targeted drugs only: ", drug_targeted_agent, "\n"))
+        lgr::lgr$info(paste0("Condition 1: Drug treatment category: ", paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info(paste0("Condition 3: Drugs with approved indications only: ", drug_is_approved, "\n"))
         lgr::lgr$info(paste0("Condition 4: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
@@ -583,7 +612,7 @@ get_drugs <- function(
       if (nrow(drug_records_indication) == 0) {
         lgr::lgr$info(paste0("WARNING: For the conditions listed below, no drug records were found for the indications (main tumor types) provided in the argument 'drug_indication_main': "
                    , paste(drug_indication_main, collapse = ", ")),"\n")
-        lgr::lgr$info(paste0("Condition 1: Molecularly targeted drugs only: ", drug_targeted_agent, "\n"))
+        lgr::lgr$info(paste0("Condition 1: Drug treatment category: ", paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info(paste0("Condition 3: Drugs with approved indications only: ", drug_is_approved, "\n"))
         lgr::lgr$info(paste0("Condition 4: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
@@ -637,6 +666,7 @@ get_drugs <- function(
               .data$atc_level2,
               .data$atc_code_level3,
               .data$atc_level3,
+              .data$atc_treatment_category,
               .data$disease_efo_label,
               .data$primary_site,
               .data$drug_clinical_id,
@@ -652,29 +682,35 @@ get_drugs <- function(
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
             atc_code_level1 = paste(
-              unique(sort(atc_code_level1)),
+              unique(sort(.data$atc_code_level1)),
               collapse = "|"
             ),
             atc_level1 = paste(
-              unique(sort(atc_level1)),
+              unique(sort(.data$atc_level1)),
               collapse = "|"
             ),
             atc_code_level2 = paste(
-              unique(sort(atc_code_level2)),
+              unique(sort(.data$atc_code_level2)),
               collapse = "|"
             ),
             atc_level2 = paste(
-              unique(sort(atc_level2)),
+              unique(sort(.data$atc_level2)),
               collapse = "|"
             ),
             atc_code_level3 = paste(
-              unique(sort(atc_code_level3)),
+              unique(sort(.data$atc_code_level3)),
               collapse = "|"
             ),
             atc_level3 = paste(
-              unique(sort(atc_level3)),
+              unique(sort(.data$atc_level3)),
               collapse = "|"
-            ), .groups = "drop")
+            ), 
+            atc_treatment_category = paste(
+              unique(sort(.data$atc_treatment_category)),
+              collapse = "|"
+            ), 
+            .groups = "drop") |>
+          dplyr::distinct()
       )
 
 
@@ -706,6 +742,7 @@ get_drugs <- function(
                  .data$atc_level2,
                  .data$atc_code_level3,
                  .data$atc_level3,
+                 .data$atc_treatment_category,
                  .data$primary_site,
                  .data$drug_clinical_id,
                  .data$drug_max_phase_indication))) |>
@@ -742,7 +779,13 @@ get_drugs <- function(
             atc_level3 = paste(
               unique(sort(.data$atc_level3)),
               collapse = "|"
-            ), .groups = "drop")
+            ), 
+            atc_treatment_category = paste(
+              unique(sort(.data$atc_treatment_category)),
+              collapse = "|"
+            ), 
+            .groups = "drop") |>
+          dplyr::distinct()
       )
     }
     lgr::lgr$info(
@@ -766,6 +809,7 @@ get_drugs <- function(
                  .data$atc_level2,
                  .data$atc_code_level3,
                  .data$atc_level3,
+                 .data$atc_treatment_category,
                  .data$drug_clinical_source))) |>
           dplyr::summarise(
             drug_clinical_id = paste(
@@ -796,8 +840,12 @@ get_drugs <- function(
               unique(sort(.data$atc_level3)),
               collapse = "|"
             ),
-            .groups = "drop"
-          )
+            atc_treatment_category = paste(
+              unique(sort(.data$atc_treatment_category)),
+              collapse = "|"
+            ), 
+            .groups = "drop") |>
+          dplyr::distinct()
       )
 
     }

@@ -13,7 +13,7 @@ get_biomarkers(cache_dir = NA, force_download = F)
 (i.e. set to TRUE to re-download even if data exists in cache)}
 }
 \value{
-Each entry of the source-spefic (CGI, CIViC etc.) entry in the \code{data} list contains
+Each entry of the source-specific (e.g. 'civic') entry in the \code{data} list contains
 a list of three data frames:
 
 \itemize{

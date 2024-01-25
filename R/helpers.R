@@ -5,11 +5,11 @@
 #'
 #'
 
-get_on_off_label_drugs <- function(cache_dir = NA) {
+get_targeted_drugs <- function(cache_dir = NA) {
 
 
   onco_drugs <- 
-    get_drugs(drug_targeted_agent = T,
+    get_drugs(treatment_category = c("targeted_therapy"),
               cache_dir = cache_dir,
               drug_classified_cancer = TRUE,
               drug_cancer_indication = TRUE,
@@ -42,7 +42,8 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
                     "nci_concept_definition",
                     "drug_name",
                     "drug_link",
-                    "atc_level3")) |>
+                    "atc_level3",
+                    "atc_treatment_category")) |>
       dplyr::mutate(drug_max_phase_indication = dplyr::if_else(
         is.na(.data$drug_max_phase_indication) |
           .data$drug_max_phase_indication == "",
@@ -61,6 +62,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
                       .data$primary_site,
                       .data$drug_link,
                       .data$atc_level3,
+                      .data$atc_treatment_category,
                       .data$nci_concept_definition) |>
       dplyr::summarise(
         drug_clinical_id =
@@ -122,6 +124,7 @@ get_on_off_label_drugs <- function(cache_dir = NA) {
                     "drug_action_type",
                     "drug_link",
                     "atc_level3",
+                    "atc_treatment_category",
                     "max_phase",
                     "max_all_phase",
                     "approved_indication",

@@ -2,7 +2,7 @@ Package: pharmOncoX
 Type: Package
 Title: Molecularly targeted cancer drugs and biomarkers
 Version: 1.4.10
-Date: 2024-01-17
+Date: 2024-01-25
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -38,7 +38,7 @@ Suggests:
     knitr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.0
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Config/testthat/edition: 3

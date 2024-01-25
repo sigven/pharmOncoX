@@ -74,7 +74,7 @@ drug_sets <- list()
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 drug_sets[['nci']] <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -104,7 +104,7 @@ drug_sets[['nci_otp_curated']] <- map_curated_targets(
 )
 
 ####-- Cancer drugs classified into categories (ATC) ---####
-drug_sets[['nci_otp_curated_classified']] <- assign_drug_category2(
+drug_sets[['nci_otp_curated_classified']] <- assign_drug_category(
   drug_df = drug_sets[['nci_otp_curated']],
   path_data_raw = path_data_raw
 )

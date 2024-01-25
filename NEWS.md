@@ -1,3 +1,10 @@
+# Version 1.5.0 (January 25th 2024)
+
+* Considerable improvement of drug classifications (output column `atc_level3`),
+considering both targeted agents and chemotherapy
+* argument `drug_targeted_agent` renamed to `treatment_category`
+* helper function `get_on_off_label_drugs` renamed to `get_targeted_drugs`
+
 # Version 1.4.10 (January 17th 2024)
 
 * Updated NCI Thesaurus (23.12d)
