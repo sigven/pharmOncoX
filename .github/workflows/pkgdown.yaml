@@ -10,7 +10,7 @@ on:
 name: pkgdown
 
 env:
-  VERSION: '1.5.0'
+  VERSION: '1.4.10'
 jobs:
   pkgdown:
     if: "startsWith(github.event.head_commit.message, 'Bump version:')"
@@ -18,7 +18,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-pandoc@v2
 
