@@ -1,6 +1,7 @@
-# Version 1.5.1 (January 28th 2024)
+# Version 1.5.2 (January 28th 2024)
 
 * Refine possible values in `treatment_category` argument to `get_drugs()` function
+* Fix anti-androgen classification
 
 # Version 1.5.0 (January 25th 2024)
 

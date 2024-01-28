@@ -620,11 +620,12 @@ get_atc_drug_classification <- function(
       atc_code_level3 == "L01CD" ~ "Taxanes",
       atc_code_level3 == "L04AX" ~ "Other immunosuppressants",
       atc_code_level3 == "L04AB" ~ "TNF-alpha inhibitors",
-      atc_code_level3 == "L02BX" ~ "Other hormone antagonists and related agents",
-      atc_code_level3 == "L02AE" ~ "GnRH analogs, endocrine therapy drugs",
+      atc_code_level3 == "L02BX" ~ "Other hormone antagonists",
+      atc_code_level3 == "L02AE" ~ "GnRH analogs",
       atc_code_level3 == "L01XK" ~ "PARP inhibitors",
       atc_code_level3 == "L01XX" ~ "Other antineoplastic agents",
       atc_code_level3 == "L02AX" ~ "Other hormones for endocrine therapy",
+      atc_code_level3 == "L02BB" ~ "Anti-androgens",
       atc_code_level3 == "L01XH" ~ "HDAC inhibitors",
       atc_code_level3 == "L01XG" ~ "Proteasome inhibitors",
       atc_code_level3 == "L01XA" ~ "Platinum compounds",
@@ -2335,6 +2336,13 @@ assign_drug_category <- function(drug_df = NULL,
       target_symbol == "EGFR" &
         !is.na(drug_name) &
           stringr::str_detect(drug_name, "MAB") ~ "L01FE",
+      target_symbol == "ERBB2" &
+        !is.na(drug_name) &
+        stringr::str_detect(drug_name, "MAB") ~ "L01FD",
+      target_symbol == "ERBB2" &
+        (is.na(drug_name) |
+           (!is.na(drug_name) &
+              !stringr::str_detect(drug_name, "MAB"))) ~ "L01EH",
       !is.na(drug_name) &
         drug_name == "SIROLIMUS" ~ "L01EG",
       target_symbol == "EGFR" &
@@ -2425,7 +2433,7 @@ assign_drug_category <- function(drug_df = NULL,
       stringr::str_detect(target_symbol, "^AR$") & 
         (!is.na(nci_concept_definition) &
            stringr::str_detect(
-             nci_concept_definition, "androgen receptor")) ~ "L01XXH",
+             nci_concept_definition, "androgen receptor")) ~ "L02BB",
       (target_symbol == "PDCD1" |
          target_symbol == "CD274") ~ "L01FF",
       TRUE ~ as.character(NA)
@@ -2743,6 +2751,16 @@ clean_final_drug_list <- function(drug_df = NULL){
       !stringr::str_detect(
         tolower(nci_concept_definition),
         "a( (synthetic|diagnostic|targeted))?( radio(immuno)conjugate)")
+    ) |>
+    dplyr::filter(
+      is.na(drug_action_type) |
+      !stringr::str_detect(tolower(drug_action_type),"vaccine")
+    ) |>
+    dplyr::filter(
+      is.na(nci_concept_definition) |
+        !stringr::str_detect(
+          tolower(nci_concept_definition),
+          "(^(a|any)|cancer|tumor|dna|autologous|cell-based|synthetic|cell|peptide|valent)( cell)? vaccine")
     ) |>
     dplyr::filter(
       is.na(nci_cd_name) |
