@@ -27,7 +27,7 @@ records - a data frame with drug records
     
     <a class="navbar-brand me-2" href="../index.html">pharmOncoX</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,7 +79,9 @@ selected set of drugs based on various criteria set by the user.</p>
 <span>  force_download <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  exclude_salt_forms <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  exclude_adc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  treatment_category <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"targeted_therapy"</span>, <span class="st">"chemo_therapy"</span>, <span class="st">"hormone_therapy"</span><span class="op">)</span>,</span>
+<span>  treatment_category <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"targeted_therapy_classified"</span>, <span class="st">"targeted_therapy_unclassified"</span>,</span>
+<span>    <span class="st">"chemo_therapy_classified"</span>, <span class="st">"hormone_therapy_classified"</span>,</span>
+<span>    <span class="st">"immuno_suppressants_classified"</span>, <span class="st">"other"</span><span class="op">)</span>,</span>
 <span>  drug_is_approved <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  drug_target <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  drug_action_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -115,7 +117,10 @@ data exists in cache</p></dd>
 
 
 <dt>treatment_category</dt>
-<dd><p>treatment category ('targeted_therapy','chemo_therapy','hormone_therapy')</p></dd>
+<dd><p>main treatment category, classified according to
+ATC or not ('targeted_therapy_classified',
+'targeted_therapy_unclassified','chemo_therapy_classified','hormone_therapy_classified',
+'immuno_suppressants_classified','other')</p></dd>
 
 
 <dt>drug_is_approved</dt>
