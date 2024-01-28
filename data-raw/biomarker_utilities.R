@@ -430,7 +430,7 @@ expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
 }
 
 load_civic_biomarkers <- function(
-    datestamp = '20230518',
+    datestamp = '20240114',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -2059,6 +2059,8 @@ map_biomarker_phenotypes <- function(biomarkers_clinical = NULL,
       is.na(primary_site) & stringr::str_detect(do_name,"prostate") ~ "Prostate",
       is.na(primary_site) & stringr::str_detect(do_name,"pancrea") ~ "Pancreas",
       is.na(primary_site) & stringr::str_detect(do_name,"lung") ~ "Lung",
+      is.na(primary_site) & stringr::str_detect(do_name,"myeloid") ~ "Myeloid",
+      is.na(primary_site) & stringr::str_detect(do_name,"lymphoma") ~ "Lymphoid",
       is.na(primary_site) & stringr::str_detect(do_name,"ovary|ovarian") ~ "Ovary",
       TRUE ~ as.character(primary_site)
     ))

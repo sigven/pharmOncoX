@@ -1,3 +1,7 @@
+# Version 1.5.1 (January 28th 2024)
+
+* Refine possible values in `treatment_category` argument to `get_drugs()` function
+
 # Version 1.5.0 (January 25th 2024)
 
 * Considerable improvement of drug classifications (output column `atc_level3`),

@@ -9,7 +9,9 @@ get_drugs(
   force_download = FALSE,
   exclude_salt_forms = TRUE,
   exclude_adc = FALSE,
-  treatment_category = c("targeted_therapy", "chemo_therapy", "hormone_therapy"),
+  treatment_category = c("targeted_therapy_classified", "targeted_therapy_unclassified",
+    "chemo_therapy_classified", "hormone_therapy_classified",
+    "immuno_suppressants_classified", "other"),
   drug_is_approved = FALSE,
   drug_target = NULL,
   drug_action_type = NULL,
@@ -34,7 +36,10 @@ data exists in cache}
 
 \item{exclude_adc}{exclude antibody-drug conjugates (ADCs)}
 
-\item{treatment_category}{treatment category ('targeted_therapy','chemo_therapy','hormone_therapy')}
+\item{treatment_category}{main treatment category, classified according to
+ATC or not ('targeted_therapy_classified',
+'targeted_therapy_unclassified','chemo_therapy_classified','hormone_therapy_classified',
+'immuno_suppressants_classified','other')}
 
 \item{drug_is_approved}{logical indicating if resulting drug records
 should contain approved drugs only}

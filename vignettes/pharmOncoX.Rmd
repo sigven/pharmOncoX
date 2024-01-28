@@ -45,13 +45,13 @@ cache_dir <- tempdir()
 ## Targeted agents
 
 * Plotted below are key statistics with respect to drug classification
-numbers for targeted and chemotherapy agents found in _pharmOncoX_. Existing classifications have been retrieved from [ATC](https://www.whocc.no/), and these have been extended with manual addition/curation, and also establishing new levels in the ATC tree. Note that only drugs that are indicated for cancer conditions (as harvested from the Open Targets platform) are considered in the numbers plotted below.
+numbers for targeted and chemotherapy agents found in _pharmOncoX_. Existing drug classifications have been retrieved from [ATC](https://www.whocc.no/), and these have been extended with manual addition/curation, and also through the establishment of multiple novel levels in the ATC tree, particularly for targeted therapies. Note that only drugs that are indicated for cancer conditions (as harvested from the Open Targets platform) are considered in the numbers plotted below.
 
 ```{r targeted_agents, echo = F, eval = T, results="hide"}
 
 drugs <- get_drugs(
   cache_dir = cache_dir,
-  treatment_category =  c("targeted_therapy"),
+  treatment_category =  c("targeted_therapy_classified"),
   output_resolution = "drug",
 	drug_action_inhibition = T, drug_source_opentargets = T)
 
@@ -101,7 +101,7 @@ p_targeted_classifications
 
 drugs <- get_drugs(
   cache_dir = cache_dir,
-  treatment_category =  c("chemo_therapy"),
+  treatment_category =  c("chemo_therapy_classified"),
   output_resolution = "drug",
 	drug_source_opentargets = T)
 
@@ -157,7 +157,8 @@ p_chemo_classifications
 
 drugs <- get_drugs(
   cache_dir = cache_dir,
-  treatment_category =  c("targeted_therapy"),
+  treatment_category =  c("targeted_therapy_classified",
+                          "targeted_therapy_unclassified"),
 	drug_target = c('BRAF'))
 
 ## Number of drug records
@@ -177,7 +178,7 @@ colnames(drugs$records)
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  treatment_category =  c("targeted_therapy"),
+  treatment_category =  c("targeted_therapy_classified"),
   drug_action_inhibition = T,
   output_resolution = "drug2target")$records |>
   dplyr::filter(atc_level3 == "RAS inhibitors")
@@ -218,7 +219,7 @@ dt_drugtable_ras_inhibitors
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  treatment_category =  c("targeted_therapy"),
+  treatment_category =  c("targeted_therapy_classified"),
   drug_action_inhibition = T,
   drug_source_opentargets = T, 
   output_resolution = "drug" )$records |>
@@ -260,7 +261,7 @@ dt_drugtable_mek_inhibitors
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  treatment_category =  c("targeted_therapy"),
+  treatment_category =  c("targeted_therapy_classified"),
   drug_source_opentargets = F,
   drug_classified_cancer = T,
    output_resolution = "drug2target")
@@ -314,6 +315,7 @@ dt_drugtable_ici
 drugs <- get_drugs(
   cache_dir = cache_dir, 
   output_resolution = "drug2target", 
+  treatment_category = c("targeted_therapy_classified"),
   drug_source_opentargets = T,
   drug_indication_main = "Lung")
 
@@ -366,7 +368,7 @@ dt_drugtable_ici_lung
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
-  treatment_category = c("chemo_therapy"),
+  treatment_category = c("chemo_therapy_classified"),
   output_resolution = "drug")
 
 drugs$records <- drugs$records |>
@@ -411,6 +413,7 @@ dt_drugtable_metabolites
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
+  treatment_category = "chemo_therapy_classified",
   output_resolution = "drug")
 
 drugs$records <- drugs$records |>
@@ -454,6 +457,7 @@ dt_drugtable_taxanes
 
 drugs <- get_drugs(
   cache_dir = cache_dir, 
+  treatment_category = "chemo_therapy_classified",
   output_resolution = "drug")
 
 drugs$records <- drugs$records |>
@@ -495,7 +499,7 @@ dt_drugtable_platins
 
 ## Reported associations between BRCA1/2 alterations and drug sensitivity
 
-Get evidence from [CIViC](https://civicdb.org) and [CGI](https://www.cancergenomeinterpreter.org/biomarkers) for cancer drug sensitivity of BRCA1/2 alterations (somatically (tumor) or inherited/germline)
+* Get evidence from [CIViC](https://civicdb.org) and [CGI](https://www.cancergenomeinterpreter.org/biomarkers) for cancer drug sensitivity of BRCA1/2 alterations (somatically (tumor) or inherited/germline)
 
 ```{r biomarkers, echo = T}
 

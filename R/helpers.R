@@ -9,7 +9,9 @@ get_targeted_drugs <- function(cache_dir = NA) {
 
 
   onco_drugs <- 
-    get_drugs(treatment_category = c("targeted_therapy"),
+    get_drugs(treatment_category = c("targeted_therapy_classified",
+                                     "targeted_therapy_unclassified",
+                                     "hormone_therapy_classified"),
               cache_dir = cache_dir,
               drug_classified_cancer = TRUE,
               drug_cancer_indication = TRUE,

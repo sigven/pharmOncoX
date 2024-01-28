@@ -14,7 +14,10 @@
 #' data exists in cache
 #' @param exclude_salt_forms exclude salt forms of drugs
 #' @param exclude_adc exclude antibody-drug conjugates (ADCs)
-#' @param treatment_category treatment category ('targeted_therapy','chemo_therapy','hormone_therapy')
+#' @param treatment_category main treatment category, classified according to 
+#' ATC or not ('targeted_therapy_classified',
+#' 'targeted_therapy_unclassified','chemo_therapy_classified','hormone_therapy_classified',
+#' 'immuno_suppressants_classified','other')
 #' @param drug_is_approved logical indicating if resulting drug records 
 #' should contain approved drugs only
 #' @param drug_target character vector with drug targets (gene symbols) 
@@ -125,7 +128,12 @@ get_drugs <- function(
     exclude_salt_forms = TRUE,
     exclude_adc = FALSE,
     treatment_category = 
-      c("targeted_therapy","chemo_therapy","hormone_therapy"),
+      c("targeted_therapy_classified",
+        "targeted_therapy_unclassified",
+        "chemo_therapy_classified",
+        "hormone_therapy_classified",
+        "immuno_suppressants_classified",
+        "other"),
     drug_is_approved = FALSE,
     drug_target = NULL,
     drug_action_type = NULL,
@@ -149,9 +157,12 @@ get_drugs <- function(
       "drug2target2indication")
   
   valid_treatment_categories <- 
-    c("hormone_therapy",
-      "targeted_therapy",
-      "chemo_therapy")
+    c("hormone_therapy_classified",
+      "targeted_therapy_classified",
+      "targeted_therapy_unclassified",
+      "chemo_therapy_classified",
+      "immuno_suppressants_classified",
+      "other")
   
   is_valid_treatment_category <- 
     unique(treatment_category %in% valid_treatment_categories)
@@ -337,38 +348,33 @@ get_drugs <- function(
 
 
   ## targeted + chemo + hormone
-  treatment_category_regex <- "(_targeted|hormone|chemo)_therapy$"
+  treatment_category_regex <- ""
+  atc_treatment_strings <- c()
   
-  if("hormone_therapy" %in% treatment_category & 
-     !("chemo_therapy" %in% treatment_category) & 
-      !("targeted_therapy" %in% treatment_category)){
-    treatment_category_regex <- "_hormone_therapy$"
+  if("hormone_therapy_classified" %in% treatment_category){
+    atc_treatment_strings <- c(atc_treatment_strings, "cancer_hormone_therapy")
   }
-  if("hormone_therapy" %in% treatment_category & 
-     "chemo_therapy" %in% treatment_category & 
-     !("targeted_therapy" %in% treatment_category)){
-    treatment_category_regex <- "_(hormone|chemo)_therapy$"
+  if("chemo_therapy_classified" %in% treatment_category){
+    atc_treatment_strings <- c(atc_treatment_strings, "cancer_chemo_therapy")
   }
-  if("targeted_therapy" %in% treatment_category & 
-     !("chemo_therapy" %in% treatment_category) & 
-     !("hormone_therapy" %in% treatment_category)){
-    treatment_category_regex <- "_targeted_therapy$"
+  if("targeted_therapy_classified" %in% treatment_category){
+    atc_treatment_strings <- c(atc_treatment_strings, "cancer(_adc)?_targeted_therapy")
   }
-  if("chemo_therapy" %in% treatment_category & 
-     !("targeted_therapy" %in% treatment_category) & 
-     !("hormone_therapy" %in% treatment_category)){
-    treatment_category_regex <- "_chemo_therapy$"
+  if("targeted_therapy_unclassified" %in% treatment_category){
+    atc_treatment_strings <- c(atc_treatment_strings, "cancer_unclassified")
   }
-  if("targeted_therapy" %in% treatment_category & 
-     "chemo_therapy" %in% treatment_category & 
-     !("hormone_therapy" %in% treatment_category)){
-    treatment_category_regex <- "_(targeted|chemo)_therapy$"
+  if("immuno_suppressants_classified" %in% treatment_category){
+    atc_treatment_strings <- c(atc_treatment_strings, "cancer_immuno_suppressants")
   }
-  if("targeted_therapy" %in% treatment_category & 
-     "hormone_therapy" %in% treatment_category & 
-     !("chemo_therapy" %in% treatment_category)){
-    treatment_category_regex <- "_(targeted|hormone)_therapy$"
+  if("other" %in% treatment_category){
+    atc_treatment_strings <- c(atc_treatment_strings, "(other_targeted_therapy|unknown)")
   }
+  
+  treatment_category_regex <- paste0(
+    "^(", paste(atc_treatment_strings, collapse="|"), ")$")
+  
+  #cat(paste0('Treatment category regex: ', treatment_category_regex))
+  #cat('\n')
   
   drug_records <- drug_records |>
     dplyr::filter(
