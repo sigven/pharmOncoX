@@ -1460,7 +1460,12 @@ load_civic_biomarkers <- function(
         relationship = "many-to-many"
       ) |>
       dplyr::distinct()
-  )
+  ) |>
+    dplyr::mutate(alias_type = dplyr::if_else(
+      alias_type == "other",
+      "other_gene",
+      as.character(alias_type)
+    ))
 
   return(biomarker_items)
 
@@ -1598,7 +1603,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
     )) |>
     tidyr::separate(gene, c("gene1","gene2"), sep = ";") |>
     dplyr::mutate(gene = dplyr::if_else(
-      !is.na(gene1) & !is.na(gene2) & startsWith(molecular_profile, gene2),
+      !is.na(gene1) & !is.na(gene2) & 
+        startsWith(molecular_profile, gene2),
       as.character(gene2),
       as.character(gene1)
     )) |>
@@ -1868,20 +1874,20 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
     ## get variant id's per molecular profile
     dplyr::inner_join(
       dplyr::select(
-        cgi_variants, entrezgene, variant_id, 
-        variant_consequence, variant_alias,
-        alteration_type),
-      multiple = "all", relationship = "many-to-many"
+        cgi_variants, variant_id, 
+        gene, alias_type, variant_alias),
+      by = c("gene", "variant_alias"),
+      relationship = "many-to-many"
     ) |>
     
     ## add all variant aliases
-    dplyr::select(-variant_alias) |>
-    dplyr::distinct() |>
-    dplyr::left_join(
-      dplyr::select(cgi_variants, entrezgene, variant_id, 
-                    variant_consequence, variant_alias, alias_type,
-                    alteration_type),
-      multiple = "all", relationship = "many-to-many")  |>
+    # dplyr::select(-variant_alias) |>
+    # dplyr::distinct() |>
+    # dplyr::left_join(
+    #   dplyr::select(cgi_variants, entrezgene, variant_id, 
+    #                 variant_consequence, variant_alias, alias_type,
+    #                 alteration_type),
+    #   relationship = "many-to-many")  |>
     dplyr::select(-c(entrezgene, variant_consequence, variant_alias,
                      alias_type, gene, symbol, alteration_type,
                      alteration)) |>
@@ -1987,9 +1993,17 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       dplyr::select(
         biomarker_items$clinical,
         variant_id
-      ), relationship = "many-to-many"
+      ), by = "variant_id", 
+      relationship = "many-to-many"
     ) |>
      dplyr::distinct() 
+  ) |>
+  dplyr::mutate(
+    alias_type = dplyr::case_when(
+      stringr::str_detect(alteration_type,"^EXP") |
+        alias_type == "other" ~ "other_gene",
+      TRUE ~ as.character(alias_type)
+    )
   )
 
   return(biomarker_items)

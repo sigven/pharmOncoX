@@ -1,7 +1,8 @@
-# Version 1.5.2 (January 28th 2024)
+# Version 1.5.3 (January 29th 2024)
 
 * Refine possible values in `treatment_category` argument to `get_drugs()` function
 * Fix anti-androgen classification
+* Fixed bug in alias type notation for copy numbers and expression biomarkers
 
 # Version 1.5.0 (January 25th 2024)
 
