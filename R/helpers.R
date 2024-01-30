@@ -9,9 +9,10 @@ get_targeted_drugs <- function(cache_dir = NA) {
 
 
   onco_drugs <- 
-    pharmOncoX::get_drugs(treatment_category = c("targeted_therapy_classified",
-                                     "targeted_therapy_unclassified",
-                                     "hormone_therapy_classified"),
+    pharmOncoX::get_drugs(
+      treatment_category = c("targeted_therapy_classified",
+                             "targeted_therapy_unclassified",
+                             "hormone_therapy_classified"),
               cache_dir = cache_dir,
               drug_classified_cancer = TRUE,
               drug_cancer_indication = TRUE,
@@ -301,7 +302,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
   all_tt_records <- all_tt_records |>
     dplyr::filter(!(.data$atc_treatment_category == "cancer_unclassified" & 
                     .data$drug_cancer_relevance == "by_cancer_condition_otp" & 
-                    .data$drug_frac_cancer_indications < 0.7 & 
+                    .data$drug_frac_cancer_indications < 0.6 & 
                     .data$approved_indication == F)) |>
     dplyr::filter(!stringr::str_detect(.data$symbol,"^RRM"))
   
