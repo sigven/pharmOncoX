@@ -1,6 +1,6 @@
 &nbsp;
 
-# pharmOncoX <a href="https://sigven.github.io/pharmOncoX/"><img src="man/figures/logo.png" align="right" height="130" width="113"/></a>
+# pharmOncoX <a href="https://sigven.github.io/pharmOncoX/"><img src="man/figures/logo.png" align="right" height="104" width="90"/></a>
 
 **pharmOncoX** provides access to targeted and non-targeted cancer drugs, including comprehensive annotations per target, drug mechanism-of-action, approval dates, clinical trial phases for various indications etc. 
 

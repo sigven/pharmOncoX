@@ -13,6 +13,8 @@ template:
          gtag('js', new Date());
          gtag('config', 'G-K1KDXWGEWK');
        </script>
+  bslib:
+    primary: "#BD3039"
 authors:
   Sigve Nakken:
     href: "https://github.com/sigven"

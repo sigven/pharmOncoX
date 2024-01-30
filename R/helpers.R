@@ -38,6 +38,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
                     "drug_approved_indication",
                     "drug_cancer_relevance",
                     "drug_frac_cancer_indications",
+                    "drug_year_first_approval",
                     "drug_clinical_id",
                     "disease_efo_id",
                     "disease_efo_label",
@@ -71,6 +72,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
                       .data$atc_treatment_category,
                       .data$drug_cancer_relevance,
                       .data$drug_frac_cancer_indications,
+                      .data$drug_year_first_approval,
                       .data$nci_concept_definition) |>
       dplyr::summarise(
         drug_clinical_id =
@@ -138,6 +140,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
                     "max_all_phase",
                     "drug_frac_cancer_indications",
                     "drug_cancer_relevance",
+                    "drug_year_first_approval",
                     "approved_indication",
                     "drug_indication_label")) |>
       dplyr::rename(drug_primary_site = primary_site,
@@ -170,6 +173,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
                       .data$drug_max_phase_indication > 2) |>
       dplyr::distinct() |>
       dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -182,6 +186,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
                       .data$drug_max_phase_indication <= 2) |>
       dplyr::distinct() |>
       dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -202,6 +207,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::distinct() |>
       dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -222,6 +228,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
     
     targeted_drugs_per_site[[t]][['other_any_phase']] <- other_any_phase |>
       dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+                     dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -292,10 +299,11 @@ get_targeted_drugs <- function(cache_dir = NA) {
   }
   
   all_tt_records <- all_tt_records |>
-    dplyr::filter(!(atc_treatment_category == "cancer_unclassified" & 
-                    drug_cancer_relevance == "by_cancer_condition_otp" & 
-                    drug_frac_cancer_indications < 0.7 & 
-                    approved_indication == F))
+    dplyr::filter(!(.data$atc_treatment_category == "cancer_unclassified" & 
+                    .data$drug_cancer_relevance == "by_cancer_condition_otp" & 
+                    .data$drug_frac_cancer_indications < 0.7 & 
+                    .data$approved_indication == F)) |>
+    dplyr::filter(!stringr::str_detect(.data$symbol,"^RRM"))
   
   return(list('records' = all_tt_records, 
               'metadata' = metadata))

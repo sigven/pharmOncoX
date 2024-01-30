@@ -2449,11 +2449,11 @@ assign_drug_category <- function(drug_df = NULL,
              "FORETINIB|FAMITINIB|MOTESANIB|",
              "LESTAURTINIB|OSI-930|PACRITINIB|KW-2449|",
              "CABOZANTINIB|BMS-817378|BMS-794833|",
-             "GOLVATINIB|TAK-593|XL-820|TANDUTINIB|",
+             "GOLVATINIB|TAK-593|XL-820|TANDUTINIB|IMATINIB|",
              "CERDULATINIB|CEP-2563|FEDRATINIB|IBCASERTIB|",
              "VANDETANIB|TESEVATINIB|TARLOXOTINIB|",
              "TAK-285|SKLB1028|PUQUITINIB|KBP5209|REPOTRECTINIB|",
-             "VATALANIB|QUIZARTINIB|BMS-690514|IMATINIB|",
+             "VATALANIB|QUIZARTINIB|BMS-690514|IMATINIB|DASATINIB|",
              "CANERTINIB|CEP-32496|REGORAFENIB|GUSACITINIB|",
              "SU-014813|X-82|XL-999|LINIFANIB|NINGETINIB|",
              "PEXIDARTINIB|RG-1530|SITRAVATINIB|SORAFENIB|SUNITINIB|",
@@ -2508,31 +2508,45 @@ assign_drug_category <- function(drug_df = NULL,
     dplyr::bind_rows(
       dplyr::filter(drugs_non_classified, is.na(target_symbol))) |>
     dplyr::mutate(atc_code_level3 = dplyr::case_when(
-      is.na(atc_code_level3) & 
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
         (!is.na(nci_concept_definition) &
          stringr::str_detect(
            tolower(nci_concept_definition),
            "anthracycline|anthracenedione")) ~ "L01DB",
-      is.na(atc_code_level3) & !stringr::str_detect(drug_entry,"/") &
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        stringr::str_detect(tolower(drug_entry),"hydroxyurea|eniluracil") ~ "L01BA",
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        stringr::str_detect(tolower(drug_entry),"arsenic trioxide") ~ "L01BA",
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        stringr::str_detect(tolower(drug_entry),
+                            "thioguanine|aspacytarabine|aspacytarabine|troxacitabine") ~ "L01BB",
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        !stringr::str_detect(drug_entry,"/| ") &
         stringr::str_detect(drug_entry, "xel$") ~ "L01CD",
-      is.na(atc_code_level3) & !stringr::str_detect(drug_entry,"/") &
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        !stringr::str_detect(drug_entry,"/| ") &
         stringr::str_detect(drug_entry, "platin$") ~ "L01XA",
-      is.na(atc_code_level3) & !is.na(nci_concept_definition) &
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        !is.na(nci_concept_definition) &
         stringr::str_detect(tolower(nci_concept_definition), "anti-estrogen") ~ "L02BA",
-      is.na(atc_code_level3) & !is.na(nci_concept_definition) &
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        !is.na(nci_concept_definition) &
         stringr::str_detect(tolower(nci_concept_definition), "aromatase inhibitor") ~ "L02BG",
-      is.na(atc_code_level3) & !is.na(nci_concept_definition) &
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        !is.na(nci_concept_definition) &
         stringr::str_detect(tolower(nci_concept_definition), "nitrogen mustard") ~ "L01AA",
-      is.na(atc_code_level3) & stringr::str_detect(
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        stringr::str_detect(
         tolower(nci_concept_definition), "purine( nucleoside)? analog") ~ "L01BB",
-      is.na(atc_code_level3) & stringr::str_detect(
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+        stringr::str_detect(
         tolower(nci_concept_definition), "pyrimidine( nucleoside)? analog") ~ "L01BC",
-      is.na(atc_code_level3) &
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") &
         !is.na(drug_entry) &
         !stringr::str_detect(drug_entry, "/") &
         stringr::str_detect(
           tolower(nci_concept_definition), "vinca alkaloid") ~ "L01CA",
-      is.na(atc_code_level3) & 
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
       ((!is.na(nci_concept_definition) &
           stringr::str_detect(
             tolower(nci_concept_definition),

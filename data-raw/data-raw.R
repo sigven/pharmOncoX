@@ -179,12 +179,15 @@ raw_biomarkers[['civic']] <-
     compound_synonyms = compound_synonyms,
     datestamp = package_datestamp,
     cache_dir = file.path(path_data_raw, "biomarkers"))
-raw_biomarkers[['cgi']] <- load_cgi_biomarkers(
-  compound_synonyms = compound_synonyms,
-  cache_dir = file.path(path_data_raw, "biomarkers"))
-raw_biomarkers[['mitelmandb']] <- load_mitelman_db(
-  cache_dir = file.path(path_data_raw, "biomarkers"))
-raw_biomarkers[['custom_fusions']] <- load_custom_fusion_db()
+raw_biomarkers[['cgi']] <- 
+  load_cgi_biomarkers(
+    compound_synonyms = compound_synonyms,
+    cache_dir = file.path(path_data_raw, "biomarkers"))
+raw_biomarkers[['mitelmandb']] <- 
+  load_mitelman_db(
+    cache_dir = file.path(path_data_raw, "biomarkers"))
+raw_biomarkers[['custom_fusions']] <- 
+  load_custom_fusion_db()
 
 raw_biomarkers[['custom_fusions']]$variant <- 
   raw_biomarkers[['custom_fusions']]$variant |>

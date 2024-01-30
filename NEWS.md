@@ -1,9 +1,9 @@
-# Version 1.5.4 (January 29th 2024)
+# Version 1.5.5 (January 30th 2024)
 
 * Refine possible values in `treatment_category` argument to `get_drugs()` function
 * Fix anti-androgen classification
 * Fixed bug in alias type notation for copy numbers and expression biomarkers
-* Filter noise in output from `get_targeted_agents`
+* Filter noise and rank output in helper function `get_targeted_drugs`
 
 # Version 1.5.0 (January 25th 2024)
 
