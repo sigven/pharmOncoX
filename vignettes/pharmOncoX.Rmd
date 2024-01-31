@@ -511,25 +511,28 @@ for(source in c('civic','cgi')){
     biomarkers$data[[source]]$variant |> 
     dplyr::filter(
       !is.na(symbol) & (symbol == "BRCA1" | symbol == "BRCA2")) |>
-    dplyr::group_by(variant_id, symbol, variant_consequence) |>
+    dplyr::group_by(variant_id, variant_name_primary, variant_consequence) |>
     dplyr::summarise(
       variant_alias = paste(variant_alias, collapse=", "), 
       .groups = "drop") |> 
     dplyr::inner_join(
       biomarkers$data[[source]]$clinical, by = "variant_id") |>
     dplyr::select(
-      variant_id, symbol, variant_consequence, variant_alias,
+      variant_id, variant_name_primary, therapeutic_context,
+      evidence_type, evidence_level, 
       biomarker_source, biomarker_source_datestamp,
       molecular_profile_name, evidence_id, variant_origin,
       primary_site, evidence_id, source_id,
-      evidence_url, therapeutic_context,
-      evidence_description, evidence_type, evidence_level,
+      evidence_url, 
+      evidence_description, 
       clinical_significance) |> 
     dplyr::distinct() |> 
-    dplyr::rename(literature_id = source_id) |>
+    dplyr::rename(literature_id = source_id,
+                  variant_name = variant_name_primary) |>
     dplyr::filter(evidence_type == "Predictive") |>
     dplyr::select(
-      symbol, primary_site,
+      variant_name, 
+      primary_site,
       therapeutic_context,
       molecular_profile_name, 
       evidence_level,
