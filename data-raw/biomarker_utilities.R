@@ -430,7 +430,7 @@ expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
 }
 
 load_civic_biomarkers <- function(
-    datestamp = '20240114',
+    datestamp = '20240130',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -966,7 +966,38 @@ load_civic_biomarkers <- function(
         
       ) |>
       dplyr::distinct()
-  )
+  ) |>
+    dplyr::mutate(
+      variant_name_primary = dplyr::case_when(
+        alteration_type == "CNA" |
+          (alteration_type == "MUT_LOF" & !endsWith(variant,"X")) |
+          alteration_type == "METHYL" |
+          stringr::str_detect(
+            variant,
+            "MUTATION|COPY NUMBER VARIATION|TRUNCATING|WILDTYPE|SPLICE SITE|DELETION|AMPLIFICATION") |
+          stringr::str_detect(alteration_type,"^EXP") ~
+        paste0(gene2," ",stringr::str_to_title(variant)),
+        variant_consequence == "transcript_fusion" |
+          (nchar(variant_consequence) == 0 & variant == "FUSION") ~
+          paste0(gene2, " Fusion"),
+        variant == "REARRANGEMENT" ~ 
+          paste0(gene2, " Rearrangement"),
+        TRUE ~ as.character(
+          paste0(gene2, " ", variant)
+        ))
+      ) |>
+    dplyr::mutate(variant_name_primary = stringr::str_replace(
+      variant_name_primary, "FS","fs")
+    ) |>
+    dplyr::mutate(variant_name_primary = stringr::str_replace(
+      variant_name_primary, "DELINS","delins")
+    ) |>
+    dplyr::mutate(variant_name_primary = stringr::str_replace(
+      variant_name_primary, "DEL","del")
+    ) |>
+    dplyr::mutate(variant_name_primary = stringr::str_replace(
+      variant_name_primary, "INS$","ins")
+    )
 
   variants_expanded <- list()
   variants_expanded[['mut']] <- data.frame()
@@ -979,6 +1010,7 @@ load_civic_biomarkers <- function(
     gene <- unique(vrows$gene2)
     variant_consequence <- unique(vrows$variant_consequence)
     alteration_type <- unique(vrows$alteration_type)
+    variant_name_primary <- unique(vrows$variant_name_primary)
 
     all_aliases <- c()
 
@@ -997,6 +1029,7 @@ load_civic_biomarkers <- function(
         df <- data.frame(
           'variant_id' = i,
           'symbol' = gene,
+          'variant_name_primary' = variant_name_primary,
           'variant_alias' = variant_alias,
           'alteration_type' = alteration_type,
           'variant_consequence' = variant_consequence,
@@ -1284,7 +1317,7 @@ load_civic_biomarkers <- function(
     variantSummary |>
       dplyr::filter(!stringr::str_detect(alteration_type,"MUT")) |>
       dplyr::select(variant_id, variant, variant_consequence,
-                    variant_alias, alteration_type,
+                    variant_alias, variant_name_primary, alteration_type,
                     gene2) |>
       dplyr::mutate(variant_alias = dplyr::if_else(
         nchar(variant_alias) > 0,
@@ -1444,6 +1477,7 @@ load_civic_biomarkers <- function(
         biomarker_source_datestamp,
         variant_id,
         variant_alias,
+        variant_name_primary,
         alteration_type,
         alias_type,
         variant_consequence,
@@ -1809,7 +1843,8 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
                     alteration_type, variant_consequence) |>
       dplyr::arrange(symbol, alteration_type, variant_alias) |>
       dplyr::distinct() |>
-      dplyr::mutate(variant_id = dplyr::row_number())
+      dplyr::mutate(variant_id = dplyr::row_number()) |>
+      dplyr::mutate(variant_name_primary = paste(symbol, variant_alias))
   )
 
   cgi_variants <- data.frame()
@@ -1822,6 +1857,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
         'variant_id' = 
           unique_variants[i,"variant_id"],
         'variant_alias' = t,
+        'variant_name_primary' = unique_variants[i,"variant_name_primary"],
         'gene' = unique_variants[i,"gene"],
         'entrezgene' = unique_variants[i,"entrezgene"],
         'symbol' = unique_variants[i,"symbol"],
@@ -1858,6 +1894,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       biomarker_source_datestamp,
       variant_id,
       variant_alias,
+      variant_name_primary,
       alteration_type,
       alias_type,
       variant_consequence,
