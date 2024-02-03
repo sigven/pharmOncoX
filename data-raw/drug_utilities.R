@@ -3328,7 +3328,7 @@ expand_drug_aliases <- function(drug_index_map = NULL,
   drugAliasAll <- as.data.frame(drugAliasPrimary |>
     dplyr::bind_rows(drugAliasNCI) |>
     dplyr::bind_rows(drugAliasPubchem) |>
-    dplyr::filter(nchar(alias) > 3) |>
+    dplyr::filter(nchar(alias) > 3 & nchar(alias) < 250) |>
     tidyr::separate_rows(alias, sep = "\\|") |>
     dplyr::distinct() |>
     dplyr::left_join(drug_index_map[['id2name']],

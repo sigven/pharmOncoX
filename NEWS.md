@@ -1,3 +1,7 @@
+# Version 1.5.7 (February 3rd 2024)
+
+* Fixed buggy alias from PubChem
+
 # Version 1.5.6 (January 31st 2024)
 
 * Refine possible values in `treatment_category` argument to `get_drugs()` function
