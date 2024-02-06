@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   pharmOncoX: pharmOncoX.html
-last_built: 2024-02-03T09:16Z
+last_built: 2024-02-06T14:48Z
 urls:
   reference: https://sigven.github.io/pharmOncoX/reference
   article: https://sigven.github.io/pharmOncoX/articles
