@@ -1,3 +1,7 @@
+# Version 1.5.8 (February 6th 2024)
+
+* NCI Thesaurus 24.01e
+
 # Version 1.5.7 (February 3rd 2024)
 
 * Fixed buggy alias from PubChem
