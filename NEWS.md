@@ -1,3 +1,7 @@
+# Version 1.6.0 (March 9th 2024)
+
+* CIViC/Mitelmandb updates
+
 # Version 1.5.9 (February 29th 2024)
 
 * Updated CIViC
