@@ -1,3 +1,7 @@
+# Version 1.6.1 (March 26th 2024)
+
+* Open Targets Platform update (v2024.03)
+
 # Version 1.6.0 (March 9th 2024)
 
 * CIViC/Mitelmandb updates

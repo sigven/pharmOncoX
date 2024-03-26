@@ -514,7 +514,9 @@ load_civic_biomarkers <- function(
         readr::read_tsv(
           file = civic_local_fnames[[paste0('vcf_',assembly)]], 
           skip = skip_lines, 
-          show_col_types = F, col_names = T) |>
+          show_col_types = F, 
+          col_names = T, 
+          guess_max = 1000) |>
           janitor::clean_names() |>
           dplyr::rename(variant_id = id) |>
           dplyr::mutate(
@@ -545,7 +547,7 @@ load_civic_biomarkers <- function(
   clinicalEvidenceSummary <- as.data.frame(
     readr::read_tsv(
       civic_local_fnames[['ClinicalEvidenceSummaries']],
-      show_col_types = F)) |>
+      show_col_types = F, guess_max = 5000)) |>
     dplyr::filter(source_type == "PubMed") |>
     dplyr::mutate(citation_id = as.character(citation_id)) |>
     dplyr::select(molecular_profile_id,
@@ -1536,7 +1538,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
   cgi_biomarkers <- as.data.frame(
     readr::read_tsv(
       file.path(cache_dir, "cgi_biomarkers_20221017.tsv"),
-      col_names = T, show_col_types = F) |>
+      col_names = T, show_col_types = F, guess_max = 1000) |>
       janitor::clean_names() |>
       dplyr::mutate(
         biomarker = 
@@ -2634,7 +2636,7 @@ load_mitelman_db <- function(cache_dir = NA) {
   mbca_data <- readr::read_tsv(
     file = file.path(
       cache_dir, "mitelmandb", "MBCA.TXT.DATA"),
-    show_col_types = F) |>
+    show_col_types = F, guess_max = 1000) |>
     dplyr::filter(stringr::str_detect(GeneShort,"::")) |>
     dplyr::rename(variant = GeneShort) |>
     dplyr::rename(karyotype = KaryShort) |>
