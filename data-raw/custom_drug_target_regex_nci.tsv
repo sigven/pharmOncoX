@@ -1,4 +1,12 @@
 pattern	symbol
+Zoligratinib	FGFR1
+Zoligratinib	FGFR2
+Zoligratinib	FGFR3
+Lunresertib	PKMYT1
+Navicixizumab	VEGFA
+Navicixizumab	DLL4
+Osunprotafib	PTPN2
+Tigozertinib	EGFR
 Acasunlimab	CD274
 ABD-3001	ALDH1
 ABD-3001	ALDH3
@@ -80,7 +88,7 @@ Tinengotinib	FLT4
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor	BRAF
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor	ARAF
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor	CRAF
-Ebvaciclib	CDK2
+Ebvaciclib|Tagtociclib	CDK2
 Ebvaciclib	CDK4
 Ebvaciclib	CDK6
 Utatrectinib	NTRK1
@@ -544,9 +552,9 @@ Aromatase Inhibitor	CYP19A1
 Bexmarilimab	STAB1
 Sonepcizumab	MBTPS1
 Src/tubulin Inhibitor KX2-361	SRC
-Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC1
-Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC2
-Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC3
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat	HDAC1
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat	HDAC2
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat	HDAC3
 Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC8
 Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC11
 Givinostat|HDAC Class I/IIb Inhibitor	HDAC1

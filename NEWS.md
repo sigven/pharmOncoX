@@ -1,3 +1,7 @@
+# Version 1.6.2 (April 12th 2024)
+
+* Updated NCI Thesaurus (24.03d)
+
 # Version 1.6.1 (March 26th 2024)
 
 * Open Targets Platform update (v2024.03)
