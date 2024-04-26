@@ -1,3 +1,7 @@
+# Version 1.6.3 (April 26th 2024)
+
+* Updated CIViC (20240426)
+
 # Version 1.6.2 (April 12th 2024)
 
 * Updated NCI Thesaurus (24.03d)
