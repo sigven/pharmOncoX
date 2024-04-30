@@ -1,3 +1,7 @@
+# Version 1.6.4 (April 30th 2024)
+
+* Improved clinical (tumor site) annotations of fusions from MitelmanDB
+
 # Version 1.6.3 (April 26th 2024)
 
 * Updated CIViC (20240426)

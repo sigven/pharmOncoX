@@ -1409,6 +1409,18 @@ load_civic_biomarkers <- function(
       nchar(variant_consequence) == 0 & 
         alias_type == "hgvsp" ~ "missense_variant",
       TRUE ~ as.character(variant_consequence)
+    )) |> 
+    dplyr::mutate(variant_alias = dplyr::case_when(
+      (is.na(variant_alias) | nchar(variant_alias) == 0) &
+        !is.na(gene)  &
+        alias_type == "other_gene" &
+        stringr::str_detect(gene,"-") ~ gene,
+      (is.na(variant_alias) | nchar(variant_alias) == 0) &
+        !is.na(gene)  &
+        alias_type == "other_gene" &
+        !stringr::str_detect(gene,"-") ~ 
+        paste0(gene, " Fusion"),
+      TRUE ~ as.character(variant_alias)
     )) |>
     dplyr::distinct()
   
@@ -2597,56 +2609,85 @@ load_custom_fusion_db <- function() {
   biomarker_items[['variant']] <- other_translocations |>
     dplyr::bind_rows(other_translocations_lc) |>
     dplyr::distinct() |>
-    dplyr::rename(variant_id = variant,
-                  variant_alias = alias,
+    dplyr::rename(variant_alias = alias,
                   gene = symbol) |>
-    dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION") |>
-    
-    dplyr::mutate(alias_type = "other") |>
-    dplyr::select(variant_id, variant_alias, alias_type,
-                  gene, alteration_type)
+    dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION",
+                  variant_consequence = "transcript_fusion",
+                  variant_id = variant,
+                  variant_name_primary = variant) |>
+    dplyr::mutate(alias_type = "other_gene") |>
+    dplyr::select(variant_id, variant_name_primary,
+                  variant_alias, alias_type,
+                  gene, alteration_type, variant_consequence)
 
   return(biomarker_items)
 }
 
-load_mitelman_db <- function(cache_dir = NA) {
+load_mitelman_db <- function(cache_dir = NA,
+                             db_datestamp = "20240415") {
 
-
-  phenotypes_morph <- read.table(
+  # Load Mitelman database
+  # dos2unix -q -n MBCA.TXT.DATA MBCA.TXT
+  
+  morphology <- read.table(
     file = file.path(
       cache_dir, "mitelmandb", "KODER.TXT.DATA"),
-    sep = "\t", stringsAsFactors = F, header = T, fill = T) |>
-    dplyr::filter(KodTyp == "MORPH" & nchar(Kod) > 0)
+    sep = "\t", stringsAsFactors = F, 
+    header = T, fill = T) |>
+    dplyr::filter(KodTyp == "MORPH" & nchar(Kod) > 0) |>
+    dplyr::mutate('morphology_code' = as.character(Kod),
+                  'morphology_name' = Benamning) |>
+    dplyr::select(morphology_code, morphology_name) |>
+    dplyr::distinct()
+  
+  topography <- read.table(
+    file = file.path(
+      cache_dir, "mitelmandb", "KODER.TXT.DATA"),
+    sep = "\t", stringsAsFactors = F, 
+    header = T, fill = T) |>
+    dplyr::filter(KodTyp == "TOP" & nchar(Kod) > 0) |>
+    dplyr::mutate('topography_code' = as.character(Kod),
+                  'topography_name' = Benamning) |>
+    dplyr::select(topography_code, topography_name) |>
+    dplyr::distinct()
 
-  morph <- data.frame('Morph' = as.integer(phenotypes_morph$Kod),
-                      'cancer_type' = phenotypes_morph$Benamning,
-                      stringsAsFactors = F )
-
-  pmid_data <- read.table(
+  pmid_data <- readr::read_tsv(
     file = file.path(
       cache_dir, "mitelmandb", "REF.TXT.DATA"),
-    sep = "\t", stringsAsFactors = F, header = T, fill = T,
-    quote = "") |>
+    quote = "none", show_col_types = F, guess_max = 1000000) |>
     dplyr::select(RefNo, Pubmed) |>
     dplyr::filter(nchar(Pubmed) > 0) |>
-    dplyr::mutate(RefNo = as.integer(RefNo)) |>
+    dplyr::mutate(reference_id = as.character(RefNo)) |>
     dplyr::distinct() |>
-    dplyr::rename(citation_id = Pubmed)
+    dplyr::rename(source_id = Pubmed) |>
+    dplyr::select(reference_id, source_id) |>
+    dplyr::distinct()
 
-  mbca_data <- readr::read_tsv(
+  fusion_event_data <- as.data.frame(readr::read_tsv(
     file = file.path(
-      cache_dir, "mitelmandb", "MBCA.TXT.DATA"),
-    show_col_types = F, guess_max = 1000) |>
+      cache_dir, "mitelmandb", "MBCA.TXT"),
+    show_col_types = F, guess_max = 100000)) |>
     dplyr::filter(stringr::str_detect(GeneShort,"::")) |>
-    dplyr::rename(variant = GeneShort) |>
-    dplyr::rename(karyotype = KaryShort) |>
-    dplyr::select(MolClin, RefNo, InvNo, Morph, Topo,
+    dplyr::rename(variant = GeneShort,
+                  karyotype = KaryShort,
+                  reference_id = RefNo,
+                  morphology_code = Morph,
+                  topography_code = Topo) |>
+    dplyr::mutate(reference_id = as.character(reference_id),
+                  morphology_code = as.character(morphology_code)) |>
+    dplyr::select(MolClin, 
+                  reference_id, 
+                  morphology_code, 
+                  topography_code,
                   variant, karyotype) |>
     tidyr::separate_rows(variant, sep = ",") |>
-    dplyr::left_join(pmid_data, by = "RefNo", 
+    dplyr::left_join(pmid_data, by = "reference_id", 
                      multiple = "all", 
                      relationship = "many-to-many") |>
-    dplyr::left_join(morph, by = "Morph", 
+    dplyr::left_join(morphology, by = "morphology_code", 
+                     multiple = "all", 
+                     relationship = "many-to-many") |>
+    dplyr::left_join(topography, by = "topography_code", 
                      multiple = "all", 
                      relationship = "many-to-many") |>
     dplyr::filter(stringr::str_detect(variant,"::")) |>
@@ -2658,76 +2699,133 @@ load_mitelman_db <- function(cache_dir = NA) {
                     stringr::str_count(karyotype,",")) |>
     tidyr::separate_rows(c(variant,karyotype),
                          sep = ",") |>
-    dplyr::select(variant, karyotype, cancer_type,
-                  citation_id, evidence_id) |>
+    dplyr::mutate(topography_name2 = dplyr::case_when(
+      is.na(topography_name) & 
+        stringr::str_detect(
+          tolower(morphology_name), "leukemia|myeloma") ~ "Myeloid",
+      is.na(topography_name) & 
+        stringr::str_detect(
+        tolower(morphology_name), "lymphoma") ~ "Lymphoid",
+      topography_name == "Ovary" ~ "Ovary/Fallopian Tube",
+      topography_name == "Fallopian tube" ~ "Ovary/Fallopian Tube",
+      topography_name == "Uterus, corpus" ~ "Uterus",
+      stringr::str_detect(morphology_name, 
+        paste0(
+          "Nasal cavity/Paranasal sinuses|Nasopharynx|",
+          "LarynxOral cavity|Oro- and hypopharynx|",
+          "Larynx|Teeth")) ~ "Head and Neck",
+      topography_name == "Gallbladder/Biliary system" ~ "Biliary Tract",
+      topography_name == "Soft tissue" ~ "Soft Tissue",
+      topography_name == "Brain" ~ "CNS/Brain",
+      morphology_name == "Mature B-cell neoplasm, NOS" ~ "Lymphoid",
+      topography_name == "Brain stem" ~ "CNS/Brain",
+      topography_name == "Cerebellum" ~ "CNS/Brain",
+      topography_name == "Vagina" ~ "Vulva/Vagina",
+      topography_name == "Skeleton" ~ "Bone",
+      stringr::str_detect(
+        tolower(morphology_name),
+        "myelodysplastic|myeloproliferative") ~ "Myeloid",
+      stringr::str_detect(
+        tolower(morphology_name),
+        "miscellaneous hematopoietic/lymphoid|hodgkin disease") ~ "Lymphoid",
+      topography_name == "Ureter" ~ "Kidney",
+      topography_name == "Unknown site" ~ "Any",
+      topography_name == "Urethra" ~ "Bladder/Urinary Tract",
+      topography_name == "Spinal cord" ~ "Peripheral Nervous System",
+      topography_name == "Uterus, cervix" ~ "Cervix",
+      topography_name == "Large intestine" ~ "Colon/Rectum",
+      topography_name == "Bladder" ~ "Bladder/Urinary Tract",
+      topography_name == "Adrenal" ~ "Adrenal Gland",
+      topography_name == "Intraabdominal" ~ "Esophagus/Stomach",
+      topography_name == "Oesophagus" ~ "Esophagus/Stomach",
+      TRUE ~ topography_name
+    )) |>
+    dplyr::rename(primary_diagnosis = morphology_name,
+                  primary_site = topography_name2) |>
+    dplyr::select(variant, 
+                  karyotype, 
+                  primary_diagnosis,
+                  primary_site,
+                  source_id, 
+                  evidence_id) |>
     dplyr::distinct() |>
     dplyr::mutate(variant_id = paste(
       variant, karyotype, sep = " - "
     ))
 
-  evidence_id <- nrow(mbca_data) + 1
+  evidence_id <- nrow(fusion_event_data) + 1
 
-  mbca_data$alias <- paste(
-    mbca_data$variant,
+  fusion_event_data$variant_alias <- paste(
+    fusion_event_data$variant,
     paste(
-      stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
-      stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
+      stringr::str_split_fixed(fusion_event_data$variant,"::",2)[,2],
+      stringr::str_split_fixed(fusion_event_data$variant,"::",2)[,1],
       sep = "-"
     ),
     paste(
-      stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
-      stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
+      stringr::str_split_fixed(fusion_event_data$variant,"::",2)[,1],
+      stringr::str_split_fixed(fusion_event_data$variant,"::",2)[,2],
       sep = "/"
     ),
     paste(
-      stringr::str_split_fixed(mbca_data$variant,"::",2)[,1],
-      stringr::str_split_fixed(mbca_data$variant,"::",2)[,2],
+      stringr::str_split_fixed(fusion_event_data$variant,"::",2)[,1],
+      stringr::str_split_fixed(fusion_event_data$variant,"::",2)[,2],
       sep = "-"
     ),
-    mbca_data$karyotype,
+    fusion_event_data$karyotype,
     sep = "@@@"
   )
+  
+  fusion_event_data$variant_name_primary <- fusion_event_data$variant
 
   bcr_abl_custom <-
     data.frame('variant_id' = "BCR::ABL1 - t(9;22)(q34;q11)",
-               'variant' = 'BCR::ABL',
-               'evidence_url' = "https://mitelmandatabase.isb-cgc.org/",
+               'variant_alias' = 'BCR::ABL',
+               'karyotype' = 't(9;22)(q34;q11)',
+               'variant_name_primary' = 'BCR::ABL1',
                'evidence_id' = paste0('MITDB_',evidence_id),
-               'cancer_type' = NA,
-               'citation_id' = NA,
-               'biomarker_entity' = T,
-               'alteration_type' = 'TRANSLOCATION_FUSION',
-               'biomarker_source_db' = 'mitelmandb',
+               'primary_diagnosis' = NA,
+               'primary_site' = NA,
+               'source_id' = NA,
                'symbol' = 'BCR-ABL1',
                stringsAsFactors = F)
 
   mitelman_db <- as.data.frame(
-    mbca_data |>
-      dplyr::select(alias, variant_id, cancer_type,
-                    evidence_id, citation_id) |>
-      tidyr::separate_rows(alias, sep = "@@@") |>
-      dplyr::rename(variant = alias) |>
+    fusion_event_data |>
+      dplyr::select(variant_alias, 
+                    variant_id,
+                    karyotype,
+                    variant_name_primary,
+                    primary_diagnosis, 
+                    primary_site,
+                    evidence_id, 
+                    source_id) |>
+      tidyr::separate_rows(variant_alias, sep = "@@@") |>
+      #dplyr::rename(variant_alias = alias) |>
       dplyr::filter(
         !stringr::str_detect(
-          variant,"RARA::PML|ABL1::BCR|ERG::TMPRSS2")) |>
-      dplyr::mutate(biomarker_entity = T) |>
-      dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION",
-                    variant_origin = "somatic",
-                    variant_type = "transcript_fusion",
-                    therapeutic_context = NA,
-                    evidence_url = "https://mitelmandatabase.isb-cgc.org/",
-                    biomarker_source_db = "mitelmandb") |>
+          variant_alias,"RARA::PML|ABL1::BCR|ERG::TMPRSS2")) |>
+      
       dplyr::bind_rows(
         bcr_abl_custom
       ) |>
+      dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION",
+                    variant_origin = "somatic",
+                    variant_consequence = "transcript_fusion",
+                    evidence_url = "https://mitelmandatabase.isb-cgc.org/",
+                    biomarker_source_db = "mitelmandb",
+                    #biomarker_entity = T,
+                    #alias_type = "other_gene",
+                    biomarker_datestamp = db_datestamp) |>
       dplyr::arrange(evidence_id) |>
-      dplyr::select(evidence_id,
-                    evidence_url,
+      dplyr::rename(citation_id = source_id) |>
+      dplyr::select(biomarker_source_db,
+                    biomarker_datestamp,
                     variant_id,
-                    variant_type,
-                    variant,
+                    variant_alias,
+                    #alias_type,
+                    variant_name_primary,
                     alteration_type,
-                    symbol,
                     dplyr::everything())
 
   )
@@ -2735,122 +2833,30 @@ load_mitelman_db <- function(cache_dir = NA) {
   mitelman_db$symbol <- stringr::str_split_fixed(
     mitelman_db$variant_id, " - ", 2)[,1]
 
-  ontology_maps <- phenOncoX::get_aux_maps(
-    cache_dir = cache_dir
-  )
-  
-  umls_concept <- ontology_maps$records$umls$concept
-  
-  umls_aliases <- umls_concept |>
-    dplyr::select(cui, cui_name) |>
-    dplyr::mutate(cui_name = tolower(cui_name)) |>
-    dplyr::distinct()
-
-  mitelman_db <- mitelman_db |>
-    dplyr::mutate(cancer_type = dplyr::if_else(
-      cancer_type == "Astrocytoma, grade I-II",
-      "low-grade astrocytoma",
-      as.character(cancer_type)
-    )) |>
-    dplyr::mutate(cancer_type = dplyr::if_else(
-      cancer_type == "Astrocytoma, grade III-IV/Glioblastoma",
-      "high-grade astrocytoma",
-      as.character(cancer_type)
-    )) |>
-    dplyr::mutate(cancer_type_lc = tolower(cancer_type)) |>
-    dplyr::left_join(umls_aliases, 
-                     by = c("cancer_type_lc" = "cui_name"), 
-                     multiple = "all", 
-                     relationship = "many-to-many") |>
-    dplyr::filter(!stringr::str_detect(cancer_type_lc,"nonneoplastic"))
-
-  missing <- mitelman_db |>
-    dplyr::filter(is.na(cui) & !is.na(cancer_type)) |>
-    dplyr::select(-cui) |>
-    dplyr::mutate(cancer_type_lc = stringr::str_replace(
-      cancer_type_lc, "leukemia/lymphoblastic ","leukemia/"
-    )) |>
-    dplyr::mutate(cancer_type_lc = stringr::str_replace(
-      cancer_type_lc,
-      ", (nos|special type|, cutaneous type|dedifferentiated|aberrant translocation)$","")
-    ) |>
-    dplyr::left_join(
-      umls_aliases,
-      by = c("cancer_type_lc" = "cui_name"), 
-      multiple = "all", 
-      relationship = "many-to-many")
-  
-  mitelman_db_final <-
-    dplyr::bind_rows(
-      dplyr::filter(
-        mitelman_db, !is.na(cui) & 
-          !is.na(cancer_type)),
-      missing
-    ) |>
-    dplyr::select(-cancer_type_lc)
-
-
-  mitelman <-
-    mitelman_db_final |>
-    dplyr::left_join(
-      ontology_maps$records$do, 
-      by = "cui", multiple = "all", 
-      relationship = "many-to-many") |>
-    dplyr::select(-do_cancer_slim) |>
-    dplyr::mutate(do_id = dplyr::if_else(
-      is.na(do_id) & !is.na(cui) & cui == "C0007138",
-      "DOID:2671",
-      as.character(do_id)
-    )) |>
-    dplyr::mutate(do_name = dplyr::if_else(
-      is.na(do_name) & !is.na(cui) & cui == "C0007138",
-      "transitional cell carcinoma",
-      as.character(do_name)
-    )) |>
-    dplyr::mutate(do_id = dplyr::if_else(
-      is.na(do_id) & !is.na(cui) & cui == "C1314694",
-      "DOID:0080829",
-      as.character(do_id)
-    )) |>
-    dplyr::mutate(do_name = dplyr::if_else(
-      is.na(do_name) & !is.na(cui) & cui == "C1314694",
-      "low grade glioma",
-      as.character(do_name)
-    )) |>
-    dplyr::mutate(do_id = dplyr::if_else(
-      is.na(do_id) & !is.na(cui) & cui == "C3640999",
-      "DOID:3070",
-      as.character(do_id)
-    )) |>
-    dplyr::mutate(do_name = dplyr::if_else(
-      is.na(do_name) & !is.na(cui) & cui == "C3640999",
-      "high grade glioma",
-      as.character(do_name)
-    )) |>
-    dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
-    dplyr::filter(do_name != "malignant adenoma") |>
-    dplyr::left_join(
-      ontology_maps$records$efo$efo2xref, 
-      by = "cui", multiple = "all", 
-      relationship = "many-to-many") |>
-    dplyr::filter(is.na(cui) | (!is.na(cui) & !is.na(do_id))) |>
-    dplyr::filter(do_name != "malignant adenoma") |>
-    dplyr::rename(disease_ontology_id = do_id) |>
-    dplyr::select(-xref_source) |>
-    dplyr::distinct()  |>
-    dplyr::filter(efo_id != "MONDO:0015667")
-
   
   biomarker_items <- list()
-  biomarker_items[['clinical']] <- mitelman
+  biomarker_items[['clinical']] <- mitelman_db
   
   biomarker_items[['variant']] <- biomarker_items[['clinical']] |>
-    dplyr::select(variant_id, variant, alteration_type, symbol) |>
-    dplyr::mutate(alias_type = "other") |>
+    #dplyr::select(variant_id, variant_alias, alteration_type, symbol) |>
+    dplyr::mutate(alias_type = "other_gene") |>
     dplyr::rename(gene = symbol) |>
-    dplyr::rename(variant_alias = variant) |>
-    dplyr::select(variant_id, variant_alias, alias_type,
-                  gene, alteration_type) |>
+    #dplyr::rename(variant_alias = variant) |>
+    dplyr::select(biomarker_source_db,
+                  biomarker_datestamp,
+                  variant_id, 
+                  variant_alias, 
+                  variant_name_primary,
+                  alteration_type,
+                  alias_type,
+                  variant_consequence,
+                  gene) |>
+    dplyr::distinct()
+  
+  biomarker_items[['clinical']] <- biomarker_items[['clinical']] |>
+    dplyr::select(-c("variant_alias", "variant_name_primary",
+                     "alteration_type","variant_consequence",
+                     "symbol")) |>
     dplyr::distinct()
   
   biomarker_items <- 
