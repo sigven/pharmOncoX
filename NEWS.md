@@ -1,3 +1,7 @@
+# Version 1.6.5 (May 7th 2024)
+
+* NCI update (24.04e)
+
 # Version 1.6.4 (April 30th 2024)
 
 * Improved clinical (tumor site) annotations of fusions from MitelmanDB
