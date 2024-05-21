@@ -1,6 +1,7 @@
-# Version 1.6.5 (May 7th 2024)
+# Version 1.6.6 (May 21st 2024)
 
 * NCI update (24.04e)
+* Updated CIViC (20240521)
 
 # Version 1.6.4 (April 30th 2024)
 
