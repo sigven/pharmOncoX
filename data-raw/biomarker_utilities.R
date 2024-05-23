@@ -1308,7 +1308,8 @@ load_civic_biomarkers <- function(
       alias_type, "genomic"))
   variants_expanded_mut2$alteration_type <- NULL
   variants_expanded_mut2 <- variants_expanded_mut2 |>
-    dplyr::left_join(variants_nongenomic, by = "variant_id")
+    dplyr::left_join(variants_nongenomic, by = "variant_id",
+                     relationship = "many-to-many")
   
   variants_expanded[['mut']] <- variants_expanded_mut1 |>
     dplyr::bind_rows(variants_expanded_mut2)
@@ -2503,7 +2504,8 @@ load_pmkb_biomarkers <- function(cache_dir = NA) {
     dplyr::filter(alteration_type != "CNA") |>
     dplyr::select(-c(variant, alteration_type, variant_type)) |>
     dplyr::left_join(variants_expanded[['mut']],
-                     by = c("symbol", "evidence_id"), multiple = "all") |>
+                     by = c("symbol", "evidence_id"), 
+                     relationship = "many-to-many") |>
     dplyr::distinct() |>
     dplyr::bind_rows(
       dplyr::filter(pmkb_phenotype_mapped,

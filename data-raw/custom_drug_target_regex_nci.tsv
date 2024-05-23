@@ -2,6 +2,8 @@ pattern	symbol
 OMX-0407	SIK3
 RMC-9085	KRAS
 3706674	KRAS
+Rineterkib	ERK1
+Rineterkib	ERK2
 Zoligratinib	FGFR1
 Zoligratinib	FGFR2
 Zoligratinib	FGFR3
@@ -563,17 +565,17 @@ Aromatase Inhibitor	CYP19A1
 Bexmarilimab	STAB1
 Sonepcizumab	MBTPS1
 Src/tubulin Inhibitor KX2-361	SRC
-Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat	HDAC1
-Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat	HDAC2
-Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat	HDAC3
-Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC8
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat|Purinostat	HDAC1
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat|Purinostat	HDAC2
+Domatinostat|Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Zabadinostat|Purinostat	HDAC3
+Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor|Purinostat	HDAC8
 Histone Deacetylase Inhibitor|Class 1/4 Histone Deacetylase Inhibitor	HDAC11
 Givinostat|HDAC Class I/IIb Inhibitor	HDAC1
 Givinostat|HDAC Class I/IIb Inhibitor	HDAC2
 Givinostat|HDAC Class I/IIb Inhibitor	HDAC3
 Givinostat|HDAC Class I/IIb Inhibitor	HDAC8
-Givinostat|HDAC Class I/IIb Inhibitor	HDAC6
-Givinostat|HDAC Class I/IIb Inhibitor|Tucidinostat	HDAC10
+Givinostat|HDAC Class I/IIb Inhibitor|Purinostat	HDAC6
+Givinostat|HDAC Class I/IIb Inhibitor|Tucidinostat|Purinostat	HDAC10
 Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC1
 Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC2
 Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC3
