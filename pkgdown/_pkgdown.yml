@@ -2,8 +2,20 @@ url: https://sigven.github.io/pharmOncoX/
 title: pharmOncoX
 toc:
   depth: 3
+
 template:
   bootstrap: 5
+  bslib:
+    info: "#BD3039"
+    dropdown-link-hover-bg: "#BD3039"
+    dropdown-link-hover-color: "white"
+    dropdown-link-active-color: "white"
+    navbar-light-color: "white"
+    navbar-light-brand-color: "white"
+    navbar-link-hover-color: "white !important"
+    nav-link-hover-color: "white !important"
+    navbar-light-brand-hover-color: "white !important"
+    navbar-link-color: "white"
   includes:
     in_header: |
        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K1KDXWGEWK"></script>
@@ -13,12 +25,16 @@ template:
          gtag('js', new Date());
          gtag('config', 'G-K1KDXWGEWK');
        </script>
-  bslib:
-    primary: "#BD3039"
 authors:
   Sigve Nakken:
     href: "https://github.com/sigven"
 navbar:
+  link-color: "white"
+  light-color: "white"
+  light-brand-color: "white"
+  light-hover-color: "white !important"
+  type: light
+  bg: info
   structure:
     left:  [home, get_started, reference, news]
     right: [search, github]

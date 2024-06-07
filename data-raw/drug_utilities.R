@@ -668,14 +668,14 @@ get_atc_drug_classification <- function(
       TRUE ~ as.character(atc_level3)
     )) |>
     dplyr::select(-atc_code_level4) |>
-    dplyr::distinct() |>
-    dplyr::mutate(atc_drug_entry = dplyr::if_else(
-      atc_code_level3 == "L01EX" |
-        atc_code_level3 == "L01FX" |
-        atc_code_level3 == "L01XX",
-      as.character(NA),
-      as.character(atc_drug_entry)
-    ))
+    dplyr::distinct() 
+    #dplyr::mutate(atc_drug_entry = dplyr::if_else(
+      #atc_code_level3 == "L01EX" |
+        #atc_code_level3 == "L01FX" |
+        #atc_code_level3 == "L01XX",
+      #as.character(NA),
+      #as.character(atc_drug_entry)
+    #))
   
   atc_custom <- as.data.frame(
     readr::read_csv(
@@ -2285,6 +2285,12 @@ assign_drug_category <- function(drug_df = NULL,
     get_atc_drug_classification(path_data_raw = path_data_raw)
 
   atc_classification_with_drugs <- atc_classification |>
+    dplyr::mutate(atc_drug_entry = dplyr::case_when(
+      !is.na(atc_drug_entry) &
+      (tolower(atc_drug_entry) == "sotorasib" |
+        tolower(atc_drug_entry) == "adagrasib") ~ as.character(NA),
+      TRUE ~ as.character(atc_drug_entry)
+    )) |>
     dplyr::filter(!is.na(atc_drug_entry))
   
   atc_classification_clean <- atc_classification |>
@@ -2405,6 +2411,8 @@ assign_drug_category <- function(drug_df = NULL,
       stringr::str_detect(
         target_symbol, "^(CHEK(1|2)\\|?){1,2}$") ~ "L01XXJ",
       stringr::str_detect(
+        target_symbol, "^BCL2") ~ "L01XXM",
+      stringr::str_detect(
         target_symbol, "^GNRH") ~ "L02AE",
       stringr::str_detect(
         target_symbol, "^BRD(T|[1-9]{1})") ~ "L01XXA",
@@ -2514,7 +2522,7 @@ assign_drug_category <- function(drug_df = NULL,
            tolower(nci_concept_definition),
            "anthracycline|anthracenedione")) ~ "L01DB",
       (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
-        stringr::str_detect(tolower(drug_entry),"hydroxyurea|eniluracil") ~ "L01BA",
+        stringr::str_detect(tolower(drug_entry),"hydroxyurea|leucovorin|eniluracil") ~ "L01BA",
       (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
         stringr::str_detect(tolower(drug_entry),"arsenic trioxide") ~ "L01BA",
       (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
@@ -2643,7 +2651,16 @@ assign_drug_category <- function(drug_df = NULL,
         "Other antineoplastic agents\\|Tubulin inhibitors",
         "Tubulin inhibitors"),
       as.character(atc_level3)
+    )) |>
+    dplyr::mutate(atc_level3 = dplyr::if_else(
+      !is.na(atc_level3),
+      stringr::str_replace(
+        atc_level3,
+        "Folic acid analogues|Other immunosuppressants",
+        "Folic acid analogues"),
+      as.character(atc_level3)
     ))
+  
 
   classified_drugs_all_final <- classified_drugs_all |>
     dplyr::select(-atc_code_level3) |>

@@ -56,7 +56,7 @@ gene_info <- dplyr::bind_rows(
     dplyr::select(gene_gencode$records$grch37, 
                   entrezgene, ensembl_gene_id),
     by = c("entrezgene"), multiple = "all")) |>
-  dplyr::filter(gene_biotype == "protein-coding") |>
+  dplyr::filter(gene_biotype == "protein_coding") |>
   dplyr::distinct() |>
   dplyr::mutate(association_sourceID = "nci_thesaurus_custom",
                 target_type = "single_protein") |>
@@ -219,7 +219,7 @@ db[['drug_map_basic']][['records']] <- drug_index_map[['id2basic']]
 db[['drug_map_alias']] <- list()
 db[['drug_map_alias']][['records']] <- drug_index_map[['id2alias']]
 
-#googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
+googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
 
 gd_records <- list()
 db_id_ref <- data.frame()

@@ -2,7 +2,6 @@ Package: pharmOncoX
 Type: Package
 Title: Molecularly targeted cancer drugs and biomarkers
 Version: 1.6.7
-Date: 2024-05-23
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",

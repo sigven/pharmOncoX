@@ -8,14 +8,14 @@ The data is largely based on drug-target-indication associations provided by the
 
 Drug-target associations from the Open Targets Platform have furthermore been integrated and appended with drug information from [NCI Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), showing also non-targeted cancer drugs (chemotherapeutic agents etc.), and various drug regimens.
 
-_pharmOncoX_ provides anti-cancer drug classification through existing entries in the [Anatomical Therapeutic Chemical (ATC) Classification System](https://www.whocc.no/atc_ddd_index/), and these have been extended significantly with manual curation, also by establishing novel drug categories that are presently missing in the ATC classificiation tree (examples include _AURK inhibitors_, _MET inhibitors_, _BET inhibitors_, _AKT inhibitors_, _PLK inhibitors_, _IAP inhibitors_ etc.) enabling a filtering of drugs according to their main mechanisms of action.
+_pharmOncoX_ provides anti-cancer drug classification through existing entries in the [Anatomical Therapeutic Chemical (ATC) Classification System](https://www.whocc.no/atc_ddd_index/), and these have been extended significantly with manual curation, also by establishing novel drug categories that are presently missing in the ATC classificiation tree (examples include _AURK inhibitors_, _MET inhibitors_, _BET inhibitors_, _AKT inhibitors_, _PLK inhibitors_, _IAP inhibitors_, _RAS inhibitors_, _BCL2 inhibitors_ etc.) enabling a filtering of drugs according to their main mechanisms of action.
 
-Currently (as of late May 2024), `pharmOncoX` is built upon the following 
+Currently (as of early June 2024), `pharmOncoX` is built upon the following 
 releases of external databases:
 
  - Open Targets Platform (2024.03)
  - ChEMBL (v34)
- - NCI Thesaurus (24.04e)
+ - NCI Thesaurus (24.05d)
 
 ### Getting started
 
