@@ -584,6 +584,12 @@ load_civic_biomarkers <- function(
                   evidence_description = evidence_statement,
                   evidence_url = evidence_civic_url,
                   cancer_type = disease) |>
+    dplyr::mutate(
+      clinical_significance =
+        dplyr::case_when(
+          clinical_significance == "Resistance" |
+            clinical_significance == "Reduced Sensitivity" ~ "Resistance/Non-response",
+          TRUE ~ as.character(clinical_significance))) |>
   dplyr::mutate(disease_ontology_id = paste0(
     "DOID:", disease_ontology_id)
   ) |>
@@ -1130,7 +1136,6 @@ load_civic_biomarkers <- function(
     )) |>
     dplyr::left_join(variant_coordinates, 
                      by = "variant_id", 
-                     multiple = "all",
                      relationship = "many-to-many") |>
     dplyr::mutate(variant_alias = dplyr::if_else(
       !is.na(vcf_coord),
@@ -1601,7 +1606,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       dplyr::left_join(
         cancer_type_abbreviations,
         by = c("primary_tumor_type" = "cgi_abbreviation"),
-        multiple = "all") |>
+        relationship = "many-to-many") |>
       dplyr::mutate(molecular_profile_id = dplyr::row_number()) |>
       dplyr::mutate(molecular_profile_type = dplyr::if_else(
         stringr::str_detect(molecular_profile, " \\+ "),
@@ -1758,9 +1763,9 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
     dplyr::mutate(
       clinical_significance =
         dplyr::case_when(
-          association == "Resistant" ~ "Resistance or Non-response",
-          association == "No Responsive" ~ "Resistance or Non-response",
-          association == "Responsive" ~ "Sensitivity",
+          association == "Resistant" ~ "Resistance/Non-response",
+          association == "No Responsive" ~ "Resistance/Non-response",
+          association == "Responsive" ~ "Sensitivity/Response",
           stringr::str_detect(association, "Toxicity") ~ "Toxicity",
           TRUE ~ as.character("Other"))) |>
     dplyr::rename(evidence_level_raw = evidence_level) |>
