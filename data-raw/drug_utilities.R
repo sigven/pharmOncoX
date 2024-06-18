@@ -2288,6 +2288,9 @@ assign_drug_category <- function(drug_df = NULL,
     dplyr::mutate(atc_drug_entry = dplyr::case_when(
       !is.na(atc_drug_entry) &
       (tolower(atc_drug_entry) == "sotorasib" |
+         tolower(atc_drug_entry) == "ivosidenib" |
+         tolower(atc_drug_entry) == "enasidenib" |
+         tolower(atc_drug_entry) == "venetoclax" |
         tolower(atc_drug_entry) == "adagrasib") ~ as.character(NA),
       TRUE ~ as.character(atc_drug_entry)
     )) |>
@@ -2742,7 +2745,6 @@ assign_drug_category <- function(drug_df = NULL,
       as.logical(cancer_target_classified)
     ))
     
-  
   drug_df <- remove_duplicate_chembl_ids(
     drug_df = classified_drugs_all_final)
   

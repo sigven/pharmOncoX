@@ -1,3 +1,8 @@
+# Version 1.6.10 
+
+* Fixed some erroneous drug classifications
+* CIViC update (20240618)
+
 # Version 1.6.8 (June 7th 2024)
 
 * NCI update (24.05d)
