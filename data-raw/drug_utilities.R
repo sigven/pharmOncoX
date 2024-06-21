@@ -2688,6 +2688,11 @@ assign_drug_category <- function(drug_df = NULL,
       !is.na(target_symbol) &
         !is.na(atc_code_level3) &
         stringr::str_detect(
+          atc_code_level3, "(\\|L01XXM)|(^L01XXM)"
+        ) ~ "cancer_targeted_therapy",
+      !is.na(target_symbol) &
+        !is.na(atc_code_level3) &
+        stringr::str_detect(
           atc_code_level3, "(\\|L04)|(^L04)"
         ) ~ "cancer_immuno_suppressants",
       !is.na(target_symbol) &

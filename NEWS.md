@@ -1,7 +1,8 @@
 # Version 1.6.10 
 
 * Fixed some erroneous drug classifications
-* CIViC update (20240618)
+* CIViC update (20240621)
+* OTP update (2024.06)
 
 # Version 1.6.8 (June 7th 2024)
 
