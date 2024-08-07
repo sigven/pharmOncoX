@@ -21,7 +21,7 @@ opentargets_version <-
   metadata$compounds[metadata$compounds$source_abbreviation == "opentargets", 
                      "source_version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
-chembl_pubchem_datestamp <- '20240429' 
+chembl_pubchem_datestamp <- '20240708' 
 
 ## set logging layout
 lgr::lgr$appenders$console$set_layout(
@@ -74,7 +74,7 @@ drug_sets <- list()
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 drug_sets[['nci']] <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = F,
+  overwrite = T,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -188,6 +188,8 @@ raw_biomarkers[['mitelmandb']] <-
     cache_dir = file.path(path_data_raw, "biomarkers"))
 raw_biomarkers[['custom_fusions']] <- 
   load_custom_fusion_db()
+raw_biomarkers[['depmap']] <- 
+  load_depmap_fusions()
 
 raw_biomarkers[['custom_fusions']]$variant <- 
   raw_biomarkers[['custom_fusions']]$variant |>

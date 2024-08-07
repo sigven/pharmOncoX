@@ -1,3 +1,10 @@
+# Version 1.7.0
+
+* CIViC update (20240807)
+* NCI Thesaurus update (24.07e)
+* MitelmanDB update (20240715)
+* New dataset: DepMap (cell line) RNA fusion events
+
 # Version 1.6.10 
 
 * Fixed some erroneous drug classifications
@@ -6,12 +13,12 @@
 
 # Version 1.6.8 (June 7th 2024)
 
-* NCI update (24.05d)
+* NCI Thesaurus update (24.05d)
 
 # Version 1.6.7 (May 23rd 2024)
 
-* NCI update (24.04e)
-* Updated CIViC (20240523)
+* NCI Thesaurus update (24.04e)
+* CIViC update (20240523)
 
 # Version 1.6.4 (April 30th 2024)
 
@@ -19,11 +26,11 @@
 
 # Version 1.6.3 (April 26th 2024)
 
-* Updated CIViC (20240426)
+* CIViC update (20240426)
 
 # Version 1.6.2 (April 12th 2024)
 
-* Updated NCI Thesaurus (24.03d)
+* NCI Thesaurus update (24.03d)
 
 # Version 1.6.1 (March 26th 2024)
 
@@ -39,7 +46,7 @@
 
 # Version 1.5.8 (February 6th 2024)
 
-* NCI Thesaurus 24.01e
+* NCI Thesaurus update (24.01e)
 
 # Version 1.5.7 (February 3rd 2024)
 

@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 ```{r install, echo = T, eval = T}
 
 if (!("remotes" %in% installed.packages())) {
- install.packages("remotes")
+  install.packages("remotes")
 }
 
 remotes::install_github('sigven/pharmOncoX')
@@ -190,7 +190,11 @@ drugs <- drugs |>
   dplyr::mutate(
     disease_indication = stringr::str_replace_all(
       disease_indication, "\\|",", ")
-    )
+    ) |>
+  dplyr::select(
+    drug_id, drug_name, drug_type, molecule_chembl_id,
+    drug_action_type, target_symbol, dplyr::everything()
+  )
 
 dt_drugtable_ras_inhibitors <- DT::datatable(
   drugs,
@@ -472,7 +476,11 @@ drugs$records <- drugs$records |>
   dplyr::mutate(
     disease_indication = stringr::str_replace_all(
       disease_indication, "\\|",", ")
-    )
+    ) |>
+  dplyr::select(
+    drug_id, drug_name, drug_type, molecule_chembl_id,
+    drug_action_type, opentargets, dplyr::everything()
+  )
 
 dt_drugtable_platins <- DT::datatable(
   drugs$records,

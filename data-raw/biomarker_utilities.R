@@ -430,7 +430,7 @@ expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
 }
 
 load_civic_biomarkers <- function(
-    datestamp = '20240130',
+    datestamp = '20240709',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -2630,8 +2630,26 @@ load_custom_fusion_db <- function() {
   return(biomarker_items)
 }
 
+load_depmap_fusions <- function(db_datestamp = "24Q2"){
+  
+  # Load DepMap fusions
+  depmap_data <- list()
+  depmap_data[['fusions']] <- as.data.frame(read.csv(
+    file = "data-raw/depmap/OmicsFusionFiltered.csv", header = T))
+  
+  depmap_data[['models']] <- as.data.frame(read.csv(
+    file = "data-raw/depmap/Model.csv", header = T)) |>
+    dplyr::select(
+      ModelID, CellLineName, OncotreeLineage,
+      OncotreePrimaryDisease, OncotreeCode,
+      Age, Sex, PrimaryOrMetastasis, SampleCollectionSite,
+      SourceType
+    )
+  return(depmap_data)
+}
+
 load_mitelman_db <- function(cache_dir = NA,
-                             db_datestamp = "20240415") {
+                             db_datestamp = "20240715") {
 
   # Load Mitelman database
   # dos2unix -q -n MBCA.TXT.DATA MBCA.TXT
@@ -2672,7 +2690,7 @@ load_mitelman_db <- function(cache_dir = NA,
 
   fusion_event_data <- as.data.frame(readr::read_tsv(
     file = file.path(
-      cache_dir, "mitelmandb", "MBCA.TXT"),
+      cache_dir, "mitelmandb", "MBCA.TXT.DATA"),
     show_col_types = F, guess_max = 100000)) |>
     dplyr::filter(stringr::str_detect(GeneShort,"::")) |>
     dplyr::rename(variant = GeneShort,

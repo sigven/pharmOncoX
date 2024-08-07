@@ -2,6 +2,7 @@ Package: pharmOncoX
 Type: Package
 Title: Molecularly targeted cancer drugs and biomarkers
 Version: 1.6.10
+URL: https://sigven.github.io/pharmOncoX
 Authors@R: 
     c(person(given = "Sigve",
              family = "Nakken",
@@ -19,7 +20,6 @@ Description: This data package collects anticancer drug information from
     also allows for the retrieval of curated biomarkers from multiple 
     freely available resources (CIViC, CGI, Mitelman database).
 License: MIT + file LICENSE
-URL: https://github.com/sigven/pharmOncoX
 BugReports: https://github.com/sigven/pharmOncoX/issues
 Depends: 
     R (>= 4.1.0)

@@ -1750,8 +1750,10 @@ map_curated_targets <- function(gene_info = NULL,
         hit$drug_approved_noncancer <- FALSE
 
         ## set general indications for unknown cases
-        if(is.na(hit$disease_efo_id) & is.na(hit$disease_efo_label) &
-           is.na(hit$cui) & is.na(hit$cui_name)){
+        if(is.na(hit$disease_efo_id) & 
+           is.na(hit$disease_efo_label) &
+           is.na(hit$cui) & 
+           is.na(hit$cui_name)){
           hit$disease_efo_id = "EFO:0000311"
           hit$disease_efo_label = "cancer"
           hit$cui = "C0006826"
