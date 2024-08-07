@@ -1,45 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/404.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/CODE_OF_CONDUCT.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/articles/pharmOncoX.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/index.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/reference/get_biomarkers.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/reference/get_drug_records.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/reference/get_drugs.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/reference/get_targeted_drugs.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://sigven.github.io/pharmOncoX/reference/tidyeval.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://sigven.github.io/pharmOncoX/404.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/CODE_OF_CONDUCT.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/LICENSE-text.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/articles/index.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/articles/pharmOncoX.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/authors.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/index.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/news/index.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/reference/get_biomarkers.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/reference/get_drug_records.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/reference/get_drugs.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/reference/get_targeted_drugs.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/reference/index.html</loc></url>
+<url><loc>https://sigven.github.io/pharmOncoX/reference/tidyeval.html</loc></url>
 </urlset>
+
