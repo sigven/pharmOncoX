@@ -1191,6 +1191,11 @@ load_civic_biomarkers <- function(
         "c.3028+1G>A",
         "c.3028+2T>C",
         "c.3028+2T>G", 
+        "c.3082+1G>T",
+        "c.3082+1G>C",
+        "c.3082+1G>A",
+        "c.3082+2T>C",
+        "c.3082+2T>G", 
         sep=","),
       as.character(variant_alias)
     )) |>

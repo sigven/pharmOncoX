@@ -1,3 +1,8 @@
+# Version 1.7.1
+
+* CIViC update (20240826)
+  - added location of MET exon 14 skipping splice site (grch37 principal transcript)
+
 # Version 1.7.0
 
 * CIViC update (20240807)
