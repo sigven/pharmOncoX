@@ -1,3 +1,7 @@
+# Version 1.7.2
+
+* CIViC update (20240904)
+
 # Version 1.7.1
 
 * CIViC update (20240826)
