@@ -1,3 +1,11 @@
+# Version 1.8.0
+
+* CIViC update (20241102)
+* NCI Thesaurus update (24.09e)
+* OTP update (2024.09)
+* Clean-up of code for ChEMBL drug mappings
+  - skip DGIdb cross-references - rely on OTP
+
 # Version 1.7.3
 
 * CIViC update (20240918)
