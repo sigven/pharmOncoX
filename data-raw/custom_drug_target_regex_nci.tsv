@@ -74,7 +74,7 @@ Tolinapant|Xevinapant|Smac Mimetic	BIRC2
 Xevinapant|(Smac|SMAC) Mimetic	BIRC3
 Tolinapant|Idronoxil|Xevinapant|Smac Mimetic	XIAP
 hSTC810	BTN1A1
-Divarasib|Opnurasib	KRAS
+Divarasib|Opnurasib|INCB161734|QTX3046|RMC-9805|TSN1611|QTX3034|RMC-6236	KRAS
 Ras Inhibitor LUNA18	KRAS
 Ras Inhibitor LUNA18	NRAS
 Ras Inhibitor LUNA18	HRAS
@@ -90,11 +90,11 @@ Tinengotinib	FLT1
 Tinengotinib	KDR
 Tinengotinib	FLT3
 Tinengotinib	FLT4
-pan-RAF Inhibitor|pan-RAF Kinase Inhibitor	BRAF
-pan-RAF Inhibitor|pan-RAF Kinase Inhibitor	ARAF
-pan-RAF Inhibitor|pan-RAF Kinase Inhibitor	CRAF
+pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|Brimarafenib|BDTX-4933|DCC-3084	BRAF
+pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	ARAF
+pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	CRAF
 Ebvaciclib|Tagtociclib	CDK2
-Ebvaciclib	CDK4
+Ebvaciclib|Atirmociclib	CDK4
 Ebvaciclib	CDK6
 Utatrectinib	NTRK1
 Utatrectinib	NTRK2

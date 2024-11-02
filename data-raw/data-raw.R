@@ -21,7 +21,7 @@ opentargets_version <-
   metadata$compounds[metadata$compounds$source_abbreviation == "opentargets", 
                      "source_version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
-chembl_pubchem_datestamp <- '20240708' 
+chembl_pubchem_datestamp <- '20241024' 
 
 ## set logging layout
 lgr::lgr$appenders$console$set_layout(
@@ -81,7 +81,7 @@ drug_sets[['nci']] <- get_nci_drugs(
 #### -- Open Targets Platform - drugs ---####
 ## Get all targeted anticancer/other drugs from Open Targets Platform
 drug_sets[['otp']] <-
-  get_opentargets_cancer_drugs(
+  get_otp_cancer_drugs(
     path_data_raw = path_data_raw,
     ot_version = opentargets_version)
 
@@ -101,7 +101,7 @@ drug_sets[['nci_otp_curated']] <- map_curated_targets(
   gene_info = gene_info,
   path_data_raw = path_data_raw,
   drug_df = drug_sets[['nci_otp']]
-)
+)$curated
 
 ####-- Cancer drugs classified into categories (ATC) ---####
 drug_sets[['nci_otp_curated_classified']] <- assign_drug_category(
@@ -194,7 +194,8 @@ raw_biomarkers[['depmap']] <-
 raw_biomarkers[['custom_fusions']]$variant <- 
   raw_biomarkers[['custom_fusions']]$variant |>
   dplyr::anti_join(
-    raw_biomarkers[["mitelmandb"]][['variant']], by = "variant_alias")
+    raw_biomarkers[["mitelmandb"]][['variant']], 
+    by = "variant_alias")
 
 biomarkers <- list()
 biomarkers[['data']] <- raw_biomarkers
@@ -202,11 +203,11 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #rm(biomarkers_all)
 
 ## upload to Google Drive
-version_bump <- paste0(
-  substr(as.character(packageVersion("pharmOncoX")),1,4),
-  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
+#version_bump <- paste0(
+#  substr(as.character(packageVersion("pharmOncoX")),1,4),
+#  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-
+version_bump <- "1.8.0"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
@@ -221,7 +222,7 @@ db[['drug_map_basic']][['records']] <- drug_index_map[['id2basic']]
 db[['drug_map_alias']] <- list()
 db[['drug_map_alias']][['records']] <- drug_index_map[['id2alias']]
 
-googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
+#googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
 
 gd_records <- list()
 db_id_ref <- data.frame()
