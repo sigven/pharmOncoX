@@ -1,0 +1,35 @@
+[tool.bumpversion]
+current_version = "1.7.3"
+search = "{current_version}"
+replace = "{new_version}"
+message = "Bump version: {current_version} → {new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+commit = true
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:\\.(?P<dev>\\d+))?
+"""
+
+serialize = [
+    "{major}.{minor}.{patch}.{dev}",
+    "{major}.{minor}.{patch}",
+]
+
+[[tool.bumpversion.files]]
+filename = "pcgrr/DESCRIPTION"
+search = "Version: {current_version}"
+replace = "Version: {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "inst/CITATION"
+search = "{current_version}"
+replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = ".github/workflows/pkgdown.yaml"
+search = "VERSION: '{current_version}'"
+replace = "VERSION: '{new_version}'"
