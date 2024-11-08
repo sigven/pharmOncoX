@@ -586,7 +586,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     
     ## parse all entries in nci thesaurus where the 
     ## semantic concept type is treatment-related
-    nci_antineo_thesaurus_raw2 <- as.data.frame(
+    nci_antineo_thesaurus_raw <- as.data.frame(
       read.table(file = file.path(path_data_raw, "nci_thesaurus", "Thesaurus.txt"),
                  header = F, stringsAsFactors = F, sep="\t",
                  comment.char="", quote = "") |>

@@ -1,3 +1,8 @@
+# Version 1.8.1
+
+* CIViC update (20241107)
+* NCI Thesaurus update (24.10d)
+
 # Version 1.8.0
 
 * CIViC update (20241102)

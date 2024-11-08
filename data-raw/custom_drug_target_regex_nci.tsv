@@ -271,7 +271,7 @@ CENP-E	CENPE
 CYP17	CYP17A1
 EBNA-1	EBNA1
 STP938	CTPS1
-HS-10502	PARP1
+HS-10502|GS-0201|HRS-1167|IMP1734|SNV1521	PARP1
 ORIC-944	PRC2
 NPX267	KIR3DL3
 ADA-011	LILRB1
@@ -376,6 +376,7 @@ DNMT1	DNMT1
 CTX-712	CLK1
 CTX-712	CLK2
 STC-15	METTL3
+RO7589831|HRO761	WRN
 ATI-2231	MAPKAPK2
 NLRP3 Inhibitor	NLRP3
 Epidermal Growth Factor Receptor|Anti-[A-Za-z]{1,}[0-9]{0,}/EGFR|EGFR (.+)?Antagonist	EGFR
@@ -420,6 +421,7 @@ CDC7	CDC7
 HIF-1alpha	HIF1A
 (FAK )	PTK2
 (Fascin )	FSCN1
+FX-909	PPARG
 (Gamma-Secretase )	GSAP
 Uridine Phosphorylase Inhibitor	UPP1
 EZH2	EZH2
@@ -432,6 +434,7 @@ NEDD8 Activating Enzyme E1	NAE1
 MetAP2	METAP2
 (Mps1 )	TTK
 MKNK1	MKNK1
+Tegtociclib	CDK2
 MNK1/2	MKNK1
 MNK1/2	MKNK2
 (CDK4/6)	CDK4
@@ -471,7 +474,6 @@ Menin Inhibitor	MEN1
 FGF Receptor Antagonist HGS1036	FGFR1
 Gunagratinib	FGFR1
 Gunagratinib	FGFR2
-
 Gunagratinib|LOXO-435	FGFR3
 Gunagratinib	FGFR4
 Vofatamab	FGFR3
@@ -481,7 +483,7 @@ Anti-NY-ESO(-)?1	CTAG1B
 Anti-GITR|Anti-human GITR	TNFRSF18
 Anti-BCMA	TNFRSF17
 17beta-Hydroxysteroid Dehydrogenase Type 5 Inhibitor	AKR1C3
-Adagrasib	KRAS
+Adagrasib|AZD0022|LY3962673	KRAS
 Anti-CD123	IL3RA
 Anti-CD33(-|/| )	CD33
 Anti-CD38(-|/| )	CD38
