@@ -2843,14 +2843,14 @@ load_mitelman_db <- function(cache_dir = NA,
                     variant_origin = "somatic",
                     variant_consequence = "transcript_fusion",
                     evidence_url = "https://mitelmandatabase.isb-cgc.org/",
-                    biomarker_source_db = "mitelmandb",
+                    biomarker_source = "mitelmandb",
                     #biomarker_entity = T,
                     #alias_type = "other_gene",
-                    biomarker_datestamp = db_datestamp) |>
+                    biomarker_source_datestamp = db_datestamp) |>
       dplyr::arrange(evidence_id) |>
       dplyr::rename(citation_id = source_id) |>
-      dplyr::select(biomarker_source_db,
-                    biomarker_datestamp,
+      dplyr::select(biomarker_source,
+                    biomarker_source_datestamp,
                     variant_id,
                     variant_alias,
                     #alias_type,
@@ -2872,8 +2872,8 @@ load_mitelman_db <- function(cache_dir = NA,
     dplyr::mutate(alias_type = "other_gene") |>
     dplyr::rename(gene = symbol) |>
     #dplyr::rename(variant_alias = variant) |>
-    dplyr::select(biomarker_source_db,
-                  biomarker_datestamp,
+    dplyr::select(biomarker_source,
+                  biomarker_source_datestamp,
                   variant_id, 
                   variant_alias, 
                   variant_name_primary,

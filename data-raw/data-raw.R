@@ -207,7 +207,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "1.8.1"
+version_bump <- "1.8.2"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
@@ -270,6 +270,9 @@ for(elem in c('biomarkers',
     dplyr::bind_rows(google_rec_df)
   
 }
+
+
+
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
 
