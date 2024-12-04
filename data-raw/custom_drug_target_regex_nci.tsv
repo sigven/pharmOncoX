@@ -93,7 +93,7 @@ Tinengotinib	FLT4
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|Brimarafenib|BDTX-4933|DCC-3084	BRAF
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	ARAF
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	CRAF
-Ebvaciclib|Tagtociclib	CDK2
+Ebvaciclib|Tagtociclib|Certociclib	CDK2
 Ebvaciclib|Atirmociclib	CDK4
 Ebvaciclib	CDK6
 Utatrectinib	NTRK1
@@ -108,7 +108,7 @@ Osemitamab	CLDN18
 Reozalimab	PDCD1
 Reozalimab	CD274
 Sirexatamab	DKK1
-Tinlorafenib	BRAF
+Tinlorafenib|Claturafenib	BRAF
 Xiliertinib	EGFR
 Benralizumab	IL5RA
 Brensocatib	CTSC
@@ -214,7 +214,7 @@ PPAR Alpha Antagonist	PPARA
 CRTH2 Antagonist	PTGDR2
 Avotaciclib	CDK1
 BRG1/BRM Inhibitor	SMARCA4
-BRG1/BRM Inhibitor	SMARCA2
+BRG1/BRM Inhibitor|LY4050784	SMARCA2
 SMO Protein Inhibitor	SMO
 PTPN2 Inhibitor	PTPN2
 Hpk1 Inhibitor	MAP4K1
@@ -316,7 +316,7 @@ Anti-ILT4	LILRB2
 Anti-LAMP1	LAMP1
 TGF-beta 1|TGFb1|Anti-TGF-beta Monoclonal	TGFB1
 Anti-TGF-beta RII	TGFBR2
-Mobocertinib|Befotertinib	EGFR
+Mobocertinib|Befotertinib|Pebezertinib	EGFR
 Karonudib	NUDT1
 Empesertib	TTK
 Amdizalisib	PIK3CD
@@ -647,7 +647,7 @@ CXCR2	CXCR2
 CXCR4	CXCR4
 PERK Inhibitor	EIF2AK3
 ERK Inhibitor	MAPK1
-MRTX0902	SOS1
+MRTX0902|KQB198|ZG2001	SOS1
 Kras G12C Inhibitor|HRS-4642	KRAS
 (ERK1/2|ERK 1/2)	MAPK3
 (ERK1/2|ERK 1/2)	MAPK1
