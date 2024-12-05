@@ -14,7 +14,7 @@ Currently (as of early December 2024), `pharmOncoX` is built upon the following
 releases of external databases:
 
  - Open Targets Platform (2024.09)
- - ChEMBL (v35)
+ - ChEMBL (v34)
  - NCI Thesaurus (24.11d)
  - MitelmanDB (20241015)
  - CIViC (20241204)
