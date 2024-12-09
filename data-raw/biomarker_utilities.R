@@ -897,8 +897,8 @@ load_civic_biomarkers <- function(
   biomarker_names_skip_regex <- 
     paste0(
       "methylat|phosphoryl|serum lev|mislocali|peri-therap|",
-      "alternative|cytoplasmic|p-loop|reg_|alternative|",
-      "loss of heterozygosity|internal|n-terminal")
+      "alternative|cytoplasmic|p-loop|reg_|alternative|polymorphism|",
+      "loss of heterozygosity|philadelphia|internal|n-terminal")
   
   molecularProfileSummary <- as.data.frame(
     data.table::fread(
@@ -1029,6 +1029,8 @@ load_civic_biomarkers <- function(
   variantSummary <- as.data.frame(
     data.table::fread(civic_local_fnames[['VariantSummaries']],
                       select = c(1:25), fill = T)) |>
+    ## Ignore the "Factor" feature type (Kataegis, CK, methylation)
+    dplyr::filter(feature_type != "Factor") |>
     #dplyr::rename(molecular_profile_id = variant_id) |>
     dplyr::mutate(alteration_type = "MUT") |>
     dplyr::mutate(variant = stringr::str_trim(variant)) |>
@@ -1145,10 +1147,6 @@ load_civic_biomarkers <- function(
       stringr::str_detect(variant,"^aa_region:"),
       as.character("missense_variant"),
       as.character(variant_consequence))) |>
-    # dplyr::mutate(variant = dplyr::if_else(
-    #   stringr::str_detect(variant,"^aa_region:"),
-    #   as.character("Mutation"),
-    #   as.character(variant))) |>
     dplyr::filter(!nchar(variant_alias) == 0) |>
     dplyr::mutate(variant_name_primary = stringr::str_replace(
       variant_name_primary, "FS","fs")
@@ -1172,7 +1170,6 @@ load_civic_biomarkers <- function(
     variant_entries <- unique(c(vrows$variant,
                                 vrows$variant_alias))
     gene <- unique(vrows$gene)
-    #molecular_profile_id <- unique(vrows$molecular_profile_id)
     variant_consequence <- unique(vrows$variant_consequence)
     alteration_type <- unique(vrows$alteration_type)
     variant_name_primary <- unique(vrows$variant_name_primary)
@@ -1193,7 +1190,6 @@ load_civic_biomarkers <- function(
       for (variant_alias in all_aliases) {
         df <- data.frame(
           'variant_id' = i,
-          #'molecular_profile_id' = molecular_profile_id,
           'symbol' = gene,
           'variant_name_primary' = variant_name_primary,
           'variant_alias' = variant_alias,
@@ -1292,7 +1288,9 @@ load_civic_biomarkers <- function(
       stringr::str_detect(variant_alias, "^aa_region") ~ "aa_region",
       stringr::str_detect(variant_alias, "^c\\.[0-9]{1,}") ~ "hgvsc",
       stringr::str_detect(variant_alias, "^Exon ") ~ "exon",
-      stringr::str_detect(variant_alias, "Mutation|Copy|Wildtype|Loss|Alteration") ~ "other_gene",
+      stringr::str_detect(
+        variant_alias, 
+        "Mutation|Copy|Wildtype|Loss|Truncation|Alteration|Frameshift") ~ "other_gene",
       TRUE ~ as.character(alias_type)
     )) |>
     dplyr::left_join(variant_coordinates, 
@@ -2324,7 +2322,7 @@ load_custom_fusion_db <- function() {
     dplyr::distinct() |>
     dplyr::rename(variant_alias = alias,
                   gene = symbol) |>
-    dplyr::mutate(alteration_type = "TRANSLOCATION_FUSION",
+    dplyr::mutate(alteration_type = "FUSION",
                   variant_consequence = "transcript_fusion",
                   variant_id = variant,
                   variant_name_primary = variant) |>
