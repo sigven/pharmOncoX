@@ -497,7 +497,17 @@ get_atc_drug_classification <- function(
   atc_drug_classification <- atc_drug_classification |>
     dplyr::bind_rows(atc_custom) |>
     dplyr::arrange(atc_code_level3) |>
-    dplyr::distinct()
+    dplyr::distinct() |>
+    dplyr::mutate(atc_code_level3 = dplyr::case_when(
+      atc_drug_entry == "ipilimumab" ~ "L01FXA",
+      atc_drug_entry == "tremelimumab" ~ "L01FXA",
+      TRUE ~ as.character(atc_code_level3)
+    )) |>
+    dplyr::mutate(atc_level3 = dplyr::case_when(
+      atc_drug_entry == "ipilimumab" ~ "Other ICIs - CTLA4 inhibitors",
+      atc_drug_entry == "tremelimumab" ~ "Other ICIs - CTLA4 inhibitors",
+      TRUE ~ as.character(atc_level3)
+    ))
   
   
   return(atc_drug_classification)
@@ -1233,11 +1243,9 @@ assign_drug_category <- function(drug_df = NULL,
   drugs_non_classified <- drug_df |>
     dplyr::mutate(drug_entry = tolower(nci_cd_name)) |>
     dplyr::anti_join(
-      #classified_drugs[['pre_classified_atc']], by = "molecule_chembl_id") |>
       classified_drugs[['pre_classified_atc']], by = "drug_entry") |>
     dplyr::distinct()
-    #dplyr::mutate(drug_entry = tolower(nci_cd_name))
-    
+
   custom_target_classifications <- drugs_non_classified |>
     dplyr::filter(!is.na(target_symbol)) |>
     dplyr::group_by(drug_name, nci_cd_name, 
@@ -1277,11 +1285,17 @@ assign_drug_category <- function(drug_df = NULL,
       target_symbol == "ALK" ~ "L01ED",
       (drug_action_type == "INHIBITOR" |
          drug_action_type == "ANTAGONIST") & 
-        (target_symbol == "LAG3" | 
-           target_symbol == "CD274|CTLA4" |
-           target_symbol == "CTLA4|PDCD1" |
-        target_symbol == "TIGIT" | 
-        target_symbol == "CTLA4") ~ "L01FXA",
+        target_symbol == "CTLA4" ~ "L01FXA",
+      (drug_action_type == "INHIBITOR" |
+         drug_action_type == "ANTAGONIST") & 
+        target_symbol == "LAG3"  ~ "L01FXB",
+      (drug_action_type == "INHIBITOR" |
+         drug_action_type == "ANTAGONIST") & 
+           target_symbol == "TIGIT" ~ "L01FXC",
+      (drug_action_type == "INHIBITOR" |
+         drug_action_type == "ANTAGONIST") & 
+           (target_symbol == "CD274|CTLA4" |
+           target_symbol == "CTLA4|PDCD1") ~ "L01FXD",
       (!is.na(drug_name) & drug_name == "BRENTUXIMAB VEDOTIN") |
       (stringr::str_detect(
         target_symbol,"^(TUBA|TUBB)") &

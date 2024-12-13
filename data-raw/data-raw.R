@@ -34,7 +34,7 @@ path_data_tmp_processed <-
   file.path(path_data_raw, "tmp_processed")
 
 
-# ####--- NCBI gene xrefs----####
+#####--- NCBI gene xrefs----####
 gene_basic <- geneOncoX::get_basic(
   cache_dir = path_data_tmp_processed)
 gene_gencode <- geneOncoX::get_gencode(
@@ -207,7 +207,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "1.8.5"
+version_bump <- "1.8.6"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
