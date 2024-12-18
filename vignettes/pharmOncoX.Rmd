@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 bibliography: '`r system.file("bibliography.bib", package = "pharmOncoX")`'
 nocite: |
-  @Kim2021-ye, @Freshour2021-bh, @Sioutos2007-nl, 
+  @Kim2021-ye, @Sioutos2007-nl, 
   @Ochoa2021-jc, @Nakken2023-ab, @Griffith2017-do,
   @Tamborero2018-aj
 ---
@@ -272,8 +272,11 @@ drugs <- get_drugs(
 drugs$records <- drugs$records |>
   dplyr::filter(
     (!is.na(atc_level3) & 
-      (atc_level3 == "PD-1/PDL-1 inhibitors" |
-     atc_level3 == "Other immune checkpoint inhibitors")
+       (atc_level3 == "PD-1/PDL-1 inhibitors" |
+         atc_level3 == "Other ICIs - LAG3 inhibitors" | 
+         atc_level3 == "Other ICIs - TIGIT inhibitors" | 
+         atc_level3 == "Other ICIs - CTLA4 inhibitors" |
+     atc_level3 == "Other ICIs")
   )) |>
   dplyr::select(
     -c("drug_alias",
@@ -326,7 +329,10 @@ drugs$records <- drugs$records |>
   dplyr::filter(
     (!is.na(atc_level3) & 
       (atc_level3 == "PD-1/PDL-1 inhibitors" |
-     atc_level3 == "Other immune checkpoint inhibitors")
+         atc_level3 == "Other ICIs - LAG3 inhibitors" | 
+         atc_level3 == "Other ICIs - TIGIT inhibitors" | 
+         atc_level3 == "Other ICIs - CTLA4 inhibitors" |
+     atc_level3 == "Other ICIs")
   )) |>
   dplyr::select(
     -c("drug_alias",

@@ -1,3 +1,12 @@
+# Version 1.8.7
+
+* NCI Thesaurus update (24.11d)
+* CIViC update (20241218)
+* New custom drug categories
+ - ICIs - CTLA4 inhibitors
+ - ICIs - TIGIT inhibitors
+ - ICIs - LAG3 inhibitors
+
 # Version 1.8.1
 
 * CIViC update (20241107)

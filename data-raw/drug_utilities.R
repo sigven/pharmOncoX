@@ -499,13 +499,31 @@ get_atc_drug_classification <- function(
     dplyr::arrange(atc_code_level3) |>
     dplyr::distinct() |>
     dplyr::mutate(atc_code_level3 = dplyr::case_when(
-      atc_drug_entry == "ipilimumab" ~ "L01FXA",
-      atc_drug_entry == "tremelimumab" ~ "L01FXA",
+      ## JAK inhibitors (assigned to both L01EJ and L04AF, 
+      ## stick to L01EJ for consistency with other kinase inhibitors)
+      atc_code_level3 == "L04AF" ~ "L01EJ",
+      ## mTOR inhibitors (assigned to both L04AH and L01EG, 
+      ## stick to L01EG for consistency with other kinase inhibitors)
+      atc_code_level3 == "L04AH" ~ "L01EG",
+      atc_drug_entry == "ipilimumab" | 
+        atc_drug_entry == "tremelimumab" ~ "L01FXA",
+      atc_drug_entry == "epcoritamab" | 
+        atc_drug_entry == "glofitamab" |
+        atc_drug_entry == "mosunetuzumab" |
+        atc_drug_entry == "talquetamab" | 
+        atc_drug_entry == "teclistamab" ~ "L01FXE",
       TRUE ~ as.character(atc_code_level3)
     )) |>
     dplyr::mutate(atc_level3 = dplyr::case_when(
-      atc_drug_entry == "ipilimumab" ~ "Other ICIs - CTLA4 inhibitors",
-      atc_drug_entry == "tremelimumab" ~ "Other ICIs - CTLA4 inhibitors",
+      atc_code_level3 == "L01EJ" ~ "JAK inhibitors",
+      atc_code_level3 == "L01EG" ~ "mTOR inhibitors",
+      atc_drug_entry == "ipilimumab" | 
+        atc_drug_entry == "tremelimumab" ~ "Other ICIs - CTLA4 inhibitors",
+      atc_drug_entry == "epcoritamab" | 
+        atc_drug_entry == "glofitamab" |
+        atc_drug_entry == "mosunetuzumab" | 
+        atc_drug_entry == "talquetamab" | 
+        atc_drug_entry == "teclistamab" ~ "T-cell Engagers",
       TRUE ~ as.character(atc_level3)
     ))
   
@@ -1196,7 +1214,20 @@ map_curated_targets <- function(gene_info = NULL,
       paste0(drug_action_type,"_OTHER"),
       as.character(drug_action_type)
     ))
-
+  
+  
+  duplicated_drugs <- ot_nci_drugs_curated |>
+    dplyr::group_by(nci_cd_name) |>
+    dplyr::summarise(drug_cancer_relevance = paste(
+      sort(unique(drug_cancer_relevance)), collapse="@")) |>
+    dplyr::filter(stringr::str_detect(drug_cancer_relevance,"@")) |>
+    tidyr::separate_rows(drug_cancer_relevance, sep = "@") |>
+    dplyr::filter(!stringr::str_detect(drug_cancer_relevance,"otp"))
+  
+  ot_nci_drugs_curated <- ot_nci_drugs_curated |>
+    dplyr::anti_join(duplicated_drugs, 
+                     by = c("nci_cd_name","drug_cancer_relevance"))
+  
   return(list('curated' = ot_nci_drugs_curated,
               'nonmapped' = inhibitors_no_target_nonmapped))
 }
@@ -1243,7 +1274,8 @@ assign_drug_category <- function(drug_df = NULL,
   drugs_non_classified <- drug_df |>
     dplyr::mutate(drug_entry = tolower(nci_cd_name)) |>
     dplyr::anti_join(
-      classified_drugs[['pre_classified_atc']], by = "drug_entry") |>
+      classified_drugs[['pre_classified_atc']], 
+      by = "drug_entry") |>
     dplyr::distinct()
 
   custom_target_classifications <- drugs_non_classified |>
@@ -1324,11 +1356,24 @@ assign_drug_category <- function(drug_df = NULL,
       stringr::str_detect(
         target_symbol, "^IDH[1-2]{1}") ~ "L01XXD",
       stringr::str_detect(
+        target_symbol, "^((IGF1\\|)|IGF1R)") ~ "L01XXN",
+      !is.na(drug_name) & 
+        stringr::str_detect(
+          tolower(drug_name), "^aberaterone") ~ "L02BX",
+      !is.na(drug_name) & 
+        stringr::str_detect(
+          tolower(drug_name), "^(gemcitabine)") ~ "L01BC",
+      !is.na(drug_name) & 
+        stringr::str_detect(
+          tolower(drug_name), "^(fludarabine)") ~ "L01BB",
+      stringr::str_detect(
         target_symbol, "^(K|N|H)RAS") ~ "L01XXC",
       stringr::str_detect(
         target_symbol, "^MET$") ~ "L01EXA",
       stringr::str_detect(
-        target_symbol, "^(AKT[0-9](\\|)?){1,}$") |
+        target_symbol, "^(CD3D\\|CD3E\\|CD3G)") ~ "L01FXE",
+      stringr::str_detect(
+        target_symbol, "^(AKT[0-9](\\|)?){1,}") |
         (!is.na(drug_name) &
            stringr::str_detect(
              drug_name, "GSK-690693")) ~ "L01EXC",
@@ -1361,9 +1406,13 @@ assign_drug_category <- function(drug_df = NULL,
          (drug_name == "PRALSETINIB" |
             drug_name == "SELPERCATINIB")) ~ "L01EXL",
       stringr::str_detect(
+        target_symbol, "^MTOR$") ~ "L01EG",
+      stringr::str_detect(
         target_symbol, "^(KDR|FLT1|FLT3|FLT4)") ~ "L01EK",
       stringr::str_detect(
         target_symbol, "^(MS4A1)") ~ "L01FA",
+      stringr::str_detect(
+        target_symbol, "^(ESR1)") ~ "L02BA",
       stringr::str_detect(
         target_symbol, "^(CD38)") ~ "L01FC",
       stringr::str_detect(
@@ -1499,21 +1548,45 @@ assign_drug_category <- function(drug_df = NULL,
                drug_n_indications > 2) &
             (!is.na(drug_frac_cancer_indications) &
                drug_frac_cancer_indications > 0.4))) ~ "L01XX",
-      
-      
       TRUE ~ as.character(atc_code_level3)
     )) |>
     dplyr::distinct() |>
     dplyr::group_by(dplyr::across(-c("atc_code_level3"))) |>
     dplyr::summarise(atc_code_level3 = paste(unique(atc_code_level3), collapse="|"),
-                     .groups = "drop")
+                     .groups = "drop") |>
+    dplyr::mutate(atc_code_level3 = dplyr::case_when(
+      stringr::str_detect(
+        atc_code_level3, "^(L0[A-Z0-9]{1,}\\|((S|M)01(XA|LA|AH)))$") ~ 
+        stringr::str_replace_all(
+          atc_code_level3, "(\\|((S|M)01(XA|LA|AH)))$", ""),
+      stringr::str_detect(
+        atc_code_level3, "L0[A-Z0-9]{1,}\\|L01XX") ~ 
+        stringr::str_replace_all(
+          atc_code_level3, "\\|L01XX", ""),
+      atc_code_level3 == "D11AH|L01EJ" |
+        atc_code_level3 == "D11AH|L01XF" |
+        atc_code_level3 == "G03DA|L02AB" |
+        atc_code_level3 == "D10AD|L01XF" |
+        atc_code_level3 == "D11AH|L04AD" ~ 
+        stringr::str_replace_all(
+          atc_code_level3, "^(D10AD|G03DA|D11AH)\\|", ""),
+      atc_code_level3 == "L01FG|S01LA" |
+        atc_code_level3 == "L01EG|S01XA" |
+        atc_code_level3 == "L01BB|L04AA" |
+        atc_code_level3 == "L01BA|L04AX" |
+        atc_code_level3 == "L01XX|M01AH" ~ 
+        stringr::str_replace_all(
+          atc_code_level3, "\\|(S01LA|S01XA|L04AA|L04AX|M01AH)", ""),
+      TRUE ~ atc_code_level3
+    )) |>
+    dplyr::distinct()
   
   
   atc_classified_drugs <- classified_drugs_all |>
     dplyr::filter(!is.na(drug_entry)) |>
     dplyr::select(atc_code_level3, drug_entry) |>
     dplyr::filter(!is.na(atc_code_level3)) |>
-    tidyr::separate_rows(atc_code_level3) |>
+    tidyr::separate_rows(atc_code_level3, sep = "\\|") |>
     dplyr::filter(!is.na(atc_code_level3)) |>
     dplyr::left_join(
       dplyr::select(
@@ -1524,7 +1597,7 @@ assign_drug_category <- function(drug_df = NULL,
         atc_level2,
         atc_code_level3,
         atc_level3
-      )
+      ), relationship ="many-to-many"
     ) |>
     dplyr::group_by(drug_entry) |>
     dplyr::summarise(
