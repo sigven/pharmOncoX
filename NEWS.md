@@ -1,11 +1,16 @@
+# Version 1.8.8
+
+* Removed buggy drug aliases from PubChem
+* Updated DepMap RNA fusion events (24Q4)
+
 # Version 1.8.7
 
 * NCI Thesaurus update (24.11d)
 * CIViC update (20241218)
 * New custom drug categories
- - ICIs - CTLA4 inhibitors
- - ICIs - TIGIT inhibitors
- - ICIs - LAG3 inhibitors
+  - ICIs - CTLA4 inhibitors
+  - ICIs - TIGIT inhibitors
+  - ICIs - LAG3 inhibitors
 
 # Version 1.8.1
 

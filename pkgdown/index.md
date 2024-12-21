@@ -17,7 +17,7 @@ releases of external databases:
  - ChEMBL (v34)
  - NCI Thesaurus (24.11d)
  - MitelmanDB (20241015)
- - CIViC (20241218)
+ - CIViC (20241221)
 
 ### Getting started
 

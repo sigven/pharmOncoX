@@ -2334,7 +2334,7 @@ load_custom_fusion_db <- function() {
   return(biomarker_items)
 }
 
-load_depmap_fusions <- function(db_datestamp = "24Q2"){
+load_depmap_fusions <- function(db_datestamp = "24Q4"){
   
   # Load DepMap fusions
   depmap_data <- list()
