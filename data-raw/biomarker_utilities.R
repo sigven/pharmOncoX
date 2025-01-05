@@ -2530,10 +2530,22 @@ load_mitelman_db <- function(cache_dir = NA,
                     evidence_id, 
                     source_id) |>
       tidyr::separate_rows(variant_alias, sep = "@@@") |>
-      #dplyr::rename(variant_alias = alias) |>
+
+      ## Remove aliases where fusion partners are mentioned in reverse order
+      #dplyr::filter(
+        # !stringr::str_detect(
+        #   variant_alias,
+        #   paste0(
+        #     "RARA::PML|ABL1::BCR|ERG::TMPRSS2|RUNX1T1::RUNX1|NSD1::NUP98|",
+        #     "MYH11::CBFB|RET::KIF5B|RET::CCDC6|ROS1::CD74|CAMTA1::WWTR1|",
+        #     "NPM1::MLF1|BRAF::KIAA1549|CREBBP::KAT6A|MLF1::NPM1"))) |>
       dplyr::filter(
         !stringr::str_detect(
-          variant_alias,"RARA::PML|ABL1::BCR|ERG::TMPRSS2")) |>
+          variant_name_primary,
+          paste0(
+            "RARA::PML|ABL1::BCR|ERG::TMPRSS2|RUNX1T1::RUNX1|NSD1::NUP98|",
+            "MYH11::CBFB|RET::KIF5B|RET::CCDC6|ROS1::CD74|CAMTA1::WWTR1|",
+            "NPM1::MLF1|BRAF::KIAA1549|CREBBP::KAT6A|MLF1::NPM1"))) |>
       
       dplyr::bind_rows(
         bcr_abl_custom
