@@ -16,8 +16,8 @@ releases of external databases:
  - Open Targets Platform (2024.09)
  - ChEMBL (v34)
  - NCI Thesaurus (24.12e)
- - MitelmanDB (20241015)
- - CIViC (20250105)
+ - MitelmanDB (20250115)
+ - CIViC (20250127)
 
 ### Getting started
 

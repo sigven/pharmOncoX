@@ -1,3 +1,8 @@
+# Version 1.9.0
+
+* CIViC update (20250127)
+* MitelmanDB update (20250115)
+
 # Version 1.8.8
 
 * Removed buggy drug aliases from PubChem
