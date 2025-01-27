@@ -4,8 +4,10 @@ suppressPackageStartupMessages(source('data-raw/biomarker_utilities.R'))
 ## get metadata from metadata_pharma_oncox.xlsx
 metadata <- list()
 for (elem in c('compounds','biomarkers')) {
-  metadata[[elem]] <- as.data.frame(openxlsx::read.xlsx(
-    "data-raw/metadata_pharm_oncox.xlsx", sheet = elem, colNames = T) |>
+  metadata[[elem]] <- as.data.frame(
+    openxlsx::read.xlsx(
+    "data-raw/metadata_pharm_oncox.xlsx", 
+    sheet = elem, colNames = T) |>
       dplyr::mutate(source_version = dplyr::if_else(
         is.na(source_version) &
           source_abbreviation == "civic",
@@ -207,7 +209,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "1.8.9"
+version_bump <- "1.9.0"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
