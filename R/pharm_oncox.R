@@ -1045,3 +1045,131 @@ NULL
 
 utils::globalVariables(c("."))
 
+#' Match a list of drug names/aliases to the dataset of drugs
+#' provided by pharmOncoX
+#'
+#' @description
+#'
+#' @export
+#' 
+match_drug_names <- function(query = NULL,
+                             exclude_salt_forms = TRUE,
+                             exclude_adc = FALSE,
+                             cache_dir = NA,
+                             force_download = FALSE){
+  
+  if(is.null(query)){
+    stop("Argument 'query' is not defined")
+  }
+  
+  if(!is.character(query)){
+    stop("Argument 'query' must be a character vector")
+  }
+  
+  #query <- tolower(query)
+  
+  query_df <- data.frame('query' = query) |>
+    dplyr::mutate(
+      drug_query = tolower(query),
+      drug_query_stripped = stringr::str_replace_all(
+        .data$drug_query, " \\(\\S+\\)$", "")) |>
+    dplyr::mutate(
+      drug_query_stripped = stringr::str_replace_all(
+        .data$drug_query_stripped, 
+        " (tri|di)?(hydrochloride|acetate)$", "")) |>
+    dplyr::distinct()
+    
+    
+  
+  ## Get full list of drug records
+  all_drug_recs <- get_drug_records(cache_dir, force_download)
+  drug_records <- as.data.frame(all_drug_recs[['records']])
+  metadata <- as.data.frame(all_drug_recs[['metadata']])
+  
+  if (exclude_salt_forms == TRUE) {
+    drug_records <- drug_records |>
+      dplyr::filter(.data$is_salt == FALSE)
+  }
+  
+  if (exclude_adc == TRUE) {
+    drug_records <- drug_records |>
+      dplyr::filter(.data$is_adc == FALSE)
+  }
+  
+  ## Match drug names
+  drug_records_slim <- drug_records |>
+    dplyr::select(drug_name,
+                molecule_chembl_id,
+                drug_type,
+                drug_action_type,
+                atc_treatment_category,
+                atc_level3,
+                drug_alias,
+                target_symbol,
+                target_ensembl_gene_id) |>
+    dplyr::distinct() |>
+    tidyr::separate_rows(drug_alias, sep = "\\|") |>
+    dplyr::mutate(drug_alias = tolower(drug_alias)) 
+  
+  matches <- list()
+  matches[['1']] <- query_df |>
+    dplyr::left_join(
+      drug_records_slim, 
+      by = c("drug_query" = "drug_alias")) |>
+    dplyr::mutate(match_type = dplyr::if_else(
+      !is.na(drug_name),
+      "by_alias", as.character(NA))) |>
+    dplyr::distinct() |>
+    dplyr::group_by(
+      dplyr::across(
+        -c("target_symbol","target_ensembl_gene_id"))) |>
+    dplyr::summarise(
+      target_symbol = paste(
+        sort(target_symbol), collapse = "|"),
+      target_ensembl_gene_id = paste(
+        sort(target_ensembl_gene_id), collapse = "|"),
+      .groups = "drop"
+    )
+  
+  matches[['2']] <- matches[['1']] |>
+    dplyr::filter(is.na(match_type)) |>
+    dplyr::select(c("drug_query","drug_query_stripped")) |>
+    dplyr::left_join(
+      drug_records_slim, 
+      by = c("drug_query_stripped" = "drug_alias"),
+      relationship = "many-to-many") |>
+    dplyr::mutate(match_type = dplyr::if_else(
+      !is.na(drug_name),
+      "by_stripped_alias", as.character(NA))) |>
+    dplyr::distinct() |>
+    dplyr::group_by(
+      dplyr::across(
+        -c("target_symbol","target_ensembl_gene_id"))) |>
+    dplyr::summarise(
+      target_symbol = paste(
+        sort(target_symbol), collapse = "|"),
+      target_ensembl_gene_id = paste(
+        sort(target_ensembl_gene_id), collapse = "|"),
+      .groups = "drop"
+    ) |>
+    dplyr::filter(!is.na(match_type))
+  
+  matches[['1']] <- matches[['1']] |>
+    dplyr::filter(!is.na(match_type))
+  
+  all_matches <- dplyr::bind_rows(matches) |>
+    dplyr::mutate(match_phrase = dplyr::case_when(
+      !is.na(match_type) & 
+        match_type == "by_name_alias" ~ drug_query,
+      !is.na(match_type) & 
+        match_type == "by_stripped_name_alias" ~ drug_query_stripped,
+    )) |>
+    dplyr::select(-c("drug_query","drug_query_stripped")) |>
+    dplyr::select(c("query","match_type","match_phrase"),
+                  dplyr::everything()) |>
+    dplyr::distinct()
+  
+  return(all_matches)  
+  
+}
+

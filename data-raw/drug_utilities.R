@@ -1754,9 +1754,10 @@ assign_drug_category <- function(drug_df = NULL,
       FALSE,
       as.logical(cancer_target_classified)
     ))
-    
-  drug_df <- remove_duplicate_chembl_ids(
-    drug_df = classified_drugs_all_final)
+   
+  drug_df <- classified_drugs_all_final 
+  #drug_df <- remove_duplicate_chembl_ids(
+  #  drug_df = classified_drugs_all_final)
   
   drug_df$drug_entry <- NULL
   
