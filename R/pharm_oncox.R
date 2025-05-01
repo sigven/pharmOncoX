@@ -1048,7 +1048,11 @@ utils::globalVariables(c("."))
 #' Match a list of drug names/aliases to the dataset of drugs
 #' provided by pharmOncoX
 #'
-#' @description
+#' @param query A character vector of drug names/aliases
+#' @param exclude_salt_forms Logical indicating if salt forms should be excluded
+#' @param exclude_adc Logical indicating if antibody-drug conjugates should be excluded
+#' @param cache_dir Local directory for data download
+#' @param force_download Logical indicating if local cache should force downloaded
 #'
 #' @export
 #' 
@@ -1059,11 +1063,25 @@ match_drug_names <- function(query = NULL,
                              force_download = FALSE){
   
   if(is.null(query)){
-    stop("Argument 'query' is not defined")
+    lgr::lgr$error("Argument 'query' is not defined")
+    return()
   }
   
   if(!is.character(query)){
-    stop("Argument 'query' must be a character vector")
+    lgr::lgr$error("Argument 'query' must be a character vector")
+    return()
+  }
+  
+  if (is.na(cache_dir)) {
+    lgr::lgr$error(paste0("Argument cache_dir = '",
+                          cache_dir, "' is not defined"))
+    return()
+  }
+  
+  if (!dir.exists(cache_dir)) {
+    lgr::lgr$error(paste0("Argument cache_dir = '",
+                          cache_dir, "' does not exist"))
+    return()
   }
   
   #query <- tolower(query)
@@ -1071,18 +1089,25 @@ match_drug_names <- function(query = NULL,
   query_df <- data.frame('query' = query) |>
     dplyr::mutate(
       drug_query = tolower(query),
+      query_index = dplyr::row_number(),
       drug_query_stripped = stringr::str_replace_all(
         .data$drug_query, " \\(\\S+\\)$", "")) |>
     dplyr::mutate(
       drug_query_stripped = stringr::str_replace_all(
         .data$drug_query_stripped, 
-        " (tri|di)?(hydrochloride|acetate)$", "")) |>
+        " (\\()?(tri|di)?((((hydro)?chloride|tosylate)( (mono|di|tri)?hydrate)?)|acetate)(\\))?$", "")) |>
+    dplyr::mutate(
+      drug_query_stripped = stringr::str_replace_all(
+        .data$drug_query_stripped, " \\(free (base|acid)\\)$","")) |>
+    dplyr::mutate(
+      drug_query_stripped = stringr::str_replace_all(
+        .data$drug_query_stripped, " \\(?(di|tri)?sodium salt(\\))?$","")) |>
     dplyr::distinct()
     
     
   
   ## Get full list of drug records
-  all_drug_recs <- get_drug_records(cache_dir, force_download)
+  all_drug_recs <- pharmOncoX:::get_drug_records(cache_dir, force_download)
   drug_records <- as.data.frame(all_drug_recs[['records']])
   metadata <- as.data.frame(all_drug_recs[['metadata']])
   
@@ -1108,6 +1133,9 @@ match_drug_names <- function(query = NULL,
                 target_symbol,
                 target_ensembl_gene_id) |>
     dplyr::distinct() |>
+    dplyr::rename(
+      drug_atc_treatment_category = atc_treatment_category,
+      drug_atc_level3 = atc_level3) |>
     tidyr::separate_rows(drug_alias, sep = "\\|") |>
     dplyr::mutate(drug_alias = tolower(drug_alias)) 
   
@@ -1115,10 +1143,11 @@ match_drug_names <- function(query = NULL,
   matches[['1']] <- query_df |>
     dplyr::left_join(
       drug_records_slim, 
-      by = c("drug_query" = "drug_alias")) |>
-    dplyr::mutate(match_type = dplyr::if_else(
+      by = c("drug_query" = "drug_alias"),
+      relationship = "many-to-many") |>
+    dplyr::mutate(drug_match_type = dplyr::if_else(
       !is.na(drug_name),
-      "by_alias", as.character(NA))) |>
+      "by_name_or_alias", as.character(NA))) |>
     dplyr::distinct() |>
     dplyr::group_by(
       dplyr::across(
@@ -1132,15 +1161,17 @@ match_drug_names <- function(query = NULL,
     )
   
   matches[['2']] <- matches[['1']] |>
-    dplyr::filter(is.na(match_type)) |>
-    dplyr::select(c("drug_query","drug_query_stripped")) |>
+    dplyr::filter(is.na(drug_match_type)) |>
+    dplyr::select(
+      c("query","query_index",
+        "drug_query","drug_query_stripped")) |>
     dplyr::left_join(
       drug_records_slim, 
       by = c("drug_query_stripped" = "drug_alias"),
       relationship = "many-to-many") |>
-    dplyr::mutate(match_type = dplyr::if_else(
+    dplyr::mutate(drug_match_type = dplyr::if_else(
       !is.na(drug_name),
-      "by_stripped_alias", as.character(NA))) |>
+      "by_stripped_name_alias", as.character(NA))) |>
     dplyr::distinct() |>
     dplyr::group_by(
       dplyr::across(
@@ -1152,22 +1183,57 @@ match_drug_names <- function(query = NULL,
         sort(target_ensembl_gene_id), collapse = "|"),
       .groups = "drop"
     ) |>
-    dplyr::filter(!is.na(match_type))
+    dplyr::filter(!is.na(drug_match_type))
   
   matches[['1']] <- matches[['1']] |>
-    dplyr::filter(!is.na(match_type))
+    dplyr::filter(!is.na(drug_match_type))
   
-  all_matches <- dplyr::bind_rows(matches) |>
-    dplyr::mutate(match_phrase = dplyr::case_when(
-      !is.na(match_type) & 
-        match_type == "by_name_alias" ~ drug_query,
-      !is.na(match_type) & 
-        match_type == "by_stripped_name_alias" ~ drug_query_stripped,
+  all_matches <- dplyr::bind_rows(matches)
+  
+  query_non_matches <- query_df |>
+    dplyr::anti_join(
+      all_matches, 
+      by = c("query_index"))
+  
+  if(nrow(query_non_matches) > 0){
+    all_matches <- dplyr::bind_rows(
+      all_matches, query_non_matches)
+  }
+  
+  all_matches <- all_matches |>
+    dplyr::mutate(drug_match_phrase = dplyr::case_when(
+      !is.na(drug_match_type) & 
+        drug_match_type == "by_name_or_alias" ~ drug_query,
+      !is.na(drug_match_type) & 
+        drug_match_type == "by_stripped_name_alias" ~ drug_query_stripped,
+    )) |>
+    dplyr::mutate(drug_name = dplyr::if_else(
+      !is.na(drug_name) & startsWith(drug_name,"Chembl"), 
+      toupper(drug_name), 
+      as.character(drug_name)
     )) |>
     dplyr::select(-c("drug_query","drug_query_stripped")) |>
-    dplyr::select(c("query","match_type","match_phrase"),
+    dplyr::select(c("query","query_index", 
+                    "drug_match_type","drug_match_phrase"),
                   dplyr::everything()) |>
-    dplyr::distinct()
+    dplyr::distinct() |>
+    dplyr::group_by(
+      dplyr::across(
+        -c("molecule_chembl_id","drug_type"))) |>
+    dplyr::summarise(
+      drug_type = paste(
+        sort(drug_type), collapse = "|"),
+      molecule_chembl_id = paste(
+        sort(molecule_chembl_id), collapse = "|"),
+      .groups = "drop"
+    ) |>
+    dplyr::distinct() |>
+    dplyr::select(c("query","query_index", 
+                    "drug_match_type","drug_match_phrase",
+                    "drug_name","drug_type",
+                    "molecule_chembl_id"),
+                  dplyr::everything()) |>
+    dplyr::arrange(query_index)
   
   return(all_matches)  
   

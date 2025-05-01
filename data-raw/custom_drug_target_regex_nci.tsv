@@ -114,9 +114,9 @@ Benralizumab	IL5RA
 Brensocatib	CTSC
 Briakinumab	IL12A
 Briakinumab	IL23A
-ARQ751|LY2503029	AKT1
-ARQ751|LY2503029	AKT2
-ARQ751|LY2503029	AKT3
+ARQ751|LY2503029|Vevorisertib	AKT1
+ARQ751|LY2503029|Vevorisertib	AKT2
+ARQ751|LY2503029|Vevorisertib	AKT3
 SDF-1 Receptor Antagonist PTX-9908	CXCR4
 Sovilnesib	KIF18A
 Anti-ALK-1	ALK
@@ -319,6 +319,12 @@ Anti-TGF-beta RII	TGFBR2
 Mobocertinib|Befotertinib|Pebezertinib	EGFR
 Karonudib	NUDT1
 Empesertib	TTK
+Camibirstat	SMARCA4
+Camibirstat	SMARCA2
+Sutetinib	EGFR
+Selatinib	EGFR
+Selatinib	ERBB2
+QLC1101|KQB365|QTX3544|Elisrasib	KRAS
 Amdizalisib	PIK3CD
 Razuprotafib	PTPRB
 Zunsemetinib	MAP2K2
@@ -373,8 +379,9 @@ ALK2	ACVR1
 Bcr-Abl|BCR-ABL	ABL1
 ROS1	ROS1
 DNMT1	DNMT1
-CTX-712	CLK1
-CTX-712	CLK2
+CTX-712|BH-30236|Rogocekib	CLK1
+CTX-712|BH-30236|Rogocekib	CLK2
+BH-30236|Rogocekib	CLK4
 STC-15	METTL3
 RO7589831|HRO761	WRN
 ATI-2231	MAPKAPK2
@@ -408,9 +415,9 @@ Aurora kinase A/B	AURKA
 Aurora kinase A/B	AURKB
 Aurora B/C	AURKB
 Aurora B/C	AURKC
-Aurora Kinase Inhibitor	AURKA
-Aurora Kinase Inhibitor	AURKB
-Aurora Kinase Inhibitor	AURKC
+Aurora Kinase Inhibitor|Cenisertib	AURKA
+Aurora Kinase Inhibitor|Cenisertib	AURKB
+Aurora Kinase Inhibitor|Cenisertib	AURKC
 UAE Inhibitor	UBA1
 XPO1	XPO1
 Protein Phosphatase 2A	PTPA
@@ -578,16 +585,16 @@ Givinostat|HDAC Class I/IIb Inhibitor	HDAC3
 Givinostat|HDAC Class I/IIb Inhibitor	HDAC8
 Givinostat|HDAC Class I/IIb Inhibitor|Purinostat	HDAC6
 Givinostat|HDAC Class I/IIb Inhibitor|Tucidinostat|Purinostat	HDAC10
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC1
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC2
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat	HDAC3
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC8
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC11
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC4
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC5
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC7
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC9
-Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat	HDAC6
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat|Bocodepsin|Alteminostat|Bisthianostat	HDAC1
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat|Alteminostat|Bisthianostat	HDAC2
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Tucidinostat|Alteminostat|Bisthianostat	HDAC3
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Alteminostat|Bisthianostat	HDAC8
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Alteminostat|Bisthianostat	HDAC11
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Bocodepsin|Alteminostat|Bisthianostat	HDAC4
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Alteminostat|Bisthianostat	HDAC5
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Alteminostat|Bisthianostat	HDAC7
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Alteminostat|Bisthianostat	HDAC9
+Quisinostat|Pracinostat|Remetinostat|Resminostat|Tefinostat|Alteminostat|Bisthianostat	HDAC6
 HDAC Inhibitor	HDAC1
 HDAC Inhibitor	HDAC2
 HDAC Inhibitor	HDAC3
@@ -668,10 +675,12 @@ Methionine Aminopeptidase 2	METAP2
 (FGFR |FGFR/)	FGFR4
 FGFR4	FGFR4
 FGFR2	FGFR2
+NXP900	SRC
+NXP900	YES1
 (HER2 )	ERBB2
 FGFR1/2/3	FGFR1
 FGFR1/2/3	FGFR2
 FGFR1/2/3	FGFR3
 (PIM |PIM/)	PIM1
 (Polo-like Kinase 1|PLK1)	PLK1
-(Polo-like Kinase 4)	PLK4
+(Polo-like Kinase 4)|RP-1664	PLK4

@@ -77,7 +77,7 @@ get_chembl_pubchem_xref <- function(datestamp = '20250227',
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_otp_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2024.09"){
+           ot_version = "2025.03"){
 
     cancer_terms <- list()
     cancer_terms[['all']] <- phenOncoX::get_terms(
@@ -94,7 +94,9 @@ get_otp_cancer_drugs <-
                   paste0("/opentargets/opentargets_drugs_",
                          ot_version,".rds"))
   ot_compounds <- as.data.frame(
-    readRDS(file = fname) |>
+    readRDS(file = fname))
+  
+  ot_compounds <- ot_compounds |>
       dplyr::select(target_genename,
                     target_symbol,
                     target_type,
@@ -117,7 +119,7 @@ get_otp_cancer_drugs <-
                     drug_withdrawn,
                     drug_approved_indication,
                     drug_blackbox_warning,
-                    drug_year_first_approval)) |>
+                    drug_year_first_approval) |>
     dplyr::mutate(
       disease_efo_id = stringr::str_replace_all(
         disease_efo_id, "_", ":")) |>
@@ -1038,9 +1040,9 @@ merge_nci_opentargets <- function(
 
 
 map_curated_targets <- function(gene_info = NULL,
-                                   path_data_raw = NULL,
-                                   drug_df = NULL){
-
+                                path_data_raw = NULL,
+                                drug_df = NULL){
+  
   drug_df$target_entrezgene <- as.numeric(
     drug_df$target_entrezgene
   )

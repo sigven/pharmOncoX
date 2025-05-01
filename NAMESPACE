@@ -2,5 +2,6 @@
 
 export(get_biomarkers)
 export(get_drugs)
+export(match_drug_names)
 importFrom(rlang,":=")
 importFrom(rlang,.data)
