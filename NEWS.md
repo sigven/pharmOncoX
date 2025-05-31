@@ -1,3 +1,8 @@
+# Version 1.9.5
+
+* NCI Thesaurus update (2025.04d)
+* CIViC update (20250531)
+
 # Version 1.9.4
 
 * Open Targets Platform update (25.03)
