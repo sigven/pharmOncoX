@@ -209,7 +209,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "1.9.5"
+version_bump <- "1.9.6"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
