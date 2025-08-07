@@ -1,3 +1,10 @@
+# Version 1.9.7
+
+* NCI Thesaurus update (2025.07d)
+* CIViC update (20250807)
+* MitelmanDB update (20250715)
+* Open Targets Platform update (2025.06)
+
 # Version 1.9.5
 
 * NCI Thesaurus update (2025.04d)
