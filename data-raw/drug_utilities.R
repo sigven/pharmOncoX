@@ -51,10 +51,11 @@ process_nci_labels <- function(path_data_raw, overwrite = F) {
 
 ### CHEMBL-PUBCHEM COMPOUND CROSS-REFERENCE
 
-get_chembl_pubchem_xref <- function(datestamp = '20250227',
-                                             chembl_release = "v34",
-                                             path_data_raw = NULL,
-                                             update = F){
+get_chembl_pubchem_xref <- function(
+    datestamp = '20250902',
+    chembl_release = "v36",
+    path_data_raw = NULL,
+    update = F){
   chembl_pubchem_xref_fname <- file.path(
     path_data_raw, "chembl",
     paste0("chembl_pubchem_mapping_", datestamp,".txt.gz"))
@@ -88,13 +89,18 @@ get_otp_cancer_drugs <-
       dplyr::select(cui, cui_name, efo_id, primary_site) |> 
       dplyr::filter(!is.na(efo_id)) |>
       dplyr::distinct() |>
-      dplyr::rename(disease_efo_id = efo_id)
+      dplyr::rename(disease_efo_id = efo_id) |>
+      dplyr::mutate(
+        disease_efo_id = stringr::str_replace_all(
+          disease_efo_id, "_", ":"))
+      
 
   fname <- paste0(path_data_raw,
                   paste0("/opentargets/opentargets_drugs_",
                          ot_version,".rds"))
   ot_compounds <- as.data.frame(
     readRDS(file = fname))
+  
   
   ot_compounds <- ot_compounds |>
       dplyr::select(target_genename,
@@ -142,7 +148,8 @@ get_otp_cancer_drugs <-
             disease_efo_id == 'EFO:0003826' |
             disease_efo_id == 'EFO:0000707' |
             disease_efo_id == 'EFO:0000228',
-          "by_cancer_condition_otp", "by_other_condition_otp")
+          "by_cancer_condition_otp", 
+          "by_other_condition_otp")
     ) |>
     dplyr::mutate(
       drug_cancer_relevance = dplyr::if_else(
@@ -175,15 +182,6 @@ get_otp_cancer_drugs <-
         as.character(drug_type)
       )
     ) |>
-    # dplyr::filter(
-    #   !is.na(drug_action_type)
-    # ) |>
-    # dplyr::filter(
-    #   !stringr::str_detect(
-    #     tolower(drug_action_type),
-    #     "allosteric|modulator|substrate|releasing|opener"
-    #   )
-    # ) |>
     dplyr::filter(
       drug_type != "Cell" &
         drug_type != "Enzyme" &
@@ -323,9 +321,6 @@ get_otp_cancer_drugs <-
     dplyr::filter(drug_withdrawn == F)
   
   targeted_noncancer_compounds <- targeted_compounds |>
-    # dplyr::filter(
-    #   !is.na(drug_cancer_relevance) & 
-    #     drug_cancer_relevance == "by_other_condition_otp") |> 
     dplyr::anti_join(
       dplyr::select(
         targeted_cancer_compounds, molecule_chembl_id
@@ -2267,10 +2262,11 @@ clean_final_drug_list <- function(drug_df = NULL){
 }
 
 
-expand_drug_aliases <- function(drug_index_map = NULL,
-                                path_data_raw = NULL,
-                                chembl_pubchem_datestamp = chembl_pubchem_datestamp){
-
+expand_drug_aliases <- function(
+    drug_index_map = NULL,
+    path_data_raw = NULL,
+    chembl_pubchem_datestamp = chembl_pubchem_datestamp){
+  
   chembl_pubchem_xref <-
     get_chembl_pubchem_xref(
       datestamp = chembl_pubchem_datestamp,

@@ -23,7 +23,7 @@ opentargets_version <-
   metadata$compounds[metadata$compounds$source_abbreviation == "opentargets", 
                      "source_version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
-chembl_pubchem_datestamp <- '20250227' 
+chembl_pubchem_datestamp <- '20250902' 
 
 ## set logging layout
 lgr::lgr$appenders$console$set_layout(
@@ -209,7 +209,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "1.9.9"
+version_bump <- "2.0.0"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
