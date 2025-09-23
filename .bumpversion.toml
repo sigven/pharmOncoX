@@ -1,5 +1,5 @@
 [tool.bumpversion]
-current_version = "1.9.9"
+current_version = "2.0.0"
 search = "{current_version}"
 replace = "{new_version}"
 message = "Bump version: {current_version} → {new_version}"

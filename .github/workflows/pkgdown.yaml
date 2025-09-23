@@ -10,7 +10,7 @@ on:
 name: pkgdown
 
 env:
-  VERSION: '1.9.9'
+  VERSION: '2.0.0'
 jobs:
   pkgdown:
     if: "startsWith(github.event.head_commit.message, 'Bump version:')"
