@@ -1,3 +1,8 @@
+# Version 2.0.0
+
+* Fixed missing drug classifications for some drugs
+* Updated phenOncoX for more drug indications
+
 # Version 1.9.8
 
 * NCI Thesaurus update (2025.08d)
