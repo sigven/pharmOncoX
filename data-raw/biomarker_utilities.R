@@ -2339,16 +2339,17 @@ load_depmap_fusions <- function(db_datestamp = "24Q4"){
   # Load DepMap fusions
   depmap_data <- list()
   depmap_data[['fusions']] <- as.data.frame(read.csv(
-    file = "data-raw/depmap/OmicsFusionFiltered.csv", header = T))
+    file = "data-raw/depmap/OmicsFusionFiltered.csv.gz", header = T))
   
   depmap_data[['models']] <- as.data.frame(read.csv(
-    file = "data-raw/depmap/Model.csv", header = T)) |>
+    file = "data-raw/depmap/Model.csv.gz", header = T)) |>
     dplyr::select(
       ModelID, CellLineName, OncotreeLineage,
       OncotreePrimaryDisease, OncotreeCode,
       Age, Sex, PrimaryOrMetastasis, SampleCollectionSite,
       SourceType
     )
+  
   return(depmap_data)
 }
 

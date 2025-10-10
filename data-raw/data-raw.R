@@ -187,11 +187,15 @@ raw_biomarkers[['cgi']] <-
     cache_dir = file.path(path_data_raw, "biomarkers"))
 raw_biomarkers[['mitelmandb']] <- 
   load_mitelman_db(
-    cache_dir = file.path(path_data_raw, "biomarkers"))
+    cache_dir = file.path(path_data_raw, "biomarkers"),
+      db_datestamp = 
+      metadata$biomarkers[metadata$biomarkers$source == "Mitelman Database","source_version"])
 raw_biomarkers[['custom_fusions']] <- 
   load_custom_fusion_db()
 raw_biomarkers[['depmap']] <- 
-  load_depmap_fusions()
+  load_depmap_fusions(
+    db_datestamp = 
+      metadata$biomarkers[metadata$biomarkers$source == "DepMap","source_version"])
 
 raw_biomarkers[['custom_fusions']]$variant <- 
   raw_biomarkers[['custom_fusions']]$variant |>
@@ -209,7 +213,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.0.0"
+version_bump <- "2.0.1"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
