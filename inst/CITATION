@@ -5,10 +5,10 @@ citEntry(
   title    = "pharmOncoX: Targeted and non-targeted anti-cancer drugs and drug regimens",
   author   = "Sigve Nakken",
   year     = "2025",
-  note     = "R package version 2.0.1",
+  note     = "R package version 2.1.0",
   url      = "https://github.com/sigven/pharmOncoX",
   textVersion = paste("Nakken S. ","(2025)",
   " pharmOncoX: Targeted and non-targeted anti-cancer drugs and drug regimens.",
-  " R package version 2.0.1.",
+  " R package version 2.1.0.",
   " (https://github.com/sigven/pharmOncoX)")
 )
