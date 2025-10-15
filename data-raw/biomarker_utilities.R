@@ -2439,17 +2439,18 @@ load_mitelman_db <- function(cache_dir = NA,
       topography_name == "Ovary" ~ "Ovary/Fallopian Tube",
       topography_name == "Fallopian tube" ~ "Ovary/Fallopian Tube",
       topography_name == "Uterus, corpus" ~ "Uterus",
-      stringr::str_detect(morphology_name, 
+      stringr::str_detect(topography_name, 
         paste0(
-          "Nasal cavity/Paranasal sinuses|Nasopharynx|",
-          "LarynxOral cavity|Oro- and hypopharynx|",
-          "Larynx|Teeth")) ~ "Head and Neck",
+          "(Nasal cavity/Paranasal sinuses|Nasopharynx|",
+          "Oral cavity|Oro- and hypopharynx|Salivary gland|",
+          "Larynx|Teeth|Tongue)")) ~ "Head and Neck",
       topography_name == "Gallbladder/Biliary system" ~ "Biliary Tract",
       topography_name == "Soft tissue" ~ "Soft Tissue",
       topography_name == "Brain" ~ "CNS/Brain",
       morphology_name == "Mature B-cell neoplasm, NOS" ~ "Lymphoid",
       topography_name == "Brain stem" ~ "CNS/Brain",
       topography_name == "Cerebellum" ~ "CNS/Brain",
+      topography_name == "Pineal body" ~ "CNS/Brain",
       topography_name == "Vagina" ~ "Vulva/Vagina",
       topography_name == "Skeleton" ~ "Bone",
       stringr::str_detect(
@@ -2463,13 +2464,24 @@ load_mitelman_db <- function(cache_dir = NA,
       topography_name == "Urethra" ~ "Bladder/Urinary Tract",
       topography_name == "Spinal cord" ~ "Peripheral Nervous System",
       topography_name == "Uterus, cervix" ~ "Cervix",
-      topography_name == "Large intestine" ~ "Colon/Rectum",
+      stringr::str_detect(
+        topography_name,"Large intestine|Anus") ~ "Colon/Rectum",
       topography_name == "Bladder" ~ "Bladder/Urinary Tract",
       topography_name == "Adrenal" ~ "Adrenal Gland",
-      topography_name == "Intraabdominal" ~ "Esophagus/Stomach",
-      topography_name == "Oesophagus" ~ "Esophagus/Stomach",
+      stringr::str_detect(
+        topography_name,
+        "Intraabdominal|Oesophagus|Stomach") ~ "Esophagus/Stomach",
       TRUE ~ topography_name
     )) |>
+    dplyr::filter(
+      topography_name2 != "Heart" &
+        topography_name2 != "Spleen" &
+        topography_name2 != "Penis" &
+        topography_name2 != "Parathyroid" &
+        topography_name2 != "Small intestine" &
+        topography_name2 != "Intrathoracal" &
+        topography_name2 != "Lymph node"
+    ) |>
     dplyr::rename(primary_diagnosis = morphology_name,
                   primary_site = topography_name2) |>
     dplyr::select(variant, 
