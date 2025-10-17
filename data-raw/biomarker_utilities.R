@@ -1087,7 +1087,7 @@ load_civic_biomarkers <- function(
       as.character(variant))) |>
     dplyr::mutate(gene = dplyr::if_else(
       feature_type == "Fusion",
-      as.character(variant),
+      as.character(feature_name),
       as.character(gene)
     )) |>
     set_alteration_type() |>
@@ -1173,7 +1173,7 @@ load_civic_biomarkers <- function(
     variant_consequence <- unique(vrows$variant_consequence)
     alteration_type <- unique(vrows$alteration_type)
     variant_name_primary <- unique(vrows$variant_name_primary)
-
+    
     all_aliases <- c()
 
     if (stringr::str_detect(alteration_type,"MUT")) {
