@@ -1,3 +1,8 @@
+# Version 2.1.2
+
+* NCI Thesaurus update (2025.09e)
+* CIViC update (20251103)
+
 # Version 2.0.0
 
 * Fixed missing drug classifications for some drugs

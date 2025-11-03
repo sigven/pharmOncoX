@@ -794,7 +794,7 @@ expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
 }
 
 load_civic_biomarkers <- function(
-    datestamp = '20240709',
+    datestamp = '20251018',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -1889,6 +1889,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
           "ABL1-BCR","BCR-ABL1"), 
         as.character(gene))
       ) |>
+      
       dplyr::mutate(gene = dplyr::case_when(
         gene == "MLL2" ~ "KMT2D",
         TRUE ~ as.character(gene)
@@ -2004,9 +2005,31 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
           "stop_gained|splice_donor|splice_acceptor"),
         "MUT_LOF",
         as.character(alteration_type)
-      ))
+      )) |>
+      dplyr::mutate(
+        gene = dplyr::case_when(
+          alteration_type == "FUSION" &
+            stringr::str_detect(alteration, "v?::v?") ~ alteration,
+          alteration_type == "FUSION" &
+            !stringr::str_detect(alteration,"::") ~ 
+            stringr::str_replace(alteration,"__","::"),
+          TRUE ~ as.character(gene)
+        )
+      ) |>
+      dplyr::mutate(
+        molecular_profile_name = 
+          stringr::str_replace(
+            .data$molecular_profile_name, "ABL1-BCR","BCR-ABL1")
+      ) |>
+      dplyr::mutate(
+        gene = 
+          stringr::str_replace(
+            .data$gene, "ABL1::BCR","BCR::ABL1"
+          )
+      )
   )
-      
+   
+     
   unique_variants <- as.data.frame(
     cgi_biomarkers  |>
       dplyr::filter(!is.na(variant_alias) &
@@ -2136,7 +2159,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       dplyr::ungroup() |>
       dplyr::mutate(molecule_chembl_id = stringr::str_replace(
         molecule_chembl_id,"^NA\\||\\|NA$",""
-      ))
+      )) 
   )
 
   cgi_clinical <- cgi_clinical |>
