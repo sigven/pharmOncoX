@@ -76,7 +76,7 @@ drug_sets <- list()
 ## Get all anticancer drugs, NCI thesaurus + DGIdb
 drug_sets[['nci']] <- get_nci_drugs(
   nci_db_release = nci_db_release,
-  overwrite = T,
+  overwrite = F,
   path_data_raw = path_data_raw,
   path_data_processed = path_data_tmp_processed)
 
@@ -213,7 +213,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.1.1"
+version_bump <- "2.1.3"
 
 db <- list()
 db[['biomarkers']] <- biomarkers

@@ -57,14 +57,14 @@ Ozekibart	GDF15
 P-cadherin Antagonist PF-03732010	CDH3
 P-cadherin Inhibitor PCA062	CDH3
 Palupiprant	PTGER4
-AZD9574|Palacaparib	PARP1
+AZD9574|Palacaparib|ACE-86225106|DSB2455	PARP1
 Sendegobresib	BRD9
 Andamertinib	EGFR
 Dabogratinib	FGFR3
 Boserolimab	CD27
 Camoteskimab	IL18
 Veludacigib	DGKZ
-Zoldonrasib	KRAS
+Zoldonrasib|INCB186748|KQB548	KRAS
 Dencatistat	CTPS1
 Cambritaxestat	ENPP2
 Pirotinib|Pruvonertinib|Silevertinib	EGFR
@@ -336,6 +336,8 @@ Selatinib	EGFR
 Selatinib	ERBB2
 QLC1101|KQB365|QTX3544|Elisrasib	KRAS
 Amdizalisib	PIK3CD
+Trodusquemine	PTP1B
+Mahatinib	TNK2
 Razuprotafib	PTPRB
 Zunsemetinib	MAP2K2
 CPB/p300 Bromodomain Inhibitor	CREB1

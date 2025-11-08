@@ -1,3 +1,8 @@
+# Version 2.1.3
+
+* NCI Thesaurus update (2025.10d)
+* CIViC update (20251108)
+
 # Version 2.1.2
 
 * NCI Thesaurus update (2025.09e)

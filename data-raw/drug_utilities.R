@@ -590,7 +590,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     file.path(
       path_data_processed,
       "nci_thesaurus",
-      "nci_treatment_thesaurus_antineo_v2.rds")) | overwrite == T){
+      "nci_treatment_thesaurus_antineo_v3.rds")) | overwrite == T){
     
     sorafenib_definition <-
       'A synthetic compound targeting growth signaling and angiogenesis. Sorafenib blocks the enzyme RAF kinase, a critical component of the RAF/MEK/ERK signaling pathway that controls cell division and proliferation; in addition, sorafenib inhibits the VEGFR-2/PDGFR-beta signaling cascade, thereby blocking tumor angiogenesis.'
@@ -793,13 +793,13 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
     
     saveRDS(nci_drugs, file = file.path(
       path_data_processed,  "nci_thesaurus",
-      "nci_treatment_thesaurus_antineo_v2.rds"))
+      "nci_treatment_thesaurus_antineo_v3.rds"))
     
   }else{
     nci_drugs <- readRDS(
       file = file.path(
         path_data_processed, "nci_thesaurus",
-        "nci_treatment_thesaurus_antineo_v2.rds"))
+        "nci_treatment_thesaurus_antineo_v3.rds"))
   }
   return(nci_drugs)
 }
