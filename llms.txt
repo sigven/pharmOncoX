@@ -1,0 +1,81 @@
+# pharmOncoX
+
+ 
+
+**pharmOncoX** provides access to targeted and non-targeted cancer
+drugs, including comprehensive annotations per target, drug
+mechanism-of-action, approval dates, clinical trial phases for various
+indications etc. It also provides access to data on actionable genomic
+aberrations (i.e. molecular biomarkers), including gene fusions,
+mutations, copy number alterations, and expression biomarkers.
+
+The data is largely based on drug-target-indication associations
+provided by the [Open Targets Platform](https://targetvalidation.org)
+([Ochoa et al., Nucleic Acids Res.,
+2021](https://doi.org/10.1093/nar/gkaa1027)). Associations retrieved
+from Open Targets Platform are integrated with cancer-relevant
+indications/conditions (as provided in
+[sigven/phenOncoX](https://github.com/sigven/phenOncoX)), allowing the
+user to retrieve drugs indicated for main tumor types (e.g. `Lung`,
+`Colon/Rectum` etc.)
+
+Drug-target associations from the Open Targets Platform have furthermore
+been integrated and appended with drug information from [NCI
+Thesaurus](https://ncithesaurus.nci.nih.gov/ncitbrowser/), showing also
+non-targeted cancer drugs (chemotherapeutic agents etc.), and various
+drug regimens.
+
+*pharmOncoX* provides anti-cancer drug classification through existing
+entries in the [Anatomical Therapeutic Chemical (ATC) Classification
+System](https://www.whocc.no/atc_ddd_index/), and these have been
+extended significantly with manual curation, also by establishing novel
+drug categories that are presently missing in the ATC classificiation
+tree (examples include *AURK inhibitors*, *MET inhibitors*, *BET
+inhibitors*, *AKT inhibitors*, *PLK inhibitors*, *IAP inhibitors*, *RAS
+inhibitors*, *BCL2 inhibitors* etc.) enabling a filtering of drugs
+according to their main mechanisms of action.
+
+Currently (as of late September 2025), `pharmOncoX` is built upon the
+following releases of external databases:
+
+- Open Targets Platform (2025.09)
+- ChEMBL (v36)
+- NCI Thesaurus (25.08d)
+- MitelmanDB (20250710)
+- CIViC (20250923)
+
+### Getting started
+
+- [Installation
+  instructions](https://sigven.github.io/pharmOncoX/articles/pharmOncoX.html#installation)
+- [Usage
+  examples](https://sigven.github.io/pharmOncoX/articles/pharmOncoX.html#retrieval-of-drugs---examples)
+
+### Contact
+
+sigven AT ifi.uio.no
+
+### Code of Conduct
+
+Please note that this project is released with a [Contributor Code of
+Conduct](https://github.com/sigven/pharmOncoX/blob/main/.github/CODE_OF_CONDUCT.md).
+By participating in this project you agree to abide by its terms.
+
+# Package index
+
+## All functions
+
+- [`get_biomarkers()`](https://sigven.github.io/pharmOncoX/reference/get_biomarkers.md)
+  : Get curated cancer biomarker datasets
+- [`get_drugs()`](https://sigven.github.io/pharmOncoX/reference/get_drugs.md)
+  : Get antineoplastic drugs and drug regimens
+- [`match_drug_names()`](https://sigven.github.io/pharmOncoX/reference/match_drug_names.md)
+  : Match a list of drug names/aliases to the dataset of drugs provided
+  by pharmOncoX
+
+# Articles
+
+### All vignettes
+
+- [Getting
+  started](https://sigven.github.io/pharmOncoX/articles/pharmOncoX.md):
