@@ -10,19 +10,25 @@
 if (!("remotes" %in% installed.packages())) {
   install.packages("remotes")
 }
+#> Installing package into '/home/runner/work/_temp/Library'
+#> (as 'lib' is unspecified)
 
 remotes::install_github('sigven/pharmOncoX')
 #> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
-#> 
+#> htmltools (0.5.8.1 -> 0.5.9) [CRAN]
+#> cpp11     (NA      -> 0.5.2) [CRAN]
+#> Installing 2 packages: htmltools, cpp11
+#> Installing packages into '/home/runner/work/_temp/Library'
+#> (as 'lib' is unspecified)
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpDqH4dP/remotes1d7465e9857a/sigven-pharmOncoX-7aec93b/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpQxieAn/remotes1a574d1969f8/sigven-pharmOncoX-d3682ad/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
 #> * checking for empty or unneeded directories
 #> Omitted ‘LazyData’ from DESCRIPTION
-#> * building ‘pharmOncoX_2.1.4.tar.gz’
+#> * building ‘pharmOncoX_2.1.5.tar.gz’
 #> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 
@@ -512,24 +518,24 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.1.4
+#> [1] pharmOncoX_2.1.5
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.37     
+#>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.39     
 #>  [5] magrittr_2.0.4     RColorBrewer_1.1-3 evaluate_1.0.5     grid_4.5.2        
 #>  [9] fastmap_1.2.0      jsonlite_2.0.0     processx_3.8.6     pkgbuild_1.4.8    
 #> [13] googledrive_2.1.2  ps_1.9.1           httr_1.4.7         purrr_1.2.0       
 #> [17] crosstalk_1.2.2    scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   
 #> [21] cli_3.6.5          rlang_1.1.6        crayon_1.5.3       remotes_2.5.0     
-#> [25] withr_3.0.2        cachem_1.1.0       yaml_2.3.10        tools_4.5.2       
-#> [29] gargle_1.6.0       dplyr_1.1.4        ggplot2_4.0.0      DT_0.34.0         
+#> [25] withr_3.0.2        cachem_1.1.0       yaml_2.3.11        tools_4.5.2       
+#> [29] gargle_1.6.0       dplyr_1.1.4        ggplot2_4.0.1      DT_0.34.0         
 #> [33] curl_7.0.0         assertthat_0.2.1   vctrs_0.6.5        R6_2.6.1          
 #> [37] lifecycle_1.0.4    stringr_1.6.0      fs_1.6.6           htmlwidgets_1.6.4 
 #> [41] ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3         callr_3.7.6       
 #> [45] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      
 #> [49] glue_1.8.0         lgr_0.5.0          systemfonts_1.3.1  xfun_0.54         
 #> [53] tibble_3.3.0       tidyselect_1.2.1   knitr_1.50         farver_2.1.2      
-#> [57] htmltools_0.5.8.1  rmarkdown_2.30     compiler_4.5.2     S7_0.2.0
+#> [57] htmltools_0.5.9    rmarkdown_2.30     compiler_4.5.2     S7_0.2.1
 ```
 
   

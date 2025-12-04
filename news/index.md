@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.5
+
+- NCI Thesaurus update (2025.11d)
+- CIViC update (20251204)
+
 ## Version 2.1.4
 
 - NCI Thesaurus update (2025.10d)
