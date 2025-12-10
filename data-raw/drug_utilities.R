@@ -78,7 +78,7 @@ get_chembl_pubchem_xref <- function(
 ### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
 get_otp_cancer_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2025.09"){
+           ot_version = "2025.12"){
 
     cancer_terms <- list()
     cancer_terms[['all']] <- phenOncoX::get_terms(
