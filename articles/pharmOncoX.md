@@ -10,25 +10,22 @@
 if (!("remotes" %in% installed.packages())) {
   install.packages("remotes")
 }
-#> Installing package into '/home/runner/work/_temp/Library'
-#> (as 'lib' is unspecified)
 
 remotes::install_github('sigven/pharmOncoX')
 #> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
-#> htmltools (0.5.8.1 -> 0.5.9) [CRAN]
-#> cpp11     (NA      -> 0.5.2) [CRAN]
-#> Installing 2 packages: htmltools, cpp11
-#> Installing packages into '/home/runner/work/_temp/Library'
+#> yaml (2.3.11 -> 2.3.12) [CRAN]
+#> Installing 1 packages: yaml
+#> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpQxieAn/remotes1a574d1969f8/sigven-pharmOncoX-d3682ad/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpfGkcAq/remotes19aa5dec30e1/sigven-pharmOncoX-6dfdca2/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
 #> * checking for empty or unneeded directories
 #> Omitted ‘LazyData’ from DESCRIPTION
-#> * building ‘pharmOncoX_2.1.5.tar.gz’
+#> * building ‘pharmOncoX_2.1.6.tar.gz’
 #> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 
@@ -82,7 +79,7 @@ drugs <- get_drugs(
 
 ## Number of drug records
 nrow(drugs$records)
-#> [1] 273
+#> [1] 302
 
 ## Column names of drug records
 colnames(drugs$records)
@@ -518,7 +515,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.1.5
+#> [1] pharmOncoX_2.1.6
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.39     
@@ -527,7 +524,7 @@ sessionInfo()
 #> [13] googledrive_2.1.2  ps_1.9.1           httr_1.4.7         purrr_1.2.0       
 #> [17] crosstalk_1.2.2    scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   
 #> [21] cli_3.6.5          rlang_1.1.6        crayon_1.5.3       remotes_2.5.0     
-#> [25] withr_3.0.2        cachem_1.1.0       yaml_2.3.11        tools_4.5.2       
+#> [25] withr_3.0.2        cachem_1.1.0       yaml_2.3.12        tools_4.5.2       
 #> [29] gargle_1.6.0       dplyr_1.1.4        ggplot2_4.0.1      DT_0.34.0         
 #> [33] curl_7.0.0         assertthat_0.2.1   vctrs_0.6.5        R6_2.6.1          
 #> [37] lifecycle_1.0.4    stringr_1.6.0      fs_1.6.6           htmlwidgets_1.6.4 

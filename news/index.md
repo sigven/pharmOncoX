@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.6
+
+- Open Targets Platform update (2025.12)
+- CIViC update (20251210)
+
 ## Version 2.1.5
 
 - NCI Thesaurus update (2025.11d)
