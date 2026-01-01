@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.1.7
+
+- CIViC update (20260101)
+
 ## Version 2.1.6
 
 - Open Targets Platform update (2025.12)
