@@ -1,7 +1,7 @@
 Package: pharmOncoX
 Type: Package
 Title: Molecularly targeted cancer drugs and biomarkers
-Version: 2.1.6
+Version: 2.1.7
 URL: https://sigven.github.io/pharmOncoX
 Authors@R: 
     c(person(given = "Sigve",
