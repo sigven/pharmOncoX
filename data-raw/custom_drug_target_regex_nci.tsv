@@ -5,8 +5,8 @@ RMC-9085|Fulzerasib|RG6620|VS-7375|Olomorasib	KRAS
 Rofecoxib|MTI-301	SCD
 ALTA2618|ATV-1601	AKT1
 Elironrasib	KRAS
-Rineterkib	ERK1
-Rineterkib	ERK2
+Rineterkib	MAPK3
+Rineterkib	MAPK1
 Zoligratinib	FGFR1
 Zoligratinib	FGFR2
 Zoligratinib	FGFR3
@@ -16,8 +16,10 @@ Navicixizumab	DLL4
 Osunprotafib	PTPN2
 Tigozertinib	EGFR
 Acasunlimab	CD274
-ABD-3001	ALDH1
-ABD-3001	ALDH3
+ABD-3001	ALDH1A1
+ABD-3001	ALDH3A1
+GSK2879552	KDM1A
+AZD5153	BRD4
 OATD-02	ARG1
 OATD-02	ARG2
 Glecirasib	KRAS
@@ -38,7 +40,7 @@ Fexagratinib	FGFR4
 Firmonertinib	EGFR
 HIF-2alpha Inhibitor	EPAS1
 HMGB1 Inhibitor	HMGB1
-Izalontamab	HER1
+Izalontamab	EGFR
 Izalontamab	ERBB3
 DGK-alpha Inhibitor	DGKH
 DGKalpha Inhibitor	DGKH
@@ -102,7 +104,7 @@ Tinengotinib	FLT3
 Tinengotinib	FLT4
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|Brimarafenib|BDTX-4933|DCC-3084	BRAF
 pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	ARAF
-pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	CRAF
+pan-RAF Inhibitor|pan-RAF Kinase Inhibitor|BDTX-4933|DCC-3084	RAF1
 Ebvaciclib|Tagtociclib|Certociclib	CDK2
 Ebvaciclib|Atirmociclib	CDK4
 Ebvaciclib	CDK6
@@ -285,15 +287,13 @@ HS-10502|GS-0201|HRS-1167|IMP1734|SNV1521	PARP1
 ORIC-944	PRC2
 NPX267	KIR3DL3
 ADA-011	LILRB1
-ABD-3001	ALDH1
-ABD-3001	ALDH3
 Ivonescimab	PDCD1
 (FASN )	FASN
 Glutaminase	GLS
 GSK-3	GSK3A
 GSK-3	GSK3B
 belvarafenib|exarafenib	BRAF
-belvarafenib	CRAF
+belvarafenib	RAF1
 nhibitor of 6-phosphofructo-2-kinase	PFKFB3
 belumosudil binds to and inhibits	ROCK2
 protein kinase C (PKC) inhibitor	PRKCA
@@ -338,6 +338,9 @@ QLC1101|KQB365|QTX3544|Elisrasib	KRAS
 Amdizalisib	PIK3CD
 Trodusquemine	PTP1B
 Mahatinib	TNK2
+MAK683	EED
+ERAS-801	EGFR
+GSK4418959|MOMA-341|NDI-219216|HRO761	WRN
 Razuprotafib	PTPRB
 Zunsemetinib	MAP2K2
 CPB/p300 Bromodomain Inhibitor	CREB1
@@ -475,7 +478,7 @@ Apomab	TNFRSF10B
 Astegolimab	ST2
 Burosumab	FGF23
 BCL-2|Bcl-2	BCL2
-Empesertib	MPS1
+Empesertib	TTK
 Enavatuzumab	TNFRSF12A
 Enokizumab	IL9
 Enoticumab	DLL4

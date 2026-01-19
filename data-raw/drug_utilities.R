@@ -1049,7 +1049,8 @@ map_curated_targets <- function(gene_info = NULL,
       sep = "\t", header = T, 
       stringsAsFactors = F, quote = "") |>
     dplyr::inner_join(
-      gene_info, by = "symbol", multiple = "all", 
+      gene_info, by = "symbol", 
+      multiple = "all", 
       relationship = "many-to-many") |>
     dplyr::distinct()
 
@@ -1163,11 +1164,16 @@ map_curated_targets <- function(gene_info = NULL,
       "(A|a)ntibody(-| )drug conjugate \\(ADC\\)"
     )) |>
     dplyr::filter(!stringr::str_detect(
-      tolower(nci_cd_name),"^(allogeneic|regimen |copper |fluorine f |indium |iodine |carbon c|autologous |recombinant |lutetium |yttrium |y 90)|vaccine$"
+      tolower(nci_cd_name),
+      paste0(
+        "^(allogeneic|regimen |copper |fluorine f |",
+        "indium |iodine |carbon c|autologous |",
+        "recombinant |lutetium |yttrium |y 90)|vaccine$")
     )) |>
     dplyr::filter(
       stringr::str_detect(
-        nci_concept_definition, "antineoplastic|tumor|cancer"
+        nci_concept_definition, 
+        "antineoplastic|tumor|cancer"
       )
     ) |>
     dplyr::select(nci_cd_name,

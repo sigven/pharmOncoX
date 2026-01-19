@@ -51,14 +51,18 @@ gene_info <- dplyr::bind_rows(
                   symbol, name, gene_biotype),
     dplyr::select(gene_gencode$records$grch38, 
                   entrezgene, ensembl_gene_id),
-    by = c("entrezgene"), multiple = "all"),
+    by = c("entrezgene"), 
+    relationship = "many-to-many"),
   dplyr::inner_join(
     dplyr::select(gene_basic$records, entrezgene, 
                   symbol, name, gene_biotype),
     dplyr::select(gene_gencode$records$grch37, 
                   entrezgene, ensembl_gene_id),
-    by = c("entrezgene"), multiple = "all")) |>
-  dplyr::filter(gene_biotype == "protein_coding") |>
+    by = c("entrezgene"), 
+    relationship = "many-to-many")) |>
+  dplyr::filter(
+    gene_biotype == "protein_coding" |
+      gene_biotype == "unknown") |>
   dplyr::distinct() |>
   dplyr::mutate(association_sourceID = "nci_thesaurus_custom",
                 target_type = "single_protein") |>
@@ -213,7 +217,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.1.7"
+version_bump <- "2.1.8"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
