@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.1.8
+
+- CIViC update (20260119)
+- MitelmanDB update (20260115)
+
 ## Version 2.1.7
 
 - CIViC update (20260101)
