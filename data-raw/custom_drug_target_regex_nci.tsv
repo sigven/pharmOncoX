@@ -1,4 +1,7 @@
 pattern	symbol
+Daraxonrasib|ALTA3263|BBO-11818	KRAS
+Daraxonrasib	NRAS
+Daraxonrasib	HRAS
 OMX-0407	SIK3
 RMC-9085|Fulzerasib|RG6620|VS-7375|Olomorasib	KRAS
 3706674	KRAS
@@ -334,6 +337,10 @@ Camibirstat	SMARCA2
 Sutetinib	EGFR
 Selatinib	EGFR
 Selatinib	ERBB2
+APL-4098	EIF2AK4
+ABBV-CLS-579	PTPN1
+ABBV-CLS-579	PTPN2
+ATX-559	DHX9
 QLC1101|KQB365|QTX3544|Elisrasib	KRAS
 Amdizalisib	PIK3CD
 Trodusquemine	PTP1B
