@@ -10,14 +10,14 @@ Drug-target associations from the Open Targets Platform have furthermore been in
 
 _pharmOncoX_ provides anti-cancer drug classification through existing entries in the [Anatomical Therapeutic Chemical (ATC) Classification System](https://www.whocc.no/atc_ddd_index/), and these have been extended significantly with manual curation, also by establishing novel drug categories that are presently missing in the ATC classificiation tree (examples include _AURK inhibitors_, _MET inhibitors_, _BET inhibitors_, _AKT inhibitors_, _PLK inhibitors_, _IAP inhibitors_, _RAS inhibitors_, _BCL2 inhibitors_ etc.) enabling a filtering of drugs according to their main mechanisms of action.
 
-Currently (as of late September 2025), `pharmOncoX` is built upon the following 
+Currently (as of mid February 2026), `pharmOncoX` is built upon the following 
 releases of external databases:
 
- - Open Targets Platform (2025.09)
+ - Open Targets Platform (2025.12)
  - ChEMBL (v36)
- - NCI Thesaurus (25.08d)
- - MitelmanDB (20250710)
- - CIViC (20250923)
+ - NCI Thesaurus (26.01d)
+ - MitelmanDB (20260115)
+ - CIViC (20260216)
 
 ### Getting started
 
