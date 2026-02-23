@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.2.1
+
+- Fixed mapping of fusion partner entrez gene identifiers
+
 ## Version 2.1.9
 
 - CIViC update (20260216)
