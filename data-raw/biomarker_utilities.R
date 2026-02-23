@@ -793,6 +793,54 @@ expand_hgvs_terms <- function(var, aa_dict, add_codon_markers = FALSE) {
   return(hits)
 }
 
+append_fusion_entrezgene <- function(df, gene_lookup) {
+  ## For FUSION records with NA entrezgene, parse the gene column
+  ## (e.g. "ERG::TMPRSS2") and look up entrezgene for each fusion partner,
+  ## producing a "::" joined string (e.g. "2078::7979").
+  ##
+  ## gene_lookup: data frame with columns 'alias' and 'entrezgene'
+
+  fusion_na_mask <- !is.na(df$alteration_type) &
+    df$alteration_type == "FUSION" &
+    is.na(df$entrezgene)
+
+  if (!any(fusion_na_mask)) {
+    return(df)
+  }
+
+  ## Build a fast named lookup vector: alias -> entrezgene (character)
+  lookup_vec <- gene_lookup |>
+    dplyr::select(alias, entrezgene) |>
+    dplyr::filter(!is.na(.data$entrezgene)) |>
+    dplyr::distinct() |>
+    dplyr::group_by(.data$alias) |>
+    dplyr::slice(1) |>
+    dplyr::ungroup() |>
+    (\(d) stats::setNames(as.character(d$entrezgene), d$alias))()
+
+  filled <- vapply(df$gene[fusion_na_mask], function(g) {
+    if (is.na(g)) return(NA_character_)
+
+    parts <- stringr::str_split(g, "::")[[1]]
+    entrez_parts <- vapply(parts, function(p) {
+      e <- lookup_vec[p]
+      if (is.na(e)) NA_character_ else unname(e)
+    }, character(1), USE.NAMES = FALSE)
+
+    if (all(is.na(entrez_parts))) {
+      return(NA_character_)
+    }
+    paste(
+      dplyr::if_else(is.na(entrez_parts), ".", entrez_parts),
+      collapse = "::"
+    )
+  }, character(1), USE.NAMES = FALSE)
+
+  df$entrezgene[fusion_na_mask] <- filled
+  return(df)
+}
+
+
 load_civic_biomarkers <- function(
     datestamp = '20251018',
     compound_synonyms = NULL,
@@ -1556,9 +1604,12 @@ load_civic_biomarkers <- function(
       TRUE ~ as.character(variant_alias)
     )) |>
     dplyr::distinct()
-  
-  biomarker_items[['clinical']] <- 
-    clinicalEvidenceSummary |> 
+
+  biomarker_items[['variant']] <- append_fusion_entrezgene(
+    biomarker_items[['variant']], gene_aliases)
+
+  biomarker_items[['clinical']] <-
+    clinicalEvidenceSummary |>
     dplyr::full_join(
       molecularProfileSummary, by = "molecular_profile_id",
       multiple = "all", relationship = "many-to-many") |> 
@@ -2105,7 +2156,9 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
       entrezgene,
     ) |>
     dplyr::distinct()
-    
+
+  cgi_variants <- append_fusion_entrezgene(
+    cgi_variants, gene_alias$records)
 
   cgi_clinical <- cgi_biomarkers |>
 
