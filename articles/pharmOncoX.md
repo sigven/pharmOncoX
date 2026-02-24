@@ -14,9 +14,12 @@ if (!("remotes" %in% installed.packages())) {
 remotes::install_github('sigven/pharmOncoX')
 #> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
-#> 
+#> later (1.4.6 -> 1.4.7) [CRAN]
+#> Installing 1 packages: later
+#> Installing package into '/home/runner/work/_temp/Library'
+#> (as 'lib' is unspecified)
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpBGBSGB/remotes1cc4545ffea7/sigven-pharmOncoX-92cbf24/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpPgIk7O/remotes1c803d162251/sigven-pharmOncoX-d168b91/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
