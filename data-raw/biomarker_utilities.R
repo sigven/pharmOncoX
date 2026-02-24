@@ -2309,7 +2309,15 @@ map_biomarker_phenotypes <- function(biomarkers_clinical = NULL,
     dplyr::select(
       cui, do_id, do_name
     ) |>
-    dplyr::distinct()
+    dplyr::distinct() |>
+    dplyr::mutate(
+      cui = dplyr::case_when(
+        .data$cui == "C0023473" ~ "C0279543",
+        .data$cui == "C0677886" ~ "C0346161",
+        .data$cui == "C5680320" ~ "C2698315",
+        TRUE ~ as.character(cui)
+      )
+    )
   
   efo_terms_all <- 
     cancer_aux_pheno_maps$records$efo$efo2xref |>
@@ -2334,7 +2342,8 @@ map_biomarker_phenotypes <- function(biomarkers_clinical = NULL,
       multiple = "all", relationship = "many-to-many") |>
     dplyr::left_join(
       umls_terms_all, by = "cui", 
-      multiple = "all", relationship = "many-to-many") |>
+      multiple = "all",
+      relationship = "many-to-many") |>
     dplyr::left_join(
       efo_terms_all,
       by = "cui", multiple = "all",  
@@ -2342,16 +2351,19 @@ map_biomarker_phenotypes <- function(biomarkers_clinical = NULL,
     dplyr::distinct() |>
     dplyr::mutate(primary_site = dplyr::case_when(
       do_name == "cancer" ~ as.character(NA),
-      is.na(primary_site) & stringr::str_detect(do_name,"brain") ~ "CNS/Brain",
-      is.na(primary_site) & stringr::str_detect(do_name,"breast") ~ "Breast",
-      is.na(primary_site) & stringr::str_detect(do_name,"colon|rectum") ~ "Colon/Rectum",
-      is.na(primary_site) & stringr::str_detect(do_name,"gastric|stomach|esophag") ~ "Esophagus/Stomach",
-      is.na(primary_site) & stringr::str_detect(do_name,"prostate") ~ "Prostate",
-      is.na(primary_site) & stringr::str_detect(do_name,"pancrea") ~ "Pancreas",
-      is.na(primary_site) & stringr::str_detect(do_name,"lung") ~ "Lung",
-      is.na(primary_site) & stringr::str_detect(do_name,"myeloid") ~ "Myeloid",
-      is.na(primary_site) & stringr::str_detect(do_name,"lymphoma") ~ "Lymphoid",
-      is.na(primary_site) & stringr::str_detect(do_name,"ovary|ovarian") ~ "Ovary",
+      is.na(primary_site) & 
+        stringr::str_detect(
+          tolower(do_name),
+          "brain|astrocytom|astroblastom|neuroblastom|nervous system") ~ "CNS/Brain",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"breast") ~ "Breast",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"colon|rectum") ~ "Colon/Rectum",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"gastric|stomach|esophag") ~ "Esophagus/Stomach",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"prostate") ~ "Prostate",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"pancrea") ~ "Pancreas",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"lung") ~ "Lung",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"myeloid|leukemi") ~ "Myeloid",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"lymphoma") ~ "Lymphoid",
+      is.na(primary_site) & stringr::str_detect(tolower(do_name),"ovary|ovarian") ~ "Ovary/Falopian Tube",
       TRUE ~ as.character(primary_site)
     ))
 
