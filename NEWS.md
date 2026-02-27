@@ -1,3 +1,7 @@
+# Version 2.2.2
+
+* Fixed some biomarker drug names
+
 # Version 2.2.1
 
 * Fixed mapping of fusion partner entrez gene

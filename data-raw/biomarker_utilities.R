@@ -842,7 +842,7 @@ append_fusion_entrezgene <- function(df, gene_lookup) {
 
 
 load_civic_biomarkers <- function(
-    datestamp = '20251018',
+    datestamp = '20260223',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -1041,10 +1041,50 @@ load_civic_biomarkers <- function(
   therapeutic_contexts <- as.data.frame(
     clinicalEvidenceSummary |>
       dplyr::select(evidence_id, therapies) |>
+      dplyr::mutate(therapies = tolower(therapies)) |>
+      dplyr::mutate(
+        therapies = stringr::str_replace(
+          .data$therapies, 
+          "futuximab/modotuximab mixture", 
+          "futuximab,modotuximab")
+      ) |>
+      dplyr::mutate(
+        therapies = stringr::str_replace(
+          .data$therapies,
+          "ipilimumab/nivolumab regimen",
+          "ipilimumab,nivolumab")
+      ) |>
+       dplyr::mutate(
+         therapies = stringr::str_replace(
+           .data$therapies,
+           "durvalumab/tremelimumab regimen",
+           "durvalumab,tremelimumab")
+       ) |>
+      ## dabrafenib/trametinib regimen
+       dplyr::mutate(
+         therapies = stringr::str_replace(
+           .data$therapies,
+           "dabrafenib/trametinib regimen",
+           "dabrafenib,trametinib")
+       ) |>
+       
+      ## datopotamab deruxtecan regimen
+      dplyr::mutate(
+        therapies = stringr::str_replace(
+          .data$therapies,
+          "datopotamab deruxtecan regimen",
+          "datopotamab deruxtecan")
+      ) |>
+      ## larotrectinib regimen
+      dplyr::mutate(
+        therapies = stringr::str_replace(
+          .data$therapies,
+          "larotrectinib regimen",
+          "larotrectinib")
+      ) |>
       dplyr::filter(!is.na(therapies) &
                       nchar(therapies) > 0) |>
       tidyr::separate_rows(therapies, sep = ",") |>
-      dplyr::mutate(therapies = tolower(therapies)) |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
                       alias_lc,
@@ -2224,6 +2264,7 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
     dplyr::mutate(biomarker_source_datestamp = datestamp) |>
     dplyr::mutate(evidence_description = NA,
                   evidence_id = paste0("CGI", molecular_profile_id),
+                  evidence_direction = "Supports",
                   molecular_profile_summary = NA,
                   rating = NA,
                   biomarker_entity = T) |>
