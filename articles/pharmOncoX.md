@@ -14,18 +14,15 @@ if (!("remotes" %in% installed.packages())) {
 remotes::install_github('sigven/pharmOncoX')
 #> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
-#> later (1.4.6 -> 1.4.7) [CRAN]
-#> Installing 1 packages: later
-#> Installing package into '/home/runner/work/_temp/Library'
-#> (as 'lib' is unspecified)
+#> 
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpPgIk7O/remotes1c803d162251/sigven-pharmOncoX-d168b91/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpXixMsa/remotes1a1c2d3add45/sigven-pharmOncoX-6434d53/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
 #> * checking for empty or unneeded directories
 #> Omitted ‘LazyData’ from DESCRIPTION
-#> * building ‘pharmOncoX_2.2.1.tar.gz’
+#> * building ‘pharmOncoX_2.2.2.tar.gz’
 #> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 
@@ -515,7 +512,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.2.1
+#> [1] pharmOncoX_2.2.2
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.39     
