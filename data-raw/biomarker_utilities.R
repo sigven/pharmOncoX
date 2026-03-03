@@ -1041,67 +1041,84 @@ load_civic_biomarkers <- function(
   therapeutic_contexts <- as.data.frame(
     clinicalEvidenceSummary |>
       dplyr::select(evidence_id, therapies) |>
-      dplyr::mutate(therapies = tolower(therapies)) |>
+      dplyr::mutate(therapies = stringr::str_replace_all(
+        .data$therapies," Anhydrous",""
+      )) |>
       dplyr::mutate(
         therapies = stringr::str_replace(
           .data$therapies, 
-          "futuximab/modotuximab mixture", 
-          "futuximab,modotuximab")
+          "Futuximab/Modotuximab Mixture", 
+          "Futuximab,Modotuximab")
       ) |>
       dplyr::mutate(
         therapies = stringr::str_replace(
           .data$therapies,
-          "ipilimumab/nivolumab regimen",
-          "ipilimumab,nivolumab")
+          "Ipilimumab/Nivolumab Regimen",
+          "Ipilimumab,Nivolumab")
       ) |>
        dplyr::mutate(
          therapies = stringr::str_replace(
            .data$therapies,
-           "durvalumab/tremelimumab regimen",
-           "durvalumab,tremelimumab")
+           "Durvalumab/Tremelimumab Regimen",
+           "Durvalumab,Tremelimumab")
        ) |>
       ## dabrafenib/trametinib regimen
        dplyr::mutate(
          therapies = stringr::str_replace(
            .data$therapies,
-           "dabrafenib/trametinib regimen",
-           "dabrafenib,trametinib")
+           "Dabrafenib/Trametinib Regimen",
+           "Dabrafenib,Trametinib")
        ) |>
        
       ## datopotamab deruxtecan regimen
       dplyr::mutate(
         therapies = stringr::str_replace(
           .data$therapies,
-          "datopotamab deruxtecan regimen",
-          "datopotamab deruxtecan")
+          "Datopotamab Deruxtecan Regimen",
+          "Datopotamab Deruxtecan")
       ) |>
       ## larotrectinib regimen
       dplyr::mutate(
         therapies = stringr::str_replace(
           .data$therapies,
-          "larotrectinib regimen",
-          "larotrectinib")
+          "Larotrectinib Regimen",
+          "Larotrectinib")
       ) |>
       dplyr::filter(!is.na(therapies) &
                       nchar(therapies) > 0) |>
+      dplyr::mutate(therapies_lc = tolower(therapies)) |>
+      tidyr::separate_rows(therapies_lc, sep = ",") |>
       tidyr::separate_rows(therapies, sep = ",") |>
+      dplyr::filter(tolower(therapies) == therapies_lc) |>
+      dplyr::distinct() |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
                       alias_lc,
                       drug_name,
                       molecule_chembl_id),
-        by = c("therapies" = "alias_lc"), 
+        by = c("therapies_lc" = "alias_lc"), 
         multiple = "all", 
         relationship = "many-to-many"
       ) |>
-      dplyr::filter(!is.na(drug_name)) |>
-      dplyr::select(evidence_id, molecule_chembl_id) |>
+      #dplyr::filter(!is.na(drug_name)) |>
+      dplyr::select(evidence_id, therapies,
+                    drug_name,
+                    molecule_chembl_id) |>
       dplyr::distinct() |>
       dplyr::group_by(evidence_id) |>
-      dplyr::summarise(molecule_chembl_id = paste(
-        unique(sort(molecule_chembl_id)), collapse = "|"),
+      dplyr::summarise(
+        drug_name = paste(
+          unique(sort(drug_name)), collapse = ","),
+        therapeutic_context = paste(
+          unique(sort(therapies)), collapse = ","),
+        molecule_chembl_id = paste(
+          unique(sort(molecule_chembl_id)), collapse = "|"),
         .groups = "drop"
       ) |>
+      dplyr::filter(!is.na(.data$therapeutic_context) &
+                      !stringr::str_detect(
+                        .data$therapeutic_context,"^[0-9]{1,}$") &
+                      nchar(.data$therapeutic_context) > 2) |>
       dplyr::ungroup() |>
       dplyr::mutate(molecule_chembl_id = stringr::str_replace(
         molecule_chembl_id,"^NA\\||\\|NA$",""
@@ -1109,8 +1126,13 @@ load_civic_biomarkers <- function(
   )
 
   clinicalEvidenceSummary <- clinicalEvidenceSummary |>
+    dplyr::select(-c("therapies")) |>
     dplyr::left_join(
-      therapeutic_contexts,
+      dplyr::select(
+        therapeutic_contexts, 
+        evidence_id,
+        molecule_chembl_id,
+        therapeutic_context),
       by = "evidence_id", multiple = "all",
       relationship = "many-to-many")
   
@@ -1656,7 +1678,7 @@ load_civic_biomarkers <- function(
     dplyr::select(molecular_profile_id, molecular_profile_name, 
                   molecular_profile_summary, 
                   variant_id, dplyr::everything()) |>
-    dplyr::rename(therapeutic_context = therapies) |>
+    #dplyr::rename(therapeutic_context = therapies) |>
     dplyr::mutate(evidence_id = paste0("EID",evidence_id)) |>
     dplyr::filter(evidence_id != "EIDNA") |>
     dplyr::mutate(biomarker_source = "civic",
@@ -2214,50 +2236,64 @@ load_cgi_biomarkers <- function(compound_synonyms = NULL,
     dplyr::select(-c(entrezgene, variant_consequence, variant_alias,
                      alias_type, gene, symbol, alteration_type,
                      alteration)) |>
-    dplyr::distinct() |>
-    dplyr::mutate(therapeutic_context = dplyr::if_else(
-      stringr::str_detect(
-        therapeutic_context,
-        "(ib|ide|ole|ant|stat|ine|us|one|mab|in|el|[0-9])( |  )\\("),
-      stringr::str_replace(
-        therapeutic_context,
-        "( |  )\\(.*\\)( )?$",""),
-      as.character(therapeutic_context)
-    ))
+    dplyr::distinct()
   
 
   therapeutic_contexts <- as.data.frame(
     cgi_clinical |>
       dplyr::select(molecular_profile_id, therapeutic_context) |>
-      dplyr::filter(!is.na(therapeutic_context) &
-                      nchar(therapeutic_context) > 0) |>
-      tidyr::separate_rows(therapeutic_context, sep = " \\+ ") |>
-      dplyr::mutate(therapeutic_context = tolower(therapeutic_context)) |>
+      #dplyr::mutate(therapeutic_context = stringr::str_replace(
+      #  .data$therapeutic_context, " deruxtecan-nxki",""
+      #)) |>
+      dplyr::mutate(therapeutic_context2 = trimws(
+        gsub("\\s*\\([^)]+\\)\\s*", " ", therapeutic_context))) |>
+      dplyr::filter(!is.na(therapeutic_context2) &
+                      nchar(therapeutic_context2) > 0) |>
+      dplyr::rename(therapies = therapeutic_context2) |>
+      dplyr::mutate(therapies_lc = tolower(therapies)) |>
+      tidyr::separate_rows(therapies_lc, sep = " \\+ ") |>
+      tidyr::separate_rows(therapies, sep = " \\+ ") |>
+      dplyr::filter(tolower(therapies) == therapies_lc) |>
+      dplyr::distinct() |>
       dplyr::left_join(
         dplyr::select(compound_synonyms,
-                      alias_lc, 
-                      drug_name, 
+                      alias_lc,
+                      drug_name,
                       molecule_chembl_id),
-        by = c("therapeutic_context" = "alias_lc"), 
-        multiple = "all", relationship = "many-to-many"
+        by = c("therapies_lc" = "alias_lc"), 
+        multiple = "all", 
+        relationship = "many-to-many"
       ) |>
-      dplyr::filter(!is.na(drug_name)) |>
-      dplyr::select(molecular_profile_id, molecule_chembl_id) |>
+      #dplyr::filter(!is.na(drug_name)) |>
+      dplyr::select(molecular_profile_id, therapies,
+                    drug_name,
+                    molecule_chembl_id) |>
       dplyr::distinct() |>
       dplyr::group_by(molecular_profile_id) |>
-      dplyr::summarise(molecule_chembl_id = paste(
-        unique(sort(molecule_chembl_id)), collapse="|"),
+      dplyr::summarise(
+        drug_name = paste(
+          unique(sort(drug_name)), collapse = ","),
+        therapeutic_context = paste(
+          unique(sort(therapies)), collapse = ","),
+        molecule_chembl_id = paste(
+          unique(sort(molecule_chembl_id)), collapse = "|"),
         .groups = "drop"
       ) |>
       dplyr::ungroup() |>
       dplyr::mutate(molecule_chembl_id = stringr::str_replace(
         molecule_chembl_id,"^NA\\||\\|NA$",""
-      )) 
+      ))
   )
 
   cgi_clinical <- cgi_clinical |>
+    dplyr::select(-c("therapeutic_context")) |>
     dplyr::left_join(
-      therapeutic_contexts, by = "molecular_profile_id", 
+      dplyr::select(
+        therapeutic_contexts, 
+        c("molecular_profile_id", 
+          "therapeutic_context",
+          "molecule_chembl_id")),
+        by = "molecular_profile_id", 
       multiple = "all", relationship = "many-to-many") |>
     dplyr::mutate(evidence_url = "https://www.cancergenomeinterpreter.org/biomarkers") |>
     dplyr::mutate(biomarker_source = "cgi") |>

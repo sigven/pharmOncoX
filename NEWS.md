@@ -1,3 +1,7 @@
+# Version 2.2.3
+
+* Make uniform ordering of biomarker-associated therapies
+
 # Version 2.2.2
 
 * Fixed some biomarker drug names
