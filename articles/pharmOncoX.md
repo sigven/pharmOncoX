@@ -16,13 +16,13 @@ remotes::install_github('sigven/pharmOncoX')
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
 #> 
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpXixMsa/remotes1a1c2d3add45/sigven-pharmOncoX-6434d53/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpTcog8u/remotes1a7573999ee5/sigven-pharmOncoX-3fb8e15/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
 #> * checking for empty or unneeded directories
 #> Omitted ‘LazyData’ from DESCRIPTION
-#> * building ‘pharmOncoX_2.2.2.tar.gz’
+#> * building ‘pharmOncoX_2.2.3.tar.gz’
 #> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 
@@ -512,7 +512,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.2.2
+#> [1] pharmOncoX_2.2.3
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.39     
