@@ -14,15 +14,20 @@ if (!("remotes" %in% installed.packages())) {
 remotes::install_github('sigven/pharmOncoX')
 #> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
-#> 
+#> later (1.4.7 -> 1.4.8) [CRAN]
+#> fs    (1.6.6 -> 1.6.7) [CRAN]
+#> highr (0.11  -> 0.12 ) [CRAN]
+#> Installing 3 packages: later, fs, highr
+#> Installing packages into '/home/runner/work/_temp/Library'
+#> (as 'lib' is unspecified)
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpTcog8u/remotes1a7573999ee5/sigven-pharmOncoX-3fb8e15/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpSf59QV/remotes1a531c578e69/sigven-pharmOncoX-5c7d6d5/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
 #> * checking for empty or unneeded directories
 #> Omitted ‘LazyData’ from DESCRIPTION
-#> * building ‘pharmOncoX_2.2.3.tar.gz’
+#> * building ‘pharmOncoX_2.2.4.tar.gz’
 #> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 
@@ -512,7 +517,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.2.3
+#> [1] pharmOncoX_2.2.4
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.39     
@@ -524,7 +529,7 @@ sessionInfo()
 #> [25] withr_3.0.2        cachem_1.1.0       yaml_2.3.12        otel_0.2.0        
 #> [29] tools_4.5.2        gargle_1.6.1       dplyr_1.2.0        ggplot2_4.0.2     
 #> [33] DT_0.34.0          curl_7.0.0         assertthat_0.2.1   vctrs_0.7.1       
-#> [37] R6_2.6.1           lifecycle_1.0.5    stringr_1.6.0      fs_1.6.6          
+#> [37] R6_2.6.1           lifecycle_1.0.5    stringr_1.6.0      fs_1.6.7          
 #> [41] htmlwidgets_1.6.4  ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        
 #> [45] callr_3.7.6        pkgdown_2.2.0      pillar_1.11.1      bslib_0.10.0      
 #> [49] gtable_0.3.6       glue_1.8.0         lgr_0.5.2          systemfonts_1.3.1 
