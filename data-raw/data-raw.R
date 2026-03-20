@@ -217,7 +217,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.2.4"
+version_bump <- "2.2.5"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
@@ -282,7 +282,6 @@ for(elem in c('biomarkers',
 }
 
 usethis::use_data(db_id_ref, internal = T, overwrite = T)
-
 
 
 
