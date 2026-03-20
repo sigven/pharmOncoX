@@ -10,24 +10,24 @@
 if (!("remotes" %in% installed.packages())) {
   install.packages("remotes")
 }
+#> Installing package into '/home/runner/work/_temp/Library'
+#> (as 'lib' is unspecified)
 
 remotes::install_github('sigven/pharmOncoX')
 #> Using github PAT from envvar GITHUB_PAT. Use `gitcreds::gitcreds_set()` and unset GITHUB_PAT in .Renviron (or elsewhere) if you want to use the more secure git credential store instead.
 #> Downloading GitHub repo sigven/pharmOncoX@HEAD
-#> later (1.4.7 -> 1.4.8) [CRAN]
-#> fs    (1.6.6 -> 1.6.7) [CRAN]
-#> highr (0.11  -> 0.12 ) [CRAN]
-#> Installing 3 packages: later, fs, highr
-#> Installing packages into '/home/runner/work/_temp/Library'
+#> cpp11 (NA -> 0.5.3) [CRAN]
+#> Installing 1 packages: cpp11
+#> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 #> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/tmp/RtmpSf59QV/remotes1a531c578e69/sigven-pharmOncoX-5c7d6d5/DESCRIPTION’ ... OK
+#> * checking for file ‘/tmp/RtmpcAcFWa/remotes1d872b5d47ef/sigven-pharmOncoX-9e12a89/DESCRIPTION’ ... OK
 #> * preparing ‘pharmOncoX’:
 #> * checking DESCRIPTION meta-information ... OK
 #> * checking for LF line-endings in source and make files and shell scripts
 #> * checking for empty or unneeded directories
 #> Omitted ‘LazyData’ from DESCRIPTION
-#> * building ‘pharmOncoX_2.2.4.tar.gz’
+#> * building ‘pharmOncoX_2.2.5.tar.gz’
 #> Installing package into '/home/runner/work/_temp/Library'
 #> (as 'lib' is unspecified)
 
@@ -81,7 +81,7 @@ drugs <- get_drugs(
 
 ## Number of drug records
 nrow(drugs$records)
-#> [1] 293
+#> [1] 104
 
 ## Column names of drug records
 colnames(drugs$records)
@@ -496,7 +496,7 @@ dt_brca1_biomarkers <- DT::datatable(
 # set eval = FALSE if you don't want this info (useful for reproducibility) 
 # to appear
 sessionInfo()
-#> R version 4.5.2 (2025-10-31)
+#> R version 4.5.3 (2026-03-11)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.3 LTS
 #> 
@@ -517,24 +517,24 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.2.4
+#> [1] pharmOncoX_2.2.5
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     stringi_1.8.7      digest_0.6.39     
-#>  [5] magrittr_2.0.4     RColorBrewer_1.1-3 evaluate_1.0.5     grid_4.5.2        
+#>  [5] magrittr_2.0.4     RColorBrewer_1.1-3 evaluate_1.0.5     grid_4.5.3        
 #>  [9] fastmap_1.2.0      jsonlite_2.0.0     processx_3.8.6     pkgbuild_1.4.8    
 #> [13] googledrive_2.1.2  ps_1.9.1           httr_1.4.8         purrr_1.2.1       
-#> [17] crosstalk_1.2.2    scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   
+#> [17] crosstalk_1.2.2    scales_1.4.0       textshaping_1.0.5  jquerylib_0.1.4   
 #> [21] cli_3.6.5          rlang_1.1.7        crayon_1.5.3       remotes_2.5.0     
 #> [25] withr_3.0.2        cachem_1.1.0       yaml_2.3.12        otel_0.2.0        
-#> [29] tools_4.5.2        gargle_1.6.1       dplyr_1.2.0        ggplot2_4.0.2     
+#> [29] tools_4.5.3        gargle_1.6.1       dplyr_1.2.0        ggplot2_4.0.2     
 #> [33] DT_0.34.0          curl_7.0.0         assertthat_0.2.1   vctrs_0.7.1       
 #> [37] R6_2.6.1           lifecycle_1.0.5    stringr_1.6.0      fs_1.6.7          
-#> [41] htmlwidgets_1.6.4  ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        
+#> [41] htmlwidgets_1.6.4  ragg_1.5.1         pkgconfig_2.0.3    desc_1.4.3        
 #> [45] callr_3.7.6        pkgdown_2.2.0      pillar_1.11.1      bslib_0.10.0      
-#> [49] gtable_0.3.6       glue_1.8.0         lgr_0.5.2          systemfonts_1.3.1 
+#> [49] gtable_0.3.6       glue_1.8.0         lgr_0.5.2          systemfonts_1.3.2 
 #> [53] xfun_0.56          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        
-#> [57] farver_2.1.2       htmltools_0.5.9    rmarkdown_2.30     compiler_4.5.2    
+#> [57] farver_2.1.2       htmltools_0.5.9    rmarkdown_2.30     compiler_4.5.3    
 #> [61] S7_0.2.1
 ```
 
