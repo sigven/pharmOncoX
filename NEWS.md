@@ -1,3 +1,8 @@
+# Version 2.2.5
+
+* Updated NCI Thesaurus (2026.02d)
+* Updated CIViC data (20260320)
+
 # Version 2.2.3
 
 * Make uniform ordering of biomarker-associated therapies
