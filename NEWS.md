@@ -1,3 +1,7 @@
+# Version 2.2.6
+
+* Updated CIViC data (20260323)
+
 # Version 2.2.5
 
 * Updated NCI Thesaurus (2026.02d)
