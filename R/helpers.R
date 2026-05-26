@@ -350,6 +350,11 @@ get_drug_records <- function(cache_dir = NA,
                  'drug_map_target',
                  'drug_map_indication')
 
+  ## load provenance table when available (added in pharmOncoX >= 2.2.7)
+  if ("drug_map_provenance" %in% db_id_ref$name) {
+    file_maps <- c(file_maps, 'drug_map_provenance')
+  }
+
   for (elem in file_maps) {
 
     fname_local <- file.path(
@@ -456,6 +461,10 @@ get_drug_records <- function(cache_dir = NA,
                      relationship = "many-to-many")
 
   drug_data[['metadata']] <- drug_datasets[['drug_map_name']][['metadata']]
+
+  if (!is.null(drug_datasets[['drug_map_provenance']])) {
+    drug_data[['provenance']] <- drug_datasets[['drug_map_provenance']][['records']]
+  }
 
   return(drug_data)
 

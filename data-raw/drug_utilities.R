@@ -52,7 +52,7 @@ process_nci_labels <- function(path_data_raw, overwrite = F) {
 ### CHEMBL-PUBCHEM COMPOUND CROSS-REFERENCE
 
 get_chembl_pubchem_xref <- function(
-    datestamp = '20250902',
+    datestamp = '20260523',
     chembl_release = "v36",
     path_data_raw = NULL,
     update = F){
@@ -75,10 +75,10 @@ get_chembl_pubchem_xref <- function(
 
 
 
-### TARGETED ANTICANCER COMPOUNDS FROM OPEN TARGETS
-get_otp_cancer_drugs <-
+### TARGETED COMPOUNDS FROM OPEN TARGETS
+get_otp_drugs <-
   function(path_data_raw = NULL,
-           ot_version = "2025.12"){
+           ot_version = "2026.03"){
 
     cancer_terms <- list()
     cancer_terms[['all']] <- phenOncoX::get_terms(
@@ -101,7 +101,6 @@ get_otp_cancer_drugs <-
   ot_compounds <- as.data.frame(
     readRDS(file = fname))
   
-  
   ot_compounds <- ot_compounds |>
       dplyr::select(target_genename,
                     target_symbol,
@@ -112,30 +111,33 @@ get_otp_cancer_drugs <-
                     disease_efo_label,
                     drug_name,
                     drug_type,
-                    drug_max_ct_phase,
-                    drug_max_phase_indication,
+                    drug_clinical_stage_max,
+                    drug_clinical_stage_indication,
                     molecule_chembl_id,
+                    parent_molecule_chembl_id,
                     drug_action_type,
                     drug_moa,
                     drug_tradenames,
                     drug_synonyms,
-                    drug_clinical_source,
+                    clinical_report_source,
+                    clinical_report_type,
                     drug_clinical_id,
                     drug_description,
-                    drug_withdrawn,
-                    drug_approved_indication,
-                    drug_blackbox_warning,
-                    drug_year_first_approval) |>
-    dplyr::mutate(
-      disease_efo_id = stringr::str_replace_all(
-        disease_efo_id, "_", ":")) |>
+                    #drug_withdrawn, # leave out
+                    drug_approved_indication) |>
+                    #drug_blackbox_warning, # leave out
+                    #drug_year_first_approval) |> # leave out
+    dplyr::rename(
+      drug_clinical_source = clinical_report_source,
+      drug_clinical_report_type = clinical_report_type) |>
     dplyr::distinct()  |>
     dplyr::left_join(
       cancer_terms[['efo']], 
       by = "disease_efo_id", 
       multiple = "all", 
       relationship = "many-to-many") |>
-    ## general cancer ontology terms (neoplasm, cancer, carcinoma, squamous cell carcinoma)
+    ## general cancer ontology terms (neoplasm, cancer, 
+    ## carcinoma, squamous cell carcinoma)
     dplyr::mutate(
       drug_cancer_relevance =
         dplyr::if_else(
@@ -177,7 +179,7 @@ get_otp_cancer_drugs <-
     ) |>
     dplyr::mutate(
       drug_type = dplyr::if_else(
-        drug_type == "unknown",
+        is.na(drug_type),
         "Unknown",
         as.character(drug_type)
       )
@@ -188,155 +190,189 @@ get_otp_cancer_drugs <-
         drug_type != "Gene" &
         drug_type != "Oligonucleotide" &
         drug_type != "Oligosaccharide" 
-    )
-  
-  cancer_indication_stats <- ot_compounds |> 
-    dplyr::filter(
-      !is.na(drug_cancer_relevance) & 
-        drug_cancer_relevance == "by_cancer_condition_otp") |> 
-    dplyr::select(drug_name, disease_efo_label) |> 
-    dplyr::filter(!is.na(disease_efo_label)) |>
-    dplyr::distinct() |> 
-    dplyr::group_by(drug_name) |> 
-    dplyr::summarise(n_cancer_indications = dplyr::n())
-  
-  non_cancer_indication_stats <- ot_compounds |>
-    dplyr::filter(
-      !is.na(drug_cancer_relevance) & 
-        drug_cancer_relevance == "by_other_condition_otp") |>
-    #dplyr::filter(drug_cancer_relevance == F) |> 
-    dplyr::filter(!is.na(disease_efo_label)) |>
-    dplyr::select(drug_name, disease_efo_label,
-                  drug_approved_indication) |> 
-    dplyr::distinct() |> 
-    dplyr::group_by(drug_name) |> 
-    dplyr::summarise(n_noncancer_indications = dplyr::n(),
-                     approved_non_cancer = paste(
-                       unique(drug_approved_indication),
-                       collapse = ";"
-                     ), .groups = "drop") |>
-    dplyr::mutate(approved_non_cancer = dplyr::if_else(
-      stringr::str_detect(approved_non_cancer,"TRUE"),
-      as.logical(TRUE),
-      as.logical(FALSE)
-    ))
-  
-  indication_stats <- cancer_indication_stats |>
-    dplyr::full_join(non_cancer_indication_stats, by = "drug_name") |>
-    dplyr::mutate(n_cancer_indications = dplyr::if_else(
-      is.na(n_cancer_indications),
-      as.numeric(0),
-      as.numeric(n_cancer_indications)
-    )) |>
-    dplyr::mutate(n_noncancer_indications = dplyr::if_else(
-      is.na(n_noncancer_indications),
-      as.numeric(0),
-      as.numeric(n_noncancer_indications)
-    )) |>
-    dplyr::mutate(drug_n_indications = n_cancer_indications +
-                    n_noncancer_indications) |>
-    dplyr::mutate(drug_frac_cancer_indications = dplyr::if_else(
-      n_cancer_indications == 0,
-      as.numeric(0),
-      round(as.numeric(n_cancer_indications / 
-                   (n_cancer_indications + n_noncancer_indications)),
-            digits = 3)
-    )) |>
-    dplyr::mutate(drug_approved_noncancer = dplyr::if_else(
-      is.na(approved_non_cancer),
-      FALSE,
-      as.logical(approved_non_cancer)
-    )) |>
-    dplyr::select(drug_name,
-                  drug_n_indications,
-                  drug_approved_noncancer,
-                  drug_frac_cancer_indications)
-  
-  ot_compounds <- ot_compounds |>
-    dplyr::left_join(indication_stats, by = "drug_name") |>
-    dplyr::mutate(
-      drug_n_indications = dplyr::if_else(
-        is.na(drug_n_indications) | 
-          drug_n_indications == "NA",
-        0,
-        as.integer(drug_n_indications)
-      )
-    )
-
-  targeted_compounds <- as.data.frame(
-    ot_compounds |>
-      dplyr::distinct() |>
-      dplyr::group_by_at(
-        dplyr::vars(-c(drug_clinical_id))) |>
-      dplyr::summarise(
-        drug_clinical_id = paste(
-          unique(drug_clinical_id),
-          collapse = ","),
-        drug_clinical_source = paste(
-          unique(sort(drug_clinical_source)),
-          collapse = ","),
-        .groups = "drop") |>
-      dplyr::ungroup() |>
-      dplyr::mutate(
-        drug_name_lc = tolower(drug_name))
-  )
-  
-  
-  ## adjust max ct phase
-  drugs_with_max_phase_adj <- as.data.frame(
-    targeted_compounds |>
-    #dplyr::filter(drug_cancer_relevance == T) |>
-    dplyr::filter(!is.na(drug_max_ct_phase) & 
-                    !is.na(drug_max_phase_indication)) |>
-    dplyr::group_by(drug_name, molecule_chembl_id) |>
-    dplyr::summarise(drug_max_ct_phase = max(drug_max_phase_indication),
-                     .groups = "drop")
-  )
-
-  targeted_compounds <- as.data.frame(targeted_compounds |>
-    dplyr::select(-drug_max_ct_phase) |>
-    dplyr::left_join(
-      drugs_with_max_phase_adj, 
-      by = c("drug_name","molecule_chembl_id"),
-      multiple = "all", relationship = "many-to-many")
-  )
-  
-  targeted_cancer_compounds <- targeted_compounds |>
-    dplyr::filter(
-      !is.na(drug_cancer_relevance) &
-        (drug_cancer_relevance == "by_cancer_condition_otp" |
-           drug_cancer_relevance == "by_cancer_target_otp")) |>
-    dplyr::mutate(drug_n_indications = dplyr::if_else(
-      is.na(drug_n_indications),as.numeric(0),
-      as.numeric(drug_n_indications)
-    )) |>
-    dplyr::mutate(drug_frac_cancer_indications = dplyr::if_else(
-      is.na(drug_frac_cancer_indications),as.numeric(0),
-      as.numeric(drug_frac_cancer_indications)
-    )) |>
-    dplyr::mutate(drug_approved_noncancer = dplyr::if_else(
-      is.na(drug_approved_noncancer),as.logical(FALSE),
-      as.logical(drug_approved_noncancer)
-    )) |>
-    dplyr::filter(drug_withdrawn == F)
-  
-  targeted_noncancer_compounds <- targeted_compounds |>
-    dplyr::anti_join(
-      dplyr::select(
-        targeted_cancer_compounds, molecule_chembl_id
-      ), by = "molecule_chembl_id"
     ) |>
-    dplyr::filter(drug_withdrawn == F)
+    dplyr::distinct() |>
+    dplyr::select(
+      c("molecule_chembl_id",
+        "parent_molecule_chembl_id",
+        "drug_name",
+        "drug_type",
+        "drug_action_type",
+        "drug_synonyms",
+        "drug_tradenames",
+        "drug_description"),
+      dplyr::everything()
+    ) |>
+    dplyr::group_by_at(
+    dplyr::vars(-c(drug_clinical_id, 
+                   drug_clinical_report_type,
+                   drug_clinical_source))) |>
+    dplyr::summarise(
+      drug_clinical_id = paste(
+        unique(drug_clinical_id),
+        collapse = ","),
+      drug_clinical_source = paste(
+        unique(sort(drug_clinical_source)),
+        collapse = ","),
+      drug_clinical_report_type = paste(
+        unique(sort(drug_clinical_report_type)),
+        collapse = ","),
+        .groups = "drop") |>
+    dplyr::ungroup()
   
-  targeted_noncancer_compounds$drug_name_lc <- NULL
-  targeted_cancer_compounds$drug_name_lc <- NULL
   
-  ot_recs <- dplyr::bind_rows(
-    targeted_cancer_compounds,
-    targeted_noncancer_compounds) |> 
-    dplyr::distinct()
   
-  return(ot_recs)
+  
+  # cancer_indication_stats <- ot_compounds |> 
+  #   dplyr::filter(
+  #     !is.na(drug_cancer_relevance) & 
+  #       drug_cancer_relevance == "by_cancer_condition_otp") |> 
+  #   dplyr::select(drug_name, disease_efo_label) |> 
+  #   dplyr::filter(!is.na(disease_efo_label)) |>
+  #   dplyr::distinct() |> 
+  #   dplyr::group_by(drug_name) |> 
+  #   dplyr::summarise(n_cancer_indications = dplyr::n())
+  # 
+  # non_cancer_indication_stats <- ot_compounds |>
+  #   dplyr::filter(
+  #     !is.na(drug_cancer_relevance) & 
+  #       drug_cancer_relevance == "by_other_condition_otp") |>
+  #   #dplyr::filter(drug_cancer_relevance == F) |> 
+  #   dplyr::filter(!is.na(disease_efo_label)) |>
+  #   dplyr::select(drug_name, 
+  #                 disease_efo_label,
+  #                 drug_approved_indication) |> 
+  #   dplyr::distinct() |> 
+  #   dplyr::group_by(drug_name) |> 
+  #   dplyr::summarise(n_noncancer_indications = dplyr::n(),
+  #                    approved_non_cancer = paste(
+  #                      unique(drug_approved_indication),
+  #                      collapse = ";"
+  #                    ), .groups = "drop") |>
+  #   dplyr::mutate(approved_non_cancer = dplyr::if_else(
+  #     stringr::str_detect(approved_non_cancer,"TRUE"),
+  #     as.logical(TRUE),
+  #     as.logical(FALSE)
+  #   ))
+  # 
+  # indication_stats <- cancer_indication_stats |>
+  #   dplyr::full_join(non_cancer_indication_stats, by = "drug_name") |>
+  #   dplyr::mutate(n_cancer_indications = dplyr::if_else(
+  #     is.na(n_cancer_indications),
+  #     as.numeric(0),
+  #     as.numeric(n_cancer_indications)
+  #   )) |>
+  #   dplyr::mutate(n_noncancer_indications = dplyr::if_else(
+  #     is.na(n_noncancer_indications),
+  #     as.numeric(0),
+  #     as.numeric(n_noncancer_indications)
+  #   )) |>
+  #   dplyr::mutate(drug_n_indications = n_cancer_indications +
+  #                   n_noncancer_indications) |>
+  #   dplyr::mutate(drug_frac_cancer_indications = dplyr::if_else(
+  #     n_cancer_indications == 0,
+  #     as.numeric(0),
+  #     round(as.numeric(n_cancer_indications / 
+  #                  (n_cancer_indications + n_noncancer_indications)),
+  #           digits = 3)
+  #   )) |>
+  #   dplyr::mutate(drug_approved_noncancer = dplyr::if_else(
+  #     is.na(approved_non_cancer),
+  #     FALSE,
+  #     as.logical(approved_non_cancer)
+  #   )) |>
+  #   dplyr::select(drug_name,
+  #                 drug_n_indications,
+  #                 drug_approved_noncancer,
+  #                 drug_frac_cancer_indications)
+  # 
+  # ot_compounds <- ot_compounds |>
+  #   dplyr::left_join(indication_stats, by = "drug_name") |>
+  #   dplyr::mutate(
+  #     drug_n_indications = dplyr::if_else(
+  #       is.na(drug_n_indications) | 
+  #         drug_n_indications == "NA",
+  #       0,
+  #       as.integer(drug_n_indications)
+  #     )
+  #   )
+  # 
+  # targeted_compounds <- as.data.frame(
+  #   ot_compounds |>
+  #     dplyr::distinct() |>
+  #     dplyr::group_by_at(
+  #       dplyr::vars(-c(drug_clinical_id))) |>
+  #     dplyr::summarise(
+  #       drug_clinical_id = paste(
+  #         unique(drug_clinical_id),
+  #         collapse = ","),
+  #       clinical_report_source = paste(
+  #         unique(sort(clinical_report_source)),
+  #         collapse = ","),
+  #       .groups = "drop") |>
+  #     dplyr::ungroup() |>
+  #     dplyr::mutate(
+  #       drug_name_lc = tolower(drug_name))
+  # )
+  # 
+  # 
+  # ## adjust max ct phase
+  # drugs_with_max_phase_adj <- as.data.frame(
+  #   targeted_compounds |>
+  #   dplyr::filter(!is.na(drug_max_ct_phase) & 
+  #                   !is.na(drug_max_phase_indication)) |>
+  #   dplyr::group_by(drug_name, molecule_chembl_id) |>
+  #   dplyr::summarise(drug_max_ct_phase = max(drug_max_phase_indication),
+  #                    .groups = "drop")
+  # )
+  # 
+  # targeted_compounds <- as.data.frame(targeted_compounds |>
+  #   dplyr::select(-drug_max_ct_phase) |>
+  #   dplyr::left_join(
+  #     drugs_with_max_phase_adj, 
+  #     by = c("drug_name","molecule_chembl_id"),
+  #     multiple = "all", 
+  #     relationship = "many-to-many")
+  # )
+  # 
+  # targeted_cancer_compounds <- targeted_compounds |>
+  #   dplyr::filter(
+  #     !is.na(drug_cancer_relevance) &
+  #       (drug_cancer_relevance == "by_cancer_condition_otp" |
+  #          drug_cancer_relevance == "by_cancer_target_otp")) |>
+  #   dplyr::mutate(drug_n_indications = dplyr::if_else(
+  #     is.na(drug_n_indications),
+  #     as.numeric(0),
+  #     as.numeric(drug_n_indications)
+  #   )) |>
+  #   dplyr::mutate(drug_frac_cancer_indications = dplyr::if_else(
+  #     is.na(drug_frac_cancer_indications),
+  #     as.numeric(0),
+  #     as.numeric(drug_frac_cancer_indications)
+  #   )) |>
+  #   dplyr::mutate(drug_approved_noncancer = dplyr::if_else(
+  #     is.na(drug_approved_noncancer),
+  #     as.logical(FALSE),
+  #     as.logical(drug_approved_noncancer)
+  #   )) 
+  # 
+  # targeted_noncancer_compounds <- targeted_compounds |>
+  #   dplyr::anti_join(
+  #     dplyr::select(
+  #       targeted_cancer_compounds, molecule_chembl_id
+  #     ), by = "molecule_chembl_id"
+  #   )
+  # 
+  # targeted_noncancer_compounds$drug_name_lc <- NULL
+  # targeted_cancer_compounds$drug_name_lc <- NULL
+  # 
+  # ot_recs <- dplyr::bind_rows(
+  #   targeted_cancer_compounds,
+  #   targeted_noncancer_compounds) |> 
+  #   dplyr::distinct()
+  
+  #return(ot_recs)
+  return(ot_compounds)
 
 }
 
@@ -804,8 +840,7 @@ get_nci_drugs <- function(nci_db_release = nci_db_release,
   return(nci_drugs)
 }
 
-
-merge_nci_opentargets <- function(
+merge_nci_otp <- function(
     drug_sets = NULL,
     path_data_raw = NULL){
   
@@ -911,50 +946,50 @@ merge_nci_opentargets <- function(
   
   rownames(all_cancer_drugs) <- NULL
   
-  salt_patterns <-
-    readr::read_tsv(
-      file.path(path_data_raw, "salts.tsv"),
-      show_col_types = F, col_names = F)
-
-  salt_patterns_regex <- paste0(
-    "( (",
-    paste(salt_patterns$X1, collapse="|"),
-    "))$")
-  
-  salt_forms <- all_cancer_drugs |>
-    dplyr::filter(
-      stringr::str_detect(
-        tolower(nci_cd_name), 
-        salt_patterns_regex)) |>
-    dplyr::filter(!is.na(opentargets_version)) |>
-    dplyr::mutate(tradename = stringr::str_replace(
-      nci_cd_name,
-      salt_patterns_regex,
-      "")) |>
-    dplyr::select(tradename, nci_cd_name) |>
-    dplyr::distinct() |>
-    dplyr::mutate(is_salt = T) |>
-    dplyr::inner_join(
-      dplyr::select(all_cancer_drugs, nci_cd_name),
-      by = c("tradename" = "nci_cd_name"),
-      multiple = "all", relationship = "many-to-many") |>
-    dplyr::distinct() |>
-    dplyr::select(-tradename)
-  
-  
-  all_cancer_drugs <- all_cancer_drugs |>
-    dplyr::left_join(
-      salt_forms, 
-      by = "nci_cd_name",
-      multiple = "all", 
-      relationship = "many-to-many") |>
-    dplyr::mutate(is_salt = dplyr::if_else(
-      is.na(is_salt),
-      as.logical(FALSE),
-      as.logical(is_salt)
-    )) |>
-    dplyr::distinct()
-  
+  # salt_patterns <-
+  #   readr::read_tsv(
+  #     file.path(path_data_raw, "salts.tsv"),
+  #     show_col_types = F, col_names = F)
+  # 
+  # salt_patterns_regex <- paste0(
+  #   "( (",
+  #   paste(salt_patterns$X1, collapse="|"),
+  #   "))$")
+  # 
+  # salt_forms <- all_cancer_drugs |>
+  #   dplyr::filter(
+  #     stringr::str_detect(
+  #       tolower(nci_cd_name), 
+  #       salt_patterns_regex)) |>
+  #   dplyr::filter(!is.na(opentargets_version)) |>
+  #   dplyr::mutate(tradename = stringr::str_replace(
+  #     nci_cd_name,
+  #     salt_patterns_regex,
+  #     "")) |>
+  #   dplyr::select(tradename, nci_cd_name) |>
+  #   dplyr::distinct() |>
+  #   dplyr::mutate(is_salt = T) |>
+  #   dplyr::inner_join(
+  #     dplyr::select(all_cancer_drugs, nci_cd_name),
+  #     by = c("tradename" = "nci_cd_name"),
+  #     multiple = "all", relationship = "many-to-many") |>
+  #   dplyr::distinct() |>
+  #   dplyr::select(-tradename)
+  # 
+  # 
+  # all_cancer_drugs <- all_cancer_drugs |>
+  #   dplyr::left_join(
+  #     salt_forms, 
+  #     by = "nci_cd_name",
+  #     multiple = "all", 
+  #     relationship = "many-to-many") |>
+  #   dplyr::mutate(is_salt = dplyr::if_else(
+  #     is.na(is_salt),
+  #     as.logical(FALSE),
+  #     as.logical(is_salt)
+  #   )) |>
+  #   dplyr::distinct()
+  # 
   
   ## antibody drug conjugates
   adc_candidates <- all_cancer_drugs |>
@@ -1001,25 +1036,25 @@ merge_nci_opentargets <- function(
       as.logical(FALSE),
       as.logical(is_adc)
     )) |>
-    dplyr::filter(drug_withdrawn == F | is.na(drug_withdrawn)) |>
+    #dplyr::filter(drug_withdrawn == F | is.na(drug_withdrawn)) |>
     dplyr::mutate(nci_concept_definition = dplyr::if_else(
       !is.na(nci_concept_definition) & 
         nchar(nci_concept_definition) == 0,
       as.character(NA),
       as.character(nci_concept_definition)
     )) |>
-    dplyr::mutate(drug_n_indications = dplyr::if_else(
-      is.na(drug_n_indications),as.numeric(0),
-      as.numeric(drug_n_indications)
-    )) |>
-    dplyr::mutate(drug_frac_cancer_indications = dplyr::if_else(
-      is.na(drug_frac_cancer_indications),as.numeric(0),
-      as.numeric(drug_frac_cancer_indications)
-    )) |>
-    dplyr::mutate(drug_approved_noncancer = dplyr::if_else(
-      is.na(drug_approved_noncancer),as.logical(FALSE),
-      as.logical(drug_approved_noncancer)
-    )) |>
+    # dplyr::mutate(drug_n_indications = dplyr::if_else(
+    #   is.na(drug_n_indications),as.numeric(0),
+    #   as.numeric(drug_n_indications)
+    # )) |>
+    # dplyr::mutate(drug_frac_cancer_indications = dplyr::if_else(
+    #   is.na(drug_frac_cancer_indications),as.numeric(0),
+    #   as.numeric(drug_frac_cancer_indications)
+    # )) |>
+    # dplyr::mutate(drug_approved_noncancer = dplyr::if_else(
+    #   is.na(drug_approved_noncancer),as.logical(FALSE),
+    #   as.logical(drug_approved_noncancer)
+    # )) |>
     dplyr::mutate(drug_cancer_relevance = dplyr::if_else(
       is.na(drug_cancer_relevance) &
         opentargets == F,
@@ -1788,7 +1823,7 @@ remove_duplicate_chembl_ids <- function(drug_df = NULL){
 
 clean_final_drug_list <- function(drug_df = NULL){
 
-  pharmaoncox <- drug_df |>
+  phOcx <- drug_df |>
     dplyr::filter(
       is.na(nci_cd_name) |
       !stringr::str_detect(
@@ -1839,7 +1874,7 @@ clean_final_drug_list <- function(drug_df = NULL){
 
 
   drug_action_types <- as.data.frame(
-    pharmaoncox |>
+    phOcx |>
       dplyr::select(nci_cd_name, drug_action_type) |>
       dplyr::distinct() |>
       dplyr::group_by(nci_cd_name) |>
@@ -1848,8 +1883,8 @@ clean_final_drug_list <- function(drug_df = NULL){
       ))
   )
 
-  pharmaoncox$drug_action_type <- NULL
-  pharmaoncox <- pharmaoncox |>
+  phOcx$drug_action_type <- NULL
+  phOcx <- phOcx |>
     dplyr::left_join(
       drug_action_types,
       by = "nci_cd_name", 
@@ -1865,15 +1900,15 @@ clean_final_drug_list <- function(drug_df = NULL){
 
 
   drug_max_ct_phase <- as.data.frame(
-    pharmaoncox |>
+    phOcx |>
       dplyr::select(nci_cd_name, drug_max_ct_phase) |>
       dplyr::group_by(nci_cd_name) |>
       dplyr::summarise(drug_max_ct_phase = max(drug_max_ct_phase))
   )
 
-  pharmaoncox$drug_max_ct_phase <- NULL
+  phOcx$drug_max_ct_phase <- NULL
 
-  pharmaoncox <- pharmaoncox |>
+  phOcx <- phOcx |>
     dplyr::left_join(drug_max_ct_phase,
                      by = "nci_cd_name",
                      relationship = "many-to-many") |>
@@ -1927,15 +1962,15 @@ clean_final_drug_list <- function(drug_df = NULL){
   ## EFO/CUI cross-ref, avoiding similar records 
   ##with "neoplasm", "carcinoma" etc.
 
-  pharmaoncox_cancer_no_indication <- pharmaoncox |>
+  phOcx_cancer_no_indication <- phOcx |>
     dplyr::filter(is.na(disease_efo_id))
   
-  pharmaoncox_non_cancer <- pharmaoncox |>
+  phOcx_non_cancer <- phOcx |>
     dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id) &
                     drug_cancer_relevance == "by_other_condition_otp")
 
-  pharmaoncox_cancer_NOS <- as.data.frame(
-    pharmaoncox |>
+  phOcx_cancer_NOS <- as.data.frame(
+    phOcx |>
       dplyr::filter(is.na(primary_site) & !is.na(disease_efo_id) &
                       drug_cancer_relevance != "by_other_condition_otp") |>
       dplyr::mutate(disease_efo_id = "EFO:0000311",
@@ -1951,14 +1986,14 @@ clean_final_drug_list <- function(drug_df = NULL){
       dplyr::distinct()
   )
 
-  pharmaoncox_cancer_specific <- pharmaoncox |>
+  phOcx_cancer_specific <- phOcx |>
     dplyr::filter(!is.na(primary_site))
 
 
-  pharmaoncox <- pharmaoncox_cancer_no_indication |>
-    dplyr::bind_rows(pharmaoncox_non_cancer) |>
-    dplyr::bind_rows(pharmaoncox_cancer_specific) |>
-    dplyr::bind_rows(pharmaoncox_cancer_NOS) |>
+  phOcx <- phOcx_cancer_no_indication |>
+    dplyr::bind_rows(phOcx_non_cancer) |>
+    dplyr::bind_rows(phOcx_cancer_specific) |>
+    dplyr::bind_rows(phOcx_cancer_NOS) |>
     dplyr::arrange(nci_cd_name) |>
     dplyr::mutate(nci_cd_name = dplyr::if_else(
       stringr::str_detect(nci_cd_name,";-"),
@@ -2000,13 +2035,13 @@ clean_final_drug_list <- function(drug_df = NULL){
     )
 
 
-  pharmaoncox$drug_name <- NULL
-  pharmaoncox$drug_name <- pharmaoncox$drug_name_final
-  pharmaoncox$nci_cd_name <- NULL
-  pharmaoncox$drug_name_final <- NULL
-  pharmaoncox$nci_concept_synonym <- NULL
+  phOcx$drug_name <- NULL
+  phOcx$drug_name <- phOcx$drug_name_final
+  phOcx$nci_cd_name <- NULL
+  phOcx$drug_name_final <- NULL
+  phOcx$nci_concept_synonym <- NULL
 
-  blackbox_warnings <- as.data.frame(pharmaoncox |>
+  blackbox_warnings <- as.data.frame(phOcx |>
     dplyr::select(drug_name, drug_blackbox_warning) |>
     dplyr::distinct() |>
       dplyr::group_by(drug_name) |>
@@ -2014,7 +2049,7 @@ clean_final_drug_list <- function(drug_df = NULL){
       unique(drug_blackbox_warning), collapse=","))
   )
 
-  nci_t_map <- as.data.frame(pharmaoncox |>
+  nci_t_map <- as.data.frame(phOcx |>
     dplyr::select(drug_name, nci_t, nci_concept_definition) |>
     dplyr::distinct() |>
     dplyr::group_by(drug_name) |>
@@ -2027,10 +2062,10 @@ clean_final_drug_list <- function(drug_df = NULL){
     ), .groups = "drop"
   )
 
-  pharmaoncox$nci_t <- NULL
-  pharmaoncox$nci_concept_definition <- NULL
-  pharmaoncox$drug_blackbox_warning <- NULL
-  pharmaoncox2 <- pharmaoncox |>
+  phOcx$nci_t <- NULL
+  phOcx$nci_concept_definition <- NULL
+  phOcx$drug_blackbox_warning <- NULL
+  phOcx2 <- phOcx |>
     dplyr::left_join(
       nci_t_map, by = "drug_name", 
       relationship = "many-to-many") |>
@@ -2086,7 +2121,7 @@ clean_final_drug_list <- function(drug_df = NULL){
       as.logical(inhibition_moa)
     )) 
   
-  inhibition_moa_df <- as.data.frame(pharmaoncox2 |>
+  inhibition_moa_df <- as.data.frame(phOcx2 |>
     dplyr::select(drug_name, inhibition_moa) |>
     dplyr::distinct() |>
     dplyr::group_by(drug_name) |>
@@ -2100,8 +2135,8 @@ clean_final_drug_list <- function(drug_df = NULL){
       as.logical(inhibition_moa)
     ))
   
-  pharmaoncox2$inhibition_moa <- NULL
-  pharmaoncox2 <- pharmaoncox2 |> 
+  phOcx2$inhibition_moa <- NULL
+  phOcx2 <- phOcx2 |> 
     dplyr::left_join(
       inhibition_moa_df, 
       by = "drug_name", 
@@ -2189,25 +2224,25 @@ clean_final_drug_list <- function(drug_df = NULL){
   
 
   drug_maps <- list()
-  drug_maps[['id2name']] <- pharmaoncox2 |>
+  drug_maps[['id2name']] <- phOcx2 |>
     dplyr::select(drug_name) |>
     dplyr::distinct() |>
     dplyr::mutate(
       drug_id = dplyr::row_number())
 
   if(nrow(drug_maps[['id2name']]) != length(
-    unique(pharmaoncox2$drug_name))){
+    unique(phOcx2$drug_name))){
     lgr::lgr$fatal("Ambiguous drug names")
     return(0)
   }
 
-  pharmaoncox2 <- pharmaoncox2 |>
+  phOcx2 <- phOcx2 |>
     dplyr::left_join(
       drug_maps[['id2name']], 
       by = "drug_name", 
       multiple = "all")
 
-  drug_maps[['id2target']] <- pharmaoncox2 |>
+  drug_maps[['id2target']] <- phOcx2 |>
     dplyr::select(drug_id,
                   target_symbol,
                   target_entrezgene,
@@ -2216,7 +2251,7 @@ clean_final_drug_list <- function(drug_df = NULL){
                   target_type) |>
     dplyr::distinct()
 
-  drug_maps[['id2indication']] <- pharmaoncox2 |>
+  drug_maps[['id2indication']] <- phOcx2 |>
     dplyr::select(drug_id,
                   drug_max_phase_indication,
                   drug_approved_indication,
@@ -2234,16 +2269,17 @@ clean_final_drug_list <- function(drug_df = NULL){
                   primary_site) |>
     dplyr::distinct()
 
-  drug_maps[['id2synonym']] <- pharmaoncox2 |>
+  drug_maps[['id2synonym']] <- phOcx2 |>
     dplyr::select(drug_id,
                   nci_concept_synonym_all) |>
     dplyr::distinct()
 
   drug_maps[['id2basic']] <- as.data.frame(
-    pharmaoncox2 |>
+    phOcx2 |>
     dplyr::select(
       drug_id,
       molecule_chembl_id,
+      parent_molecule_chembl_id,
       drug_type,
       drug_action_type,
       drug_cancer_relevance,
@@ -2436,5 +2472,266 @@ get_mesh_drug_categories <- function(path_data_raw = NULL){
     }
     i <- i + 1
   }
-  
+
+}
+
+
+## Aggregate evidence across parent-child drug pairs (active moiety → salt/ester forms).
+##
+## Layer 1: canonical record per parent molecule, with indication evidence pooled
+##          across all forms (max stage, union of clinical IDs, any-approval flag).
+## Layer 2: id2provenance table recording which constituent molecule contributed
+##          each piece of evidence.
+##
+## Must be called AFTER expand_drug_aliases so that id2alias is fully populated.
+##
+aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
+
+  lgr::lgr$info("Aggregating evidence across parent-child drug pairs")
+
+  basic      <- drug_index_map[['id2basic']]
+  name_map   <- drug_index_map[['id2name']]
+  indication <- drug_index_map[['id2indication']]
+  alias      <- drug_index_map[['id2alias']]
+
+  empty_provenance <- data.frame(
+    drug_id                   = integer(),
+    molecule_chembl_id        = character(),
+    parent_molecule_chembl_id = character(),
+    canonical_drug_id         = integer(),
+    drug_name                 = character(),
+    canonical_drug_name       = character(),
+    is_canonical              = logical(),
+    constituent_role          = character(),
+    stringsAsFactors          = FALSE
+  )
+
+  ## molecule_chembl_id → drug_id lookup
+  mol_to_drug <- basic |>
+    dplyr::filter(!is.na(molecule_chembl_id)) |>
+    dplyr::select(drug_id, molecule_chembl_id, parent_molecule_chembl_id) |>
+    dplyr::distinct()
+
+  ## child molecules: parent differs from self
+  child_mols <- mol_to_drug |>
+    dplyr::filter(
+      !is.na(parent_molecule_chembl_id),
+      parent_molecule_chembl_id != molecule_chembl_id
+    )
+
+  if (nrow(child_mols) == 0) {
+    lgr::lgr$info("No parent-child relationships found — skipping aggregation")
+    drug_index_map[['id2provenance']] <- empty_provenance
+    return(drug_index_map)
+  }
+
+  ## map each child to its parent drug_id (if the parent is in the dataset)
+  parent_lookup <- mol_to_drug |>
+    dplyr::select(molecule_chembl_id, drug_id) |>
+    dplyr::distinct()
+
+  child_to_parent <- child_mols |>
+    dplyr::left_join(
+      dplyr::rename(parent_lookup, parent_drug_id = drug_id),
+      by = c("parent_molecule_chembl_id" = "molecule_chembl_id")
+    )
+
+  matched_children <- child_to_parent |>
+    dplyr::filter(!is.na(parent_drug_id))
+
+  orphan_parent_ids <- child_to_parent |>
+    dplyr::filter(is.na(parent_drug_id)) |>
+    dplyr::pull(parent_molecule_chembl_id) |>
+    unique()
+
+  lgr::lgr$info(paste0(
+    "Parent-child summary: ",
+    nrow(matched_children), " child drugs mapped to a dataset parent; ",
+    length(orphan_parent_ids), " orphan parent ChEMBL IDs (no dataset entry)"
+  ))
+
+  if (length(orphan_parent_ids) > 0) {
+    lgr::lgr$info(paste0(
+      "Orphan parent ChEMBL IDs: ", paste(orphan_parent_ids, collapse = ", ")))
+  }
+
+  ## ── Layer 2: provenance table ──────────────────────────────────────────────
+
+  child_prov <- matched_children |>
+    dplyr::mutate(
+      canonical_drug_id = parent_drug_id,
+      is_canonical      = FALSE,
+      constituent_role  = "child_salt_form"
+    ) |>
+    dplyr::select(drug_id, molecule_chembl_id, parent_molecule_chembl_id,
+                  canonical_drug_id, is_canonical, constituent_role)
+
+  parent_prov <- mol_to_drug |>
+    dplyr::anti_join(dplyr::select(matched_children, drug_id), by = "drug_id") |>
+    dplyr::mutate(
+      canonical_drug_id = drug_id,
+      is_canonical      = TRUE,
+      constituent_role  = dplyr::if_else(
+        !is.na(parent_molecule_chembl_id) &
+          parent_molecule_chembl_id != molecule_chembl_id,
+        "orphan_child",
+        "parent_or_standalone"
+      )
+    ) |>
+    dplyr::select(drug_id, molecule_chembl_id, parent_molecule_chembl_id,
+                  canonical_drug_id, is_canonical, constituent_role)
+
+  provenance <- dplyr::bind_rows(parent_prov, child_prov) |>
+    dplyr::left_join(
+      dplyr::select(name_map, drug_id, drug_name),
+      by = "drug_id") |>
+    dplyr::left_join(
+      dplyr::select(name_map, drug_id, canonical_drug_name = drug_name),
+      by = c("canonical_drug_id" = "drug_id")) |>
+    dplyr::arrange(canonical_drug_id, constituent_role) |>
+    dplyr::distinct()
+
+  ## ── Update id2basic: add canonical_drug_id, correct is_salt ───────────────
+
+  child_canonical_map <- matched_children |>
+    dplyr::select(drug_id, parent_drug_id) |>
+    dplyr::rename(canonical_drug_id = parent_drug_id)
+
+  updated_basic <- basic |>
+    dplyr::left_join(child_canonical_map, by = "drug_id") |>
+    dplyr::mutate(
+      canonical_drug_id = dplyr::if_else(
+        is.na(canonical_drug_id),
+        as.integer(drug_id),
+        as.integer(canonical_drug_id)
+      ),
+      ## set is_salt TRUE for child molecules regardless of prior value
+      is_salt = dplyr::if_else(
+        !is.na(parent_molecule_chembl_id) &
+          parent_molecule_chembl_id != molecule_chembl_id,
+        as.logical(TRUE),
+        as.logical(is_salt)
+      )
+    )
+
+  ## ── Layer 1: aggregate indication evidence ─────────────────────────────────
+
+  ## all drug_ids involved (both parents and children)
+  involved_ids <- dplyr::bind_rows(
+    dplyr::select(matched_children, drug_id),
+    dplyr::select(matched_children, drug_id = parent_drug_id)
+  ) |> dplyr::distinct()
+
+  ## canonical remap: child → parent_drug_id; parent → itself
+  canonical_remap <- dplyr::bind_rows(
+    dplyr::select(matched_children, drug_id, canonical_drug_id = parent_drug_id),
+    dplyr::select(matched_children, drug_id = parent_drug_id) |>
+      dplyr::distinct() |>
+      dplyr::mutate(canonical_drug_id = drug_id)
+  ) |> dplyr::distinct()
+
+  ## indication rows for involved drugs, remapped to canonical drug_id
+  involved_ind <- indication |>
+    dplyr::inner_join(involved_ids, by = "drug_id") |>
+    dplyr::left_join(canonical_remap, by = "drug_id") |>
+    dplyr::mutate(
+      source_drug_id = as.character(drug_id),
+      drug_id        = canonical_drug_id
+    ) |>
+    dplyr::select(-canonical_drug_id)
+
+  ## aggregate per (canonical drug_id × disease)
+  agg_ind <- involved_ind |>
+    dplyr::group_by(
+      drug_id, disease_efo_id, disease_efo_label, cui, cui_name, primary_site
+    ) |>
+    dplyr::summarise(
+      drug_max_phase_indication = suppressWarnings(
+        max(drug_max_phase_indication, na.rm = TRUE)),
+      drug_approved_indication = dplyr::case_when(
+        any(drug_approved_indication == TRUE, na.rm = TRUE) ~ TRUE,
+        all(is.na(drug_approved_indication))               ~ NA,
+        TRUE                                               ~ FALSE
+      ),
+      drug_clinical_id = paste(
+        sort(unique(na.omit(unlist(strsplit(drug_clinical_id, ","))))),
+        collapse = ","),
+      drug_clinical_source = paste(
+        sort(unique(na.omit(unlist(strsplit(drug_clinical_source, ","))))),
+        collapse = ","),
+      drug_year_first_approval = suppressWarnings(
+        min(drug_year_first_approval, na.rm = TRUE)),
+      source_drug_ids = paste(sort(unique(source_drug_id)), collapse = "|"),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(
+      drug_max_phase_indication = dplyr::if_else(
+        is.infinite(drug_max_phase_indication), as.numeric(NA),
+        as.numeric(drug_max_phase_indication)),
+      drug_year_first_approval = dplyr::if_else(
+        is.infinite(drug_year_first_approval), as.integer(NA),
+        as.integer(drug_year_first_approval))
+    )
+
+  ## recompute drug-level summary stats for canonical records
+  canonical_stats <- agg_ind |>
+    dplyr::group_by(drug_id) |>
+    dplyr::summarise(
+      drug_max_ct_phase = suppressWarnings(
+        max(drug_max_phase_indication, na.rm = TRUE)),
+      drug_n_indications = dplyr::n_distinct(
+        disease_efo_id[!is.na(disease_efo_id)]),
+      n_cancer_ind = sum(!is.na(primary_site)),
+      drug_approved_noncancer = any(
+        is.na(primary_site) & drug_approved_indication == TRUE,
+        na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(
+      drug_max_ct_phase = dplyr::if_else(
+        is.infinite(drug_max_ct_phase), as.numeric(NA),
+        as.numeric(drug_max_ct_phase)),
+      drug_frac_cancer_indications = dplyr::if_else(
+        drug_n_indications > 0,
+        as.numeric(n_cancer_ind / drug_n_indications),
+        as.numeric(0))
+    ) |>
+    dplyr::select(-n_cancer_ind)
+
+  agg_ind <- agg_ind |>
+    dplyr::left_join(canonical_stats, by = "drug_id")
+
+  ## standalone drugs: preserve as-is, add source_drug_ids = self
+  standalone_ind <- indication |>
+    dplyr::anti_join(involved_ids, by = "drug_id") |>
+    dplyr::mutate(source_drug_ids = as.character(drug_id))
+
+  updated_indication <- dplyr::bind_rows(standalone_ind, agg_ind)
+
+  ## ── Merge child aliases into parent ───────────────────────────────────────
+
+  child_aliases <- alias |>
+    dplyr::inner_join(
+      dplyr::select(matched_children, drug_id, parent_drug_id),
+      by = "drug_id") |>
+    dplyr::mutate(drug_id = parent_drug_id) |>
+    dplyr::select(-parent_drug_id)
+
+  updated_alias <- dplyr::bind_rows(alias, child_aliases) |>
+    dplyr::distinct()
+
+  ## ── Assemble and return ────────────────────────────────────────────────────
+
+  drug_index_map[['id2basic']]      <- updated_basic
+  drug_index_map[['id2indication']] <- updated_indication
+  drug_index_map[['id2alias']]      <- updated_alias
+  drug_index_map[['id2provenance']] <- provenance
+
+  lgr::lgr$info(paste0(
+    "Aggregation complete: ",
+    dplyr::n_distinct(matched_children$drug_id), " child records merged into ",
+    dplyr::n_distinct(matched_children$parent_drug_id), " canonical parent records"
+  ))
+
+  return(drug_index_map)
 }
