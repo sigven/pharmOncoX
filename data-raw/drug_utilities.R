@@ -1881,7 +1881,6 @@ clean_final_drug_list <- function(drug_df = NULL){
                   drug_type,
                   drug_action_type,
                   molecule_chembl_id,
-                  drug_max_phase_indication,
                   dplyr::everything())
 
 
