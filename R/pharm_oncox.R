@@ -121,7 +121,6 @@
 #'
 #' @export
 #'
-
 get_drugs <- function(
     cache_dir = NA,
     force_download = FALSE,

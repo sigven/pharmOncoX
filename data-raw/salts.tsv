@@ -1,4 +1,4 @@
-(M|m)aleate
+((D|d)i)?(M|m)aleate
 (S|s)uccinate
 (T|t)risodium
 (B|b)enzoate
@@ -29,17 +29,18 @@
 (C|c)amsylate
 (C|c)hloride
 (A|a)cetate
-(S|s)odium (P|p)hosphate
+(S|s)odium( (P|p)hosphate|(S|s)uccinate
 (S|s)odium
 (P|p)hosphate
 (D|d)iphosphate
-(C|c)itrate
+((B|b)ismuth )?(C|c)itrate
 (M|m)esylate
 (A|a)cetate
 (C|c)alcium
 (T|t)osylate
 (T|t)artrate
-(H|h)ydrochloride
+(H|h)ydrochloride (M|m)onohydrate
+(H|h)ydrochloride (D|d)ihydrate
 (P|p)ropionate
 (M|m)onosodium
 (N|n)itrate
