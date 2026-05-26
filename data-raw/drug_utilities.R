@@ -1166,9 +1166,9 @@ map_curated_targets <- function(gene_info = NULL,
         hit$target_ensembl_gene_id <- target_ensembl_gene_id
         hit$drug_clinical_source <- "nci_thesaurus_custom"
         hit$drug_cancer_relevance <- "by_cancer_target_nci"
-        hit$drug_n_indications <- 0
-        hit$drug_frac_cancer_indications <- 0
-        hit$drug_approved_noncancer <- FALSE
+        #hit$drug_n_indications <- 0
+        #hit$drug_frac_cancer_indications <- 0
+        #hit$drug_approved_noncancer <- FALSE
 
         ## set general indications for unknown cases
         if(is.na(hit$disease_efo_id) & 
@@ -1572,20 +1572,18 @@ assign_drug_category <- function(drug_df = NULL,
         !stringr::str_detect(drug_entry, "/") &
         stringr::str_detect(
           tolower(nci_concept_definition), "vinca alkaloid") ~ "L01CA",
-      (is.na(atc_code_level3) | atc_code_level3 == "NA") & 
+      (is.na(atc_code_level3) | atc_code_level3 == "NA") &
       ((!is.na(nci_concept_definition) &
           stringr::str_detect(
             tolower(nci_concept_definition),
             "antineoplastic activit|anti-tumor activit"
           )) |
-         (!is.na(drug_max_ct_phase) &
+         (!is.na(drug_clinical_stage_max) &
             stringr::str_detect(
-              drug_entry,"(in|ib|ide|ine|ax|il|an|ate| alfa)$") &
-            drug_max_ct_phase >= 2 &
-            (!is.na(drug_n_indications) &
-               drug_n_indications > 2) &
-            (!is.na(drug_frac_cancer_indications) &
-               drug_frac_cancer_indications > 0.4))) ~ "L01XX",
+              drug_entry, "(in|ib|ide|ine|ax|il|an|ate| alfa)$") &
+            drug_clinical_stage_max %in% c(
+              "PHASE_2", "PHASE_2_3", "PHASE_3", "PREAPPROVAL", "APPROVAL"
+            ))) ~ "L01XX",
       TRUE ~ as.character(atc_code_level3)
     )) |>
     dplyr::distinct() |>
