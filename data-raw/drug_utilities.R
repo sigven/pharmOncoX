@@ -124,9 +124,8 @@ get_otp_drugs <-
                     drug_clinical_id,
                     drug_description,
                     #drug_withdrawn, # leave out
-                    drug_approved_indication,
+                    drug_approved_indication) |>
                     #drug_blackbox_warning, # leave out
-                    drug_year_first_approval) |>
     dplyr::rename(
       drug_clinical_source = clinical_report_source,
       drug_clinical_report_type = clinical_report_type) |>
@@ -2241,7 +2240,6 @@ clean_final_drug_list <- function(drug_df = NULL){
                   drug_clinical_stage_max,
                   drug_approved_indication,
                   drug_clinical_source,
-                  drug_year_first_approval,
                   drug_clinical_id,
                   disease_efo_id,
                   disease_efo_label,
@@ -2658,18 +2656,13 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
       drug_clinical_source = paste(
         sort(unique(na.omit(unlist(strsplit(drug_clinical_source, ","))))),
         collapse = ","),
-      drug_year_first_approval = suppressWarnings(
-        min(drug_year_first_approval, na.rm = TRUE)),
       source_drug_ids = paste(sort(unique(source_drug_id)), collapse = "|"),
       .groups = "drop"
     ) |>
     dplyr::mutate(
       drug_max_phase_indication = dplyr::if_else(
         is.infinite(drug_max_phase_indication), as.numeric(NA),
-        as.numeric(drug_max_phase_indication)),
-      drug_year_first_approval = dplyr::if_else(
-        is.infinite(drug_year_first_approval), as.integer(NA),
-        as.integer(drug_year_first_approval))
+        as.numeric(drug_max_phase_indication))
     )
 
   ## standalone drugs: preserve as-is, add source_drug_ids = self
