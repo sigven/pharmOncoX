@@ -318,15 +318,15 @@ get_otp_drugs <-
   # ## adjust max ct phase
   # drugs_with_max_phase_adj <- as.data.frame(
   #   targeted_compounds |>
-  #   dplyr::filter(!is.na(drug_max_ct_phase) & 
-  #                   !is.na(drug_max_phase_indication)) |>
+  #   dplyr::filter(!is.na(drug_max_clinical_stage) & 
+  #                   !is.na(drug_max_clinical_stage_indication)) |>
   #   dplyr::group_by(drug_name, molecule_chembl_id) |>
-  #   dplyr::summarise(drug_max_ct_phase = max(drug_max_phase_indication),
+  #   dplyr::summarise(drug_max_clinical_stage = max(drug_max_clinical_stage_indication),
   #                    .groups = "drop")
   # )
   # 
   # targeted_compounds <- as.data.frame(targeted_compounds |>
-  #   dplyr::select(-drug_max_ct_phase) |>
+  #   dplyr::select(-drug_max_clinical_stage) |>
   #   dplyr::left_join(
   #     drugs_with_max_phase_adj, 
   #     by = c("drug_name","molecule_chembl_id"),
@@ -945,50 +945,50 @@ merge_nci_otp <- function(
   
   rownames(all_cancer_drugs) <- NULL
   
-  # salt_patterns <-
-  #   readr::read_tsv(
-  #     file.path(path_data_raw, "salts.tsv"),
-  #     show_col_types = F, col_names = F)
-  # 
-  # salt_patterns_regex <- paste0(
-  #   "( (",
-  #   paste(salt_patterns$X1, collapse="|"),
-  #   "))$")
-  # 
-  # salt_forms <- all_cancer_drugs |>
-  #   dplyr::filter(
-  #     stringr::str_detect(
-  #       tolower(nci_cd_name), 
-  #       salt_patterns_regex)) |>
-  #   dplyr::filter(!is.na(opentargets_version)) |>
-  #   dplyr::mutate(tradename = stringr::str_replace(
-  #     nci_cd_name,
-  #     salt_patterns_regex,
-  #     "")) |>
-  #   dplyr::select(tradename, nci_cd_name) |>
-  #   dplyr::distinct() |>
-  #   dplyr::mutate(is_salt = T) |>
-  #   dplyr::inner_join(
-  #     dplyr::select(all_cancer_drugs, nci_cd_name),
-  #     by = c("tradename" = "nci_cd_name"),
-  #     multiple = "all", relationship = "many-to-many") |>
-  #   dplyr::distinct() |>
-  #   dplyr::select(-tradename)
-  # 
-  # 
-  # all_cancer_drugs <- all_cancer_drugs |>
-  #   dplyr::left_join(
-  #     salt_forms, 
-  #     by = "nci_cd_name",
-  #     multiple = "all", 
-  #     relationship = "many-to-many") |>
-  #   dplyr::mutate(is_salt = dplyr::if_else(
-  #     is.na(is_salt),
-  #     as.logical(FALSE),
-  #     as.logical(is_salt)
-  #   )) |>
-  #   dplyr::distinct()
-  # 
+  salt_patterns <-
+    readr::read_tsv(
+      file.path(path_data_raw, "salts.tsv"),
+      show_col_types = F, col_names = F)
+
+  salt_patterns_regex <- paste0(
+    "( (",
+    paste(salt_patterns$X1, collapse="|"),
+    "))$")
+
+  salt_forms <- all_cancer_drugs |>
+    dplyr::filter(
+      stringr::str_detect(
+        tolower(nci_cd_name),
+        salt_patterns_regex)) |>
+    dplyr::filter(!is.na(opentargets_version)) |>
+    dplyr::mutate(tradename = stringr::str_replace(
+      nci_cd_name,
+      salt_patterns_regex,
+      "")) |>
+    dplyr::select(tradename, nci_cd_name) |>
+    dplyr::distinct() |>
+    dplyr::mutate(is_salt = T) |>
+    dplyr::inner_join(
+      dplyr::select(all_cancer_drugs, nci_cd_name),
+      by = c("tradename" = "nci_cd_name"),
+      multiple = "all", relationship = "many-to-many") |>
+    dplyr::distinct() |>
+    dplyr::select(-tradename)
+
+
+  all_cancer_drugs <- all_cancer_drugs |>
+    dplyr::left_join(
+      salt_forms,
+      by = "nci_cd_name",
+      multiple = "all",
+      relationship = "many-to-many") |>
+    dplyr::mutate(is_salt = dplyr::if_else(
+      is.na(is_salt),
+      as.logical(FALSE),
+      as.logical(is_salt)
+    )) |>
+    dplyr::distinct()
+
   
   ## antibody drug conjugates
   adc_candidates <- all_cancer_drugs |>
@@ -2151,6 +2151,7 @@ clean_final_drug_list <- function(drug_df = NULL){
       drug_cancer_relevance,
       inhibition_moa,
       is_adc,
+      is_salt,
       nci_concept_definition,
       nci_t,
       opentargets,
@@ -2161,7 +2162,6 @@ clean_final_drug_list <- function(drug_df = NULL){
       atc_code_level3,
       atc_level3,
       atc_treatment_category) |>
-    #dplyr::mutate(is_salt = FALSE) |>
       dplyr::distinct())
 
   return(drug_maps)
@@ -2364,7 +2364,7 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
   indication <- drug_index_map[['id2indication']]
   alias      <- drug_index_map[['id2alias']]
 
-  ## convert categorical stage strings → numeric drug_max_phase_indication
+  ## convert categorical stage strings → numeric drug_max_clinical_stage_indication
   .stage_num <- c(
     APPROVAL      = 4,   PREAPPROVAL   = 3.5,
     PHASE_3       = 3,   PHASE_2_3     = 2.5,
@@ -2374,7 +2374,7 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
   )
   indication <- indication |>
     dplyr::mutate(
-      drug_max_phase_indication = as.numeric(
+      drug_max_clinical_stage_indication = as.numeric(
         .stage_num[drug_clinical_stage_indication])
     ) |>
     dplyr::select(
@@ -2535,8 +2535,8 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
       drug_id, disease_efo_id, disease_efo_label, cui, cui_name, primary_site
     ) |>
     dplyr::summarise(
-      drug_max_phase_indication = suppressWarnings(
-        max(drug_max_phase_indication, na.rm = TRUE)),
+      drug_max_clinical_stage_indication = suppressWarnings(
+        max(drug_max_clinical_stage_indication, na.rm = TRUE)),
       drug_approved_indication = dplyr::case_when(
         any(drug_approved_indication == TRUE, na.rm = TRUE) ~ TRUE,
         all(is.na(drug_approved_indication))               ~ NA,
@@ -2552,9 +2552,9 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
       .groups = "drop"
     ) |>
     dplyr::mutate(
-      drug_max_phase_indication = dplyr::if_else(
-        is.infinite(drug_max_phase_indication), as.numeric(NA),
-        as.numeric(drug_max_phase_indication))
+      drug_max_clinical_stage_indication = dplyr::if_else(
+        is.infinite(drug_max_clinical_stage_indication), as.numeric(NA),
+        as.numeric(drug_max_clinical_stage_indication))
     )
 
   ## standalone drugs: preserve as-is, add source_drug_ids = self
@@ -2568,8 +2568,8 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
   all_drug_stats <- updated_indication |>
     dplyr::group_by(drug_id) |>
     dplyr::summarise(
-      drug_max_ct_phase = suppressWarnings(
-        max(drug_max_phase_indication, na.rm = TRUE)),
+      drug_max_clinical_stage = suppressWarnings(
+        max(drug_max_clinical_stage_indication, na.rm = TRUE)),
       drug_n_indications = dplyr::n_distinct(
         disease_efo_id[!is.na(disease_efo_id)]),
       n_cancer_ind = sum(!is.na(primary_site)),
@@ -2579,9 +2579,9 @@ aggregate_parent_child_drugs <- function(drug_index_map = NULL) {
       .groups = "drop"
     ) |>
     dplyr::mutate(
-      drug_max_ct_phase = dplyr::if_else(
-        is.infinite(drug_max_ct_phase), as.numeric(NA),
-        as.numeric(drug_max_ct_phase)),
+      drug_max_clinical_stage = dplyr::if_else(
+        is.infinite(drug_max_clinical_stage), as.numeric(NA),
+        as.numeric(drug_max_clinical_stage)),
       drug_frac_cancer_indications = dplyr::if_else(
         drug_n_indications > 0,
         as.numeric(n_cancer_ind / drug_n_indications),

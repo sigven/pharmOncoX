@@ -24,8 +24,8 @@ get_targeted_drugs <- function(cache_dir = NA) {
     
   targeted_onco_inhibitors <- as.data.frame(
     onco_drugs$records |>
-      dplyr::filter(!is.na(.data$drug_max_ct_phase)) |>
-      dplyr::filter(.data$drug_max_ct_phase >= 1) |>
+      dplyr::filter(!is.na(.data$drug_max_clinical_stage)) |>
+      dplyr::filter(.data$drug_max_clinical_stage >= 1) |>
       dplyr::filter(!is.na(.data$molecule_chembl_id)) |>
       dplyr::mutate(
         drug_link =
@@ -35,7 +35,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
       dplyr::select(c("target_symbol",
                     "target_genename",
                     "molecule_chembl_id",
-                    "drug_max_phase_indication",
+                    "drug_max_clinical_stage_indication",
                     "drug_approved_indication",
                     "drug_cancer_relevance",
                     "drug_frac_cancer_indications",
@@ -51,11 +51,11 @@ get_targeted_drugs <- function(cache_dir = NA) {
                     "drug_link",
                     "atc_level3",
                     "atc_treatment_category")) |>
-      dplyr::mutate(drug_max_phase_indication = dplyr::if_else(
-        is.na(.data$drug_max_phase_indication) |
-          .data$drug_max_phase_indication == "",
+      dplyr::mutate(drug_max_clinical_stage_indication = dplyr::if_else(
+        is.na(.data$drug_max_clinical_stage_indication) |
+          .data$drug_max_clinical_stage_indication == "",
         as.integer(0),
-        as.integer(.data$drug_max_phase_indication)
+        as.integer(.data$drug_max_clinical_stage_indication)
       )) |>
       dplyr::rename(symbol = target_symbol,
                     genename = target_genename) |>
@@ -79,8 +79,8 @@ get_targeted_drugs <- function(cache_dir = NA) {
         drug_clinical_id =
           paste(sort(unique(.data$drug_clinical_id)),
                 collapse = "|"),
-        max_phase = max(.data$drug_max_phase_indication, na.rm = T),
-        max_all_phase = paste(sort(unique(.data$drug_max_phase_indication)),
+        max_phase = max(.data$drug_max_clinical_stage_indication, na.rm = T),
+        max_all_phase = paste(sort(unique(.data$drug_max_clinical_stage_indication)),
                               collapse = "|"),
         approved_indication = 
           paste(sort(unique(.data$drug_approved_indication)),
@@ -145,8 +145,8 @@ get_targeted_drugs <- function(cache_dir = NA) {
                     "approved_indication",
                     "drug_indication_label")) |>
       dplyr::rename(drug_primary_site = primary_site,
-                    drug_max_phase_indication = max_phase,
-                    drug_max_phase_indication_all = max_all_phase)
+                    drug_max_clinical_stage_indication = max_phase,
+                    drug_max_clinical_stage_indication_all = max_all_phase)
   )
 
   targeted_drugs_per_site <- list()
@@ -171,9 +171,9 @@ get_targeted_drugs <- function(cache_dir = NA) {
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
-                      .data$drug_max_phase_indication > 2) |>
+                      .data$drug_max_clinical_stage_indication > 2) |>
       dplyr::distinct() |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
@@ -184,9 +184,9 @@ get_targeted_drugs <- function(cache_dir = NA) {
     targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
-                      .data$drug_max_phase_indication <= 2) |>
+                      .data$drug_max_clinical_stage_indication <= 2) |>
       dplyr::distinct() |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
@@ -199,7 +199,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
       dplyr::filter(
         .data$drug_primary_site != t &
           .data$drug_primary_site != "Any" &
-          .data$drug_max_phase_indication > 2) |>
+          .data$drug_max_clinical_stage_indication > 2) |>
       dplyr::anti_join(
         targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
         by = c("molecule_chembl_id","drug_name","symbol")) |>
@@ -207,7 +207,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
         by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::distinct() |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
@@ -228,7 +228,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         by = c("molecule_chembl_id","drug_name","symbol"))
     
     targeted_drugs_per_site[[t]][['other_any_phase']] <- other_any_phase |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      dplyr::desc(.data$drug_year_first_approval),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
@@ -283,7 +283,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         drug_label = "OTHER",
         query_site = t,
         drug_clinical_phase = dplyr::if_else(
-          .data$drug_max_phase_indication <= 2,
+          .data$drug_max_clinical_stage_indication <= 2,
           "early",
           "late"
         )) |>

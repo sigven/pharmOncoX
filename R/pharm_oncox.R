@@ -85,7 +85,7 @@
 #'   \item \emph{target_ensembl_gene_id} - Ensembl gene identifier of drug target
 #'   \item \emph{target_type} - type of drug target (single protein, protein 
 #'   family etc.)
-#'   \item \emph{drug_max_phase_indication} - maximum clinical phase for drug 
+#'   \item \emph{drug_max_clinical_stage_indication} - maximum clinical phase for drug 
 #'   (given indication)
 #'   \item \emph{drug_approved_indication} - logical indicating if drug has 
 #'   an approved indication
@@ -95,7 +95,7 @@
 #'   is approved for a non-cancer disease
 #'   \item \emph{drug_n_indications} - number of indications for the
 #'   given drug (from approved indications, clinical trials etc)
-#'   \item \emph{drug_max_ct_phase} - maximum clinical phase for drug 
+#'   \item \emph{drug_max_clinical_stage} - maximum clinical phase for drug 
 #'   (any indication)
 #'   \item \emph{disease_efo_id} - EFO (Experimental Factor Ontology) 
 #'   identifier for drug indication
@@ -413,8 +413,8 @@ get_drugs <- function(
       ## include indications customly retrieved in DailyMed (assuming they are all max phase)
       drug_records <- drug_records |>
         dplyr::filter(
-          (!is.na(.data$drug_max_ct_phase) &
-             .data$drug_max_ct_phase >= drug_minimum_phase_any_indication))
+          (!is.na(.data$drug_max_clinical_stage) &
+             .data$drug_max_clinical_stage >= drug_minimum_phase_any_indication))
 
       if (nrow(drug_records) == 0) {
         lgr::lgr$info(paste0(
@@ -481,7 +481,7 @@ get_drugs <- function(
         lgr::lgr$info('\n')
       }else{
         drug_records <- drug_records |>
-          dplyr::arrange(dplyr::desc(.data$drug_max_ct_phase))
+          dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage))
       }
     }
 
@@ -605,14 +605,14 @@ get_drugs <- function(
               .data$disease_efo_label,
               .data$primary_site,
               .data$drug_clinical_id,
-              .data$drug_max_phase_indication))) |>
+              .data$drug_max_clinical_stage_indication))) |>
           dplyr::summarise(
             drug_clinical_id = paste(
               unique(sort(.data$drug_clinical_id)), collapse = "|"),
             disease_indication = paste(
               unique(sort(.data$disease_efo_label)), collapse = "|"),
             disease_indication_max_phase = paste(
-              sort(unique(.data$drug_max_phase_indication),
+              sort(unique(.data$drug_max_clinical_stage_indication),
                      decreasing = T), collapse = "|"),
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
@@ -680,14 +680,14 @@ get_drugs <- function(
                  .data$atc_treatment_category,
                  .data$primary_site,
                  .data$drug_clinical_id,
-                 .data$drug_max_phase_indication))) |>
+                 .data$drug_max_clinical_stage_indication))) |>
           dplyr::summarise(
             drug_clinical_id = paste(
               unique(sort(.data$drug_clinical_id)), collapse = "|"),
             disease_indication = paste(
               unique(sort(.data$disease_efo_label)), collapse = "|"),
             disease_indication_max_phase = paste(
-              sort(unique(.data$drug_max_phase_indication),
+              sort(unique(.data$drug_max_clinical_stage_indication),
                           decreasing = F), collapse = "|"),
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
@@ -803,7 +803,7 @@ get_drugs <- function(
         dplyr::everything()
       ) |>
       dplyr::arrange(
-        dplyr::desc(.data$drug_max_ct_phase),
+        dplyr::desc(.data$drug_max_clinical_stage),
         dplyr::desc(.data$opentargets),
         nchar(.data$drug_name))
 
