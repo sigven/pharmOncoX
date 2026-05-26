@@ -10,9 +10,8 @@
 #' * `records` - a data frame with drug records
 #'
 #' @param cache_dir local cache directory for data retrieval
-#' @param force_download force download data from remote repository even if 
+#' @param force_download force download data from remote repository even if
 #' data exists in cache
-#' @param exclude_salt_forms exclude salt forms of drugs
 #' @param exclude_adc exclude antibody-drug conjugates (ADCs)
 #' @param treatment_category main treatment category, classified according to 
 #' ATC or not ('targeted_therapy_classified',
@@ -74,9 +73,7 @@
 #'   mechanism-of-action (NCI Thesaurus)
 #'   \item \emph{opentargets} - logical - drug is found in the Open Targets 
 #'   Platform resource
-#'   \item \emph{is_salt} - logical - drug record represents a salt form 
-#'   (excluded by default)
-#'   \item \emph{is_adc} - logical - drug record represents an 
+#'   \item \emph{is_adc} - logical - drug record represents an
 #'   antibody-drug conjugate (ADC - excluded by default)
 #'   \item \emph{nci_t} - NCI thesaurus identifier
 #'   \item \emph{target_symbol} - gene symbol of drug target
@@ -123,7 +120,6 @@
 get_drugs <- function(
     cache_dir = NA,
     force_download = FALSE,
-    exclude_salt_forms = TRUE,
     exclude_adc = FALSE,
     treatment_category = 
       c("targeted_therapy_classified",
@@ -324,11 +320,6 @@ get_drugs <- function(
   drug_records <- as.data.frame(all_drug_recs[['records']])
   metadata     <- as.data.frame(all_drug_recs[['metadata']])
   provenance   <- all_drug_recs[['provenance']]   # NULL when not yet built
-
-  if (exclude_salt_forms == TRUE) {
-    drug_records <- drug_records |>
-      dplyr::filter(.data$is_salt == FALSE)
-  }
 
   if (exclude_adc == TRUE) {
     drug_records <- drug_records |>
@@ -990,7 +981,6 @@ utils::globalVariables(c("."))
 #' provided by pharmOncoX
 #'
 #' @param query A character vector of drug names/aliases
-#' @param exclude_salt_forms Logical indicating if salt forms should be excluded
 #' @param exclude_adc Logical indicating if antibody-drug conjugates should be excluded
 #' @param cache_dir Local directory for data download
 #' @param force_download Logical indicating if local cache should force downloaded
@@ -998,7 +988,6 @@ utils::globalVariables(c("."))
 #' @export
 #' 
 match_drug_names <- function(query = NULL,
-                             exclude_salt_forms = TRUE,
                              exclude_adc = FALSE,
                              cache_dir = NA,
                              force_download = FALSE){
@@ -1052,16 +1041,11 @@ match_drug_names <- function(query = NULL,
   drug_records <- as.data.frame(all_drug_recs[['records']])
   metadata <- as.data.frame(all_drug_recs[['metadata']])
   
-  if (exclude_salt_forms == TRUE) {
-    drug_records <- drug_records |>
-      dplyr::filter(.data$is_salt == FALSE)
-  }
-  
   if (exclude_adc == TRUE) {
     drug_records <- drug_records |>
       dplyr::filter(.data$is_adc == FALSE)
   }
-  
+
   ## Match drug names
   drug_records_slim <- drug_records |>
     dplyr::select(drug_name,
