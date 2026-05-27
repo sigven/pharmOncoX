@@ -580,6 +580,8 @@ get_drugs <- function(
                          .data$cui_name,
                          .data$drug_approved_indication,
                          .data$drug_clinical_source)) |>
+        dplyr::select(-dplyr::any_of(
+          c("parent_molecule_chembl_id", "source_drug_ids"))) |>
         dplyr::distinct()
 
       drug_records <- as.data.frame(
@@ -655,6 +657,8 @@ get_drugs <- function(
                          .data$cui_name,
                          .data$drug_approved_indication,
                          .data$drug_clinical_source)) |>
+        dplyr::select(-dplyr::any_of(
+          c("parent_molecule_chembl_id", "source_drug_ids"))) |>
         dplyr::distinct()
 
       drug_records <- as.data.frame(
@@ -723,8 +727,10 @@ get_drugs <- function(
       "Collapsing record set - providing output on a 'per_drug_target_indication' resolution")
     if (nrow(drug_records) > 0) {
       drug_records <- as.data.frame(
-        drug_records |> 
+        drug_records |>
           dplyr::select(-c(.data$cui, .data$cui_name)) |>
+          dplyr::select(-dplyr::any_of(
+            c("parent_molecule_chembl_id", "source_drug_ids"))) |>
           dplyr::distinct() |>
           dplyr::group_by(
             dplyr::across(
