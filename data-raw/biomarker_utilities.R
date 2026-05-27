@@ -842,7 +842,7 @@ append_fusion_entrezgene <- function(df, gene_lookup) {
 
 
 load_civic_biomarkers <- function(
-    datestamp = '20260223',
+    datestamp = '20260526',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",

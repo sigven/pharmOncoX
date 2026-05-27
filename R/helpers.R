@@ -442,16 +442,19 @@ get_drug_records <- function(cache_dir = NA,
   )
 
 
-  drug_data[['records']] <- drug_datasets[['drug_map_name']][['records']] |>
+  ## keep only canonical parent / standalone drugs — children are merged upward
+  ## by aggregate_parent_child_drugs; exposing them would show empty records
+  drug_records_base <- drug_datasets[['drug_map_name']][['records']] |>
     dplyr::left_join(drug_datasets[['drug_map_basic']][['records']],
-                     by = "drug_id")  |>
-    ## keep only canonical parent / standalone drugs (children are merged upward
-    ## by aggregate_parent_child_drugs; exposing them would show empty records)
-    dplyr::filter(
-      !("canonical_drug_id" %in% names(.)) |
-        .data$drug_id == .data$canonical_drug_id
-    ) |>
-    dplyr::select(-dplyr::any_of("is_salt")) |>
+                     by = "drug_id")
+
+  if ("canonical_drug_id" %in% names(drug_records_base)) {
+    drug_records_base <- drug_records_base |>
+      dplyr::filter(.data$drug_id == .data$canonical_drug_id)
+  }
+
+  drug_data[['records']] <- drug_records_base |>
+    dplyr::select(-dplyr::any_of(c("is_salt", "canonical_drug_id"))) |>
     dplyr::left_join(drug_aliases_collapsed, by = "drug_id") |>
     dplyr::left_join(drug_datasets[['drug_map_target']][['records']],
                      by = "drug_id", multiple = "all",

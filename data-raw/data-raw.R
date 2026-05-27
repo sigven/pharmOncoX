@@ -143,6 +143,7 @@ if(NROW(dup_chembl_ids) > 0){
     dplyr::distinct()
 }
 
+
 ####--- Cancer drug aliases ----#####
 drug_aliases <- expand_drug_aliases(
   drug_index_map = drug_index_map,
@@ -225,7 +226,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.2.5"
+version_bump <- "2.3.0"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
