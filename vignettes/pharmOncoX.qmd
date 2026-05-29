@@ -189,10 +189,10 @@ biomarker_search_cols <- c(
 #| echo: true
 #| eval: false
 
-# if (!("remotes" %in% installed.packages())) {
-#   install.packages("remotes")
-# }
-# remotes::install_github('sigven/pharmOncoX')
+if (!("remotes" %in% installed.packages())) {
+  install.packages("remotes")
+}
+remotes::install_github('sigven/pharmOncoX')
 ```
 
 <br><br>
