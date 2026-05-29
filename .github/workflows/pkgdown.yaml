@@ -10,7 +10,7 @@ on:
 name: pkgdown
 
 env:
-  VERSION: '2.3.0'
+  VERSION: '2.2.6'
 jobs:
   pkgdown:
     if: "startsWith(github.event.head_commit.message, 'Bump version:')"
@@ -37,7 +37,7 @@ jobs:
 
       - name: Build site
         shell: bash
-        run: Rscript -e 'pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)'
+        run: Rscript -e 'pkgdown::build_site_github_pages(new_process = FALSE, quiet = FALSE, install = FALSE)'
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
