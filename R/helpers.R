@@ -24,8 +24,8 @@ get_targeted_drugs <- function(cache_dir = NA) {
     
   targeted_onco_inhibitors <- as.data.frame(
     onco_drugs$records |>
-      dplyr::filter(!is.na(.data$drug_max_ct_phase)) |>
-      dplyr::filter(.data$drug_max_ct_phase >= 1) |>
+      dplyr::filter(!is.na(.data$drug_max_clinical_stage)) |>
+      dplyr::filter(.data$drug_max_clinical_stage >= 1) |>
       dplyr::filter(!is.na(.data$molecule_chembl_id)) |>
       dplyr::mutate(
         drug_link =
@@ -35,11 +35,10 @@ get_targeted_drugs <- function(cache_dir = NA) {
       dplyr::select(c("target_symbol",
                     "target_genename",
                     "molecule_chembl_id",
-                    "drug_max_phase_indication",
+                    "drug_max_clinical_stage_indication",
                     "drug_approved_indication",
                     "drug_cancer_relevance",
                     "drug_frac_cancer_indications",
-                    "drug_year_first_approval",
                     "drug_clinical_id",
                     "disease_efo_id",
                     "disease_efo_label",
@@ -51,11 +50,11 @@ get_targeted_drugs <- function(cache_dir = NA) {
                     "drug_link",
                     "atc_level3",
                     "atc_treatment_category")) |>
-      dplyr::mutate(drug_max_phase_indication = dplyr::if_else(
-        is.na(.data$drug_max_phase_indication) |
-          .data$drug_max_phase_indication == "",
+      dplyr::mutate(drug_max_clinical_stage_indication = dplyr::if_else(
+        is.na(.data$drug_max_clinical_stage_indication) |
+          .data$drug_max_clinical_stage_indication == "",
         as.integer(0),
-        as.integer(.data$drug_max_phase_indication)
+        as.integer(.data$drug_max_clinical_stage_indication)
       )) |>
       dplyr::rename(symbol = target_symbol,
                     genename = target_genename) |>
@@ -73,14 +72,13 @@ get_targeted_drugs <- function(cache_dir = NA) {
                       .data$atc_treatment_category,
                       .data$drug_cancer_relevance,
                       .data$drug_frac_cancer_indications,
-                      .data$drug_year_first_approval,
                       .data$nci_concept_definition) |>
       dplyr::summarise(
         drug_clinical_id =
           paste(sort(unique(.data$drug_clinical_id)),
                 collapse = "|"),
-        max_phase = max(.data$drug_max_phase_indication, na.rm = T),
-        max_all_phase = paste(sort(unique(.data$drug_max_phase_indication)),
+        max_phase = max(.data$drug_max_clinical_stage_indication, na.rm = T),
+        max_all_phase = paste(sort(unique(.data$drug_max_clinical_stage_indication)),
                               collapse = "|"),
         approved_indication = 
           paste(sort(unique(.data$drug_approved_indication)),
@@ -141,12 +139,11 @@ get_targeted_drugs <- function(cache_dir = NA) {
                     "max_all_phase",
                     "drug_frac_cancer_indications",
                     "drug_cancer_relevance",
-                    "drug_year_first_approval",
                     "approved_indication",
                     "drug_indication_label")) |>
       dplyr::rename(drug_primary_site = primary_site,
-                    drug_max_phase_indication = max_phase,
-                    drug_max_phase_indication_all = max_all_phase)
+                    drug_max_clinical_stage_indication = max_phase,
+                    drug_max_clinical_stage_indication_all = max_all_phase)
   )
 
   targeted_drugs_per_site <- list()
@@ -171,10 +168,9 @@ get_targeted_drugs <- function(cache_dir = NA) {
     targeted_drugs_per_site[[t]][['on_label']][['late_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
-                      .data$drug_max_phase_indication > 2) |>
+                      .data$drug_max_clinical_stage_indication > 2) |>
       dplyr::distinct() |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
-                     dplyr::desc(.data$drug_year_first_approval),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -184,10 +180,9 @@ get_targeted_drugs <- function(cache_dir = NA) {
     targeted_drugs_per_site[[t]][['on_label']][['early_phase']] <- 
       targeted_onco_inhibitors |>
       dplyr::filter(.data$drug_primary_site == t &
-                      .data$drug_max_phase_indication <= 2) |>
+                      .data$drug_max_clinical_stage_indication <= 2) |>
       dplyr::distinct() |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
-                     dplyr::desc(.data$drug_year_first_approval),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -199,7 +194,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
       dplyr::filter(
         .data$drug_primary_site != t &
           .data$drug_primary_site != "Any" &
-          .data$drug_max_phase_indication > 2) |>
+          .data$drug_max_clinical_stage_indication > 2) |>
       dplyr::anti_join(
         targeted_drugs_per_site[[t]][['on_label']][['late_phase']],
         by = c("molecule_chembl_id","drug_name","symbol")) |>
@@ -207,8 +202,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         targeted_drugs_per_site[[t]][['on_label']][['early_phase']],
         by = c("molecule_chembl_id","drug_name","symbol")) |>
       dplyr::distinct() |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
-                     dplyr::desc(.data$drug_year_first_approval),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -228,8 +222,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         by = c("molecule_chembl_id","drug_name","symbol"))
     
     targeted_drugs_per_site[[t]][['other_any_phase']] <- other_any_phase |>
-      dplyr::arrange(dplyr::desc(.data$drug_max_phase_indication),
-                     dplyr::desc(.data$drug_year_first_approval),
+      dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage_indication),
                      .data$atc_treatment_category,
                      dplyr::desc(.data$drug_frac_cancer_indications),
                      .data$symbol) |>
@@ -283,7 +276,7 @@ get_targeted_drugs <- function(cache_dir = NA) {
         drug_label = "OTHER",
         query_site = t,
         drug_clinical_phase = dplyr::if_else(
-          .data$drug_max_phase_indication <= 2,
+          .data$drug_max_clinical_stage_indication <= 2,
           "early",
           "late"
         )) |>
@@ -349,6 +342,11 @@ get_drug_records <- function(cache_dir = NA,
                  'drug_map_basic',
                  'drug_map_target',
                  'drug_map_indication')
+
+  ## load provenance table when available (added in pharmOncoX >= 2.2.7)
+  if ("drug_map_provenance" %in% db_id_ref$name) {
+    file_maps <- c(file_maps, 'drug_map_provenance')
+  }
 
   for (elem in file_maps) {
 
@@ -444,9 +442,19 @@ get_drug_records <- function(cache_dir = NA,
   )
 
 
-  drug_data[['records']] <- drug_datasets[['drug_map_name']][['records']] |>
+  ## keep only canonical parent / standalone drugs — children are merged upward
+  ## by aggregate_parent_child_drugs; exposing them would show empty records
+  drug_records_base <- drug_datasets[['drug_map_name']][['records']] |>
     dplyr::left_join(drug_datasets[['drug_map_basic']][['records']],
-                     by = "drug_id")  |>
+                     by = "drug_id")
+
+  if ("canonical_drug_id" %in% names(drug_records_base)) {
+    drug_records_base <- drug_records_base |>
+      dplyr::filter(.data$drug_id == .data$canonical_drug_id)
+  }
+
+  drug_data[['records']] <- drug_records_base |>
+    dplyr::select(-dplyr::any_of(c("is_salt", "canonical_drug_id"))) |>
     dplyr::left_join(drug_aliases_collapsed, by = "drug_id") |>
     dplyr::left_join(drug_datasets[['drug_map_target']][['records']],
                      by = "drug_id", multiple = "all",
@@ -456,6 +464,10 @@ get_drug_records <- function(cache_dir = NA,
                      relationship = "many-to-many")
 
   drug_data[['metadata']] <- drug_datasets[['drug_map_name']][['metadata']]
+
+  if (!is.null(drug_datasets[['drug_map_provenance']])) {
+    drug_data[['provenance']] <- drug_datasets[['drug_map_provenance']][['records']]
+  }
 
   return(drug_data)
 

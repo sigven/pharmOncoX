@@ -23,7 +23,7 @@ opentargets_version <-
   metadata$compounds[metadata$compounds$source_abbreviation == "opentargets", 
                      "source_version"]
 package_datestamp <- stringr::str_replace_all(Sys.Date(),"-","")
-chembl_pubchem_datestamp <- '20250902' 
+chembl_pubchem_datestamp <- '20260523' 
 
 ## set logging layout
 lgr::lgr$appenders$console$set_layout(
@@ -87,9 +87,9 @@ drug_sets[['nci']] <- get_nci_drugs(
 #### -- Open Targets Platform - drugs ---####
 ## Get all targeted anticancer/other drugs from Open Targets Platform
 drug_sets[['otp']] <-
-  get_otp_cancer_drugs(
+  get_otp_drugs(
     path_data_raw = path_data_raw,
-    ot_version = opentargets_version)
+    ot_version = "2026.03")
 
 
 ## Merge information from Open Targets Platform and NCI targeted drugs
@@ -97,7 +97,7 @@ drug_sets[['otp']] <-
 ## 2) By name (if molecule chembl id does not provide any cross-ref)
 ## 3) Remove ambiguous names/ids
 ##
-drug_sets[['nci_otp']] <- merge_nci_opentargets(
+drug_sets[['nci_otp']] <- merge_nci_otp(
   drug_sets = drug_sets,
   path_data_raw = path_data_raw)
 
@@ -143,6 +143,7 @@ if(NROW(dup_chembl_ids) > 0){
     dplyr::distinct()
 }
 
+
 ####--- Cancer drug aliases ----#####
 drug_aliases <- expand_drug_aliases(
   drug_index_map = drug_index_map,
@@ -152,6 +153,14 @@ drug_aliases <- expand_drug_aliases(
 
 drug_index_map[['id2alias']] <- drug_aliases
 drug_index_map$id2synonym <- NULL
+
+####---- Parent-child drug aggregation ----####
+## Aggregate evidence from salt/ester forms into their canonical parent records.
+## Populates id2provenance (Layer 2) and updates id2indication, id2basic,
+## id2alias (Layer 1) in-place.
+drug_index_map <- aggregate_parent_child_drugs(
+  drug_index_map = drug_index_map
+)
 
 compound_synonyms <- drug_index_map[['id2alias']] |>
   dplyr::mutate(alias_lc = tolower(alias)) |>
@@ -217,7 +226,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.2.5"
+version_bump <- "2.3.0"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
@@ -231,18 +240,23 @@ db[['drug_map_basic']] <- list()
 db[['drug_map_basic']][['records']] <- drug_index_map[['id2basic']]
 db[['drug_map_alias']] <- list()
 db[['drug_map_alias']][['records']] <- drug_index_map[['id2alias']]
+db[['drug_map_provenance']] <- list()
+db[['drug_map_provenance']][['records']] <- drug_index_map[['id2provenance']]
 
 #googledrive::drive_auth_configure(api_key = Sys.getenv("GD_KEY"))
 
 gd_records <- list()
 db_id_ref <- data.frame()
 
+DRY_RUN <- 0
+
 for(elem in c('biomarkers',
               'drug_map_name',
               'drug_map_target',
               'drug_map_indication',
               'drug_map_basic',
-              'drug_map_alias')){
+              'drug_map_alias',
+              'drug_map_provenance')){
 
   if(elem != "biomarkers"){
     db[[elem]][['metadata']] <- metadata$compounds
@@ -256,6 +270,10 @@ for(elem in c('biomarkers',
     db[[elem]],
           file = local_rds_fpath)
 
+  if (DRY_RUN == 1){
+    cat("DRY RUN - skipping upload to Google Drive")
+    next
+  }
   (gd_records[[elem]] <- googledrive::drive_upload(
     media = local_rds_fpath,
     path = paste0("pharmOncoX/", elem, "_v", version_bump,".rds")

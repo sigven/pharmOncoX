@@ -10,9 +10,8 @@
 #' * `records` - a data frame with drug records
 #'
 #' @param cache_dir local cache directory for data retrieval
-#' @param force_download force download data from remote repository even if 
+#' @param force_download force download data from remote repository even if
 #' data exists in cache
-#' @param exclude_salt_forms exclude salt forms of drugs
 #' @param exclude_adc exclude antibody-drug conjugates (ADCs)
 #' @param treatment_category main treatment category, classified according to 
 #' ATC or not ('targeted_therapy_classified',
@@ -45,12 +44,14 @@
 #' @param drug_classified_cancer logical indicating if resulting drug 
 #' records should be for those classified only in the "L" class of ATC (
 #' "ANTINEOPLASTIC AND IMMUNOMODULATING AGENTS") only
-#' @param drug_has_blackbox_warning logical indicating if resulting drug 
-#' records should contain drugs with black box warnings only
-#' @param drug_approval_year only include records for drugs approved 
-#' later than this date (year)
-#' @param drug_minimum_phase_any_indication only include drug records that 
+#' @param drug_minimum_phase_any_indication only include drug records that
 #' are in a clinical phase (any indication) greater or equal than this phase
+#' @param include_provenance logical, if \code{TRUE} the returned list
+#' includes a \code{provenance} data frame showing the constituent salt/ester
+#' forms that were aggregated into each canonical parent drug record
+#' (columns: \emph{drug_id}, \emph{drug_name}, \emph{molecule_chembl_id},
+#' \emph{parent_molecule_chembl_id}, \emph{is_canonical},
+#' \emph{constituent_role}, \emph{canonical_drug_name})
 #' @param output_resolution dictate output record resolution 
 #' ('drug','drug2target','drug2target2indication')
 #'
@@ -72,12 +73,8 @@
 #'   mechanism-of-action (NCI Thesaurus)
 #'   \item \emph{opentargets} - logical - drug is found in the Open Targets 
 #'   Platform resource
-#'   \item \emph{is_salt} - logical - drug record represents a salt form 
-#'   (excluded by default)
-#'   \item \emph{is_adc} - logical - drug record represents an 
+#'   \item \emph{is_adc} - logical - drug record represents an
 #'   antibody-drug conjugate (ADC - excluded by default)
-#'   \item \emph{drug_blacbox_warning} - logical indicating if drug has 
-#'   blackbox warning
 #'   \item \emph{nci_t} - NCI thesaurus identifier
 #'   \item \emph{target_symbol} - gene symbol of drug target
 #'   \item \emph{target_entrezgene} - Entrez gene identifier of drug target
@@ -85,7 +82,7 @@
 #'   \item \emph{target_ensembl_gene_id} - Ensembl gene identifier of drug target
 #'   \item \emph{target_type} - type of drug target (single protein, protein 
 #'   family etc.)
-#'   \item \emph{drug_max_phase_indication} - maximum clinical phase for drug 
+#'   \item \emph{drug_max_clinical_stage_indication} - maximum clinical phase for drug 
 #'   (given indication)
 #'   \item \emph{drug_approved_indication} - logical indicating if drug has 
 #'   an approved indication
@@ -95,8 +92,7 @@
 #'   is approved for a non-cancer disease
 #'   \item \emph{drug_n_indications} - number of indications for the
 #'   given drug (from approved indications, clinical trials etc)
-#'   \item \emph{drug_year_first_approval} - year drug was first approved
-#'   \item \emph{drug_max_ct_phase} - maximum clinical phase for drug 
+#'   \item \emph{drug_max_clinical_stage} - maximum clinical phase for drug 
 #'   (any indication)
 #'   \item \emph{disease_efo_id} - EFO (Experimental Factor Ontology) 
 #'   identifier for drug indication
@@ -121,11 +117,9 @@
 #'
 #' @export
 #'
-
 get_drugs <- function(
     cache_dir = NA,
     force_download = FALSE,
-    exclude_salt_forms = TRUE,
     exclude_adc = FALSE,
     treatment_category = 
       c("targeted_therapy_classified",
@@ -141,9 +135,9 @@ get_drugs <- function(
     drug_source_opentargets = FALSE,
     drug_cancer_indication = TRUE, 
     drug_classified_cancer = TRUE,
-    drug_has_blackbox_warning = FALSE,
-    drug_approval_year = 1939,
-    drug_minimum_phase_any_indication = 0,
+    ## NA integer
+    drug_minimum_phase_any_indication = NA_integer_,
+    include_provenance = FALSE,
     output_resolution = "drug2target2indication",
     drug_action_inhibition = F){
 
@@ -216,50 +210,54 @@ get_drugs <- function(
   arg_validation_messages <- list()
 
   arg_validation_messages[[1]] <-
-     assertthat::validate_that(
-       is.numeric(drug_approval_year),
-       msg = "ERROR: Argument 'drug_approval_year' must be of type 'numeric'")
-  arg_validation_messages[[2]] <-
-    assertthat::validate_that(
-      drug_approval_year >= 1939 & drug_approval_year <= 2024,
-      msg = "ERROR: Argument 'drug_approval_year' must be larger than 1939 and less than or equal to 2024")
-  arg_validation_messages[[3]] <-
     assertthat::validate_that(
       is.logical(drug_is_approved),
       msg = "ERROR: Argument 'drug_is_approved' must be of type 'logical'")
-  arg_validation_messages[[4]] <-
+  arg_validation_messages[[2]] <-
     assertthat::validate_that(
       is.logical(drug_source_opentargets),
       msg = "ERROR: Argument 'drug_source_opentargets' must be of type 'logical'")
-  arg_validation_messages[[5]] <-
+  arg_validation_messages[[3]] <-
     assertthat::validate_that(
       is.logical(drug_classified_cancer),
       msg = "ERROR: Argument 'drug_classified_cancer' must be of type 'logical'")
-  arg_validation_messages[[6]] <-
+  arg_validation_messages[[4]] <-
     assertthat::validate_that(
       is.logical(drug_cancer_indication),
       msg = "ERROR: Argument 'drug_cancer_indication' must be of type 'logical'")
-  arg_validation_messages[[7]] <-
+  arg_validation_messages[[5]] <-
     assertthat::validate_that(
       is.character(treatment_category),
       msg = "ERROR: Argument 'treatment_category' must be of type 'character'")
-  arg_validation_messages[[8]] <-
+  arg_validation_messages[[6]] <-
     assertthat::validate_that(
       length(is_valid_treatment_category) == 1 &
         is_valid_treatment_category == T,
-      msg = paste0("ERROR: Argument 'treatment_category' must contain any ",
-      "combination of 'chemo_therapy','hormone_therapy', or 'targeted_therapy'"))
-
-  arg_validation_messages[[9]] <-
-    assertthat::validate_that(
-      is.logical(drug_has_blackbox_warning),
-      msg = "ERROR: Argument 'drug_has_blackbox_warning' must be of type 'logical'")
-  arg_validation_messages[[10]] <-
+      msg = glue::glue("ERROR: Argument 'treatment_category' must contain any ",
+      "combination of {paste(valid_treatment_categories, collapse = '\", \"')}"))
+  arg_validation_messages[[7]] <-
     assertthat::validate_that(
       output_resolution %in% valid_output_resolutions,
       msg = "ERROR: Argument 'output_resolution' must be either 'drug','drug2target', or 'drug2target2indication'")
-
-  arg_counter <- 11
+  arg_validation_messages[[8]] <-
+    assertthat::validate_that(
+      is.logical(include_provenance),
+      msg = "ERROR: Argument 'include_provenance' must be of type 'logical'")
+  
+  ## assert that drug minimum phase any indication is a numeric value between 0 and 4
+  arg_validation_messages[[9]] <-
+    assertthat::validate_that(
+      is.integer(drug_minimum_phase_any_indication) &
+        (is.na(drug_minimum_phase_any_indication) |
+        (length(drug_minimum_phase_any_indication) == 1 &
+        drug_minimum_phase_any_indication %in% c(1,2,3,4))),
+      msg = paste0(
+        "ERROR: Argument 'drug_minimum_phase_any_indication' ",
+        "must be an integer value between 1 and 4 (0: include drugs in any clinical phase, 1: include drugs in clinical phase 1 or higher, 2: include drugs in clinical phase 2 or higher, 3: include drugs in clinical phase 3 or higher, 4: include drugs that are approved)")
+    )
+  
+  
+  arg_counter <- 10
   if (!is.null(drug_action_type)) {
     arg_counter <- arg_counter + 1
     arg_validation_messages[[arg_counter]] <-
@@ -326,7 +324,7 @@ get_drugs <- function(
   }
   if (length(error_messages) > 0) {
     lgr::lgr$info('\n')
-    lgr::lgr$info(error_messages, sep = "\n")
+    lgr::lgr$info(error_messages)
     return()
   }
 
@@ -334,47 +332,46 @@ get_drugs <- function(
   ## Get full list of drug records
   all_drug_recs <- get_drug_records(cache_dir, force_download)
   drug_records <- as.data.frame(all_drug_recs[['records']])
-  metadata <- as.data.frame(all_drug_recs[['metadata']])
-
-  if (exclude_salt_forms == TRUE) {
-    drug_records <- drug_records |>
-      dplyr::filter(.data$is_salt == FALSE)
-  }
+  metadata     <- as.data.frame(all_drug_recs[['metadata']])
+  provenance   <- all_drug_recs[['provenance']]   # NULL when not yet built
 
   if (exclude_adc == TRUE) {
     drug_records <- drug_records |>
       dplyr::filter(.data$is_adc == FALSE)
   }
 
-
   ## targeted + chemo + hormone
   treatment_category_regex <- ""
   atc_treatment_strings <- c()
   
   if("hormone_therapy_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_hormone_therapy")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_hormone_therapy")
   }
   if("chemo_therapy_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_chemo_therapy")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_chemo_therapy")
   }
   if("targeted_therapy_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer(_adc)?_targeted_therapy")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer(_adc)?_targeted_therapy")
   }
   if("targeted_therapy_unclassified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_unclassified")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_unclassified")
   }
   if("immuno_suppressants_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_immuno_suppressants")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_immuno_suppressants")
   }
   if("other" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "(other_targeted_therapy|unknown)")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "(other_targeted_therapy|unknown)")
   }
   
   treatment_category_regex <- paste0(
     "^(", paste(atc_treatment_strings, collapse="|"), ")$")
-  
-  #cat(paste0('Treatment category regex: ', treatment_category_regex))
-  #cat('\n')
+
   
   drug_records <- drug_records |>
     dplyr::filter(
@@ -418,54 +415,15 @@ get_drugs <- function(
     }
   }
 
-  if (drug_has_blackbox_warning == TRUE) {
-    if (nrow(drug_records) > 0) {
-      drug_records <- drug_records |>
-        dplyr::filter(is.na(.data$drug_blackbox_warning) |
-                        .data$drug_blackbox_warning == TRUE)
-
-      if (nrow(drug_records) == 0) {
-        lgr::lgr$info(
-          paste0("WARNING: For the conditions listed below, NO drugs were found with a blackbox warning\n"))
-        lgr::lgr$info(
-          paste0("Condition 1: Drug treatment category: ", 
-                 paste(treatment_category, collapse=", "), "\n"))
-        lgr::lgr$info(
-          paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
-        lgr::lgr$info('\n')
-      }
-    }
-  }
-
-  if (nrow(drug_records) > 0) {
-    drug_records <- drug_records |>
-      dplyr::filter(is.na(.data$drug_year_first_approval) |
-                      .data$drug_year_first_approval >= drug_approval_year)
-
-    if (nrow(drug_records) == 0) {
-      lgr::lgr$info(
-        paste0("WARNING: For the conditions listed below, NO drugs were found with an approval date greater than or equal to: ",
-                 drug_approval_year),"\n")
-      lgr::lgr$info(
-        paste0("Condition 1: Drug treatment category: ", 
-               paste(treatment_category, collapse=", "), "\n"))
-      lgr::lgr$info(
-        paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
-      lgr::lgr$info(
-        paste0("Condition 3: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
-
-      lgr::lgr$info('\n')
-    }
-  }
-
-  if (drug_minimum_phase_any_indication > 0) {
+  
+  if (!is.na(drug_minimum_phase_any_indication)) {
     if (nrow(drug_records) > 0) {
 
       ## include indications customly retrieved in DailyMed (assuming they are all max phase)
       drug_records <- drug_records |>
         dplyr::filter(
-          (!is.na(.data$drug_max_ct_phase) &
-             .data$drug_max_ct_phase >= drug_minimum_phase_any_indication))
+          (!is.na(.data$drug_max_clinical_stage) &
+             .data$drug_max_clinical_stage >= drug_minimum_phase_any_indication))
 
       if (nrow(drug_records) == 0) {
         lgr::lgr$info(paste0(
@@ -473,17 +431,11 @@ get_drugs <- function(
           "with a clinical phase greater or equal than: ",
           drug_minimum_phase_any_indication),"\n")
         lgr::lgr$info(
-          paste0("Condition 1: Drug treatment category: ", 
+          paste0("Condition 1: Drug treatment category: ",
                  paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(
-          paste0("Condition 2: Open Targets Platform only: ", 
+          paste0("Condition 2: Open Targets Platform only: ",
                  drug_source_opentargets, "\n"))
-        lgr::lgr$info(
-          paste0("Condition 3: Drugs with blackbox warnings only: ", 
-                 drug_has_blackbox_warning, "\n"))
-        lgr::lgr$info(
-          paste0("Condition 4: Drugs with approval later than only: ", 
-                 drug_approval_year, "\n"))
         lgr::lgr$info('\n')
       }
 
@@ -506,13 +458,7 @@ get_drugs <- function(
         paste0("Condition 2: Open Targets Platform only: ", 
                drug_source_opentargets, "\n"))
       lgr::lgr$info(
-        paste0("Condition 3: Drugs with blackbox warnings only: ", 
-               drug_has_blackbox_warning, "\n"))
-      lgr::lgr$info(
-        paste0("Condition 4: Drugs with approval later than only: ", 
-               drug_approval_year, "\n"))
-      lgr::lgr$info(
-        paste0("Condition 5: Drugs with minimum clinical phase (any indication) only: ", 
+        paste0("Condition 3: Drugs with minimum clinical phase (any indication) only: ",
                drug_minimum_phase_any_indication, "\n"))
 
     }
@@ -540,15 +486,11 @@ get_drugs <- function(
         lgr::lgr$info(paste0("Condition 1: Drug treatment category: ", paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info(paste0("Condition 3: Drugs with approved indications only: ", drug_is_approved, "\n"))
-        lgr::lgr$info(paste0("Condition 4: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
-        lgr::lgr$info(paste0("Condition 5: Drugs with approval later than only: ", drug_approval_year, "\n"))
-        lgr::lgr$info(paste0("Condition 6: Drugs with minimum clinical phase (any indication) only: ", drug_minimum_phase_any_indication, "\n"))
+        lgr::lgr$info(paste0("Condition 4: Drugs with minimum clinical phase (any indication) only: ", drug_minimum_phase_any_indication, "\n"))
         lgr::lgr$info('\n')
       }else{
         drug_records <- drug_records |>
-          dplyr::arrange(
-            dplyr::desc(.data$drug_max_ct_phase),
-            dplyr::desc(.data$drug_year_first_approval))
+          dplyr::arrange(dplyr::desc(.data$drug_max_clinical_stage))
       }
     }
 
@@ -580,11 +522,9 @@ get_drugs <- function(
         lgr::lgr$info(paste0("Condition 1: Drug treatment category: ", paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info(paste0("Condition 3: Drugs with approved indications only: ", drug_is_approved, "\n"))
-        lgr::lgr$info(paste0("Condition 4: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
-        lgr::lgr$info(paste0("Condition 5: Drugs with approval later than: ", drug_approval_year, "\n"))
-        lgr::lgr$info(paste0("Condition 6: Drugs with minimum clinical phase (any indication) only: ", drug_minimum_phase_any_indication, "\n"))
+        lgr::lgr$info(paste0("Condition 4: Drugs with minimum clinical phase (any indication) only: ", drug_minimum_phase_any_indication, "\n"))
         if (nrow(all_drug_targets) > 0) {
-          lgr::lgr$info(paste0("Condition 7: Drugs targeted towards the following targets: ", paste(all_drug_targets$target_symbol, collapse = ", "), "\n"))
+          lgr::lgr$info(paste0("Condition 5: Drugs targeted towards the following targets: ", paste(all_drug_targets$target_symbol, collapse = ", "), "\n"))
         }
         lgr::lgr$info('\n')
       }else{
@@ -621,15 +561,13 @@ get_drugs <- function(
         lgr::lgr$info(paste0("Condition 1: Drug treatment category: ", paste(treatment_category, collapse=", "), "\n"))
         lgr::lgr$info(paste0("Condition 2: Open Targets Platform only: ", drug_source_opentargets, "\n"))
         lgr::lgr$info(paste0("Condition 3: Drugs with approved indications only: ", drug_is_approved, "\n"))
-        lgr::lgr$info(paste0("Condition 4: Drugs with blackbox warnings only: ", drug_has_blackbox_warning, "\n"))
-        lgr::lgr$info(paste0("Condition 5: Drugs with approval later than: ", drug_approval_year, "\n"))
-        lgr::lgr$info(paste0("Condition 6: Drugs with minimum clinical phase (any indication) only: ", drug_minimum_phase_any_indication, "\n"))
+        lgr::lgr$info(paste0("Condition 4: Drugs with minimum clinical phase (any indication) only: ", drug_minimum_phase_any_indication, "\n"))
         if (nrow(all_drug_targets) > 0) {
-          lgr::lgr$info(paste0("Condition 7: Drugs targeted towards the following targets only: ", paste(all_drug_targets$target_symbol, collapse = ", "), "\n"))
+          lgr::lgr$info(paste0("Condition 5: Drugs targeted towards the following targets only: ", paste(all_drug_targets$target_symbol, collapse = ", "), "\n"))
         }
         if (!is.null(drug_action_type)) {
           lgr::lgr$info(paste0(
-            "Condition 8: Drugs with the following action types only: ",
+            "Condition 6: Drugs with the following action types only: ",
             paste(drug_action_type, collapse = ", "), "\n"))
         }
         lgr::lgr$info('\n')
@@ -660,6 +598,8 @@ get_drugs <- function(
                          .data$cui_name,
                          .data$drug_approved_indication,
                          .data$drug_clinical_source)) |>
+        dplyr::select(-dplyr::any_of(
+          c("parent_molecule_chembl_id", "source_drug_ids"))) |>
         dplyr::distinct()
 
       drug_records <- as.data.frame(
@@ -673,20 +613,24 @@ get_drugs <- function(
               .data$atc_code_level3,
               .data$atc_level3,
               .data$atc_treatment_category,
+              .data$drug_cancer_relevance,
               .data$disease_efo_label,
               .data$primary_site,
               .data$drug_clinical_id,
-              .data$drug_max_phase_indication))) |>
+              .data$drug_max_clinical_stage_indication))) |>
           dplyr::summarise(
             drug_clinical_id = paste(
               unique(sort(.data$drug_clinical_id)), collapse = "|"),
             disease_indication = paste(
               unique(sort(.data$disease_efo_label)), collapse = "|"),
             disease_indication_max_phase = paste(
-              sort(unique(.data$drug_max_phase_indication),
+              sort(unique(.data$drug_max_clinical_stage_indication),
                      decreasing = T), collapse = "|"),
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
+            drug_cancer_relevance = paste(
+              unique(sort(.data$drug_cancer_relevance)), collapse = "|"
+            ),
             atc_code_level1 = paste(
               unique(sort(.data$atc_code_level1)),
               collapse = "|"
@@ -710,19 +654,17 @@ get_drugs <- function(
             atc_level3 = paste(
               unique(sort(.data$atc_level3)),
               collapse = "|"
-            ), 
+            ),
             atc_treatment_category = paste(
               unique(sort(.data$atc_treatment_category)),
               collapse = "|"
-            ), 
+            ),
             .groups = "drop") |>
           dplyr::distinct()
       )
 
 
     }
-    lgr::lgr$info(
-      paste0("Final record set: n = ", nrow(drug_records), " records"))
 
   }
 
@@ -735,6 +677,8 @@ get_drugs <- function(
                          .data$cui_name,
                          .data$drug_approved_indication,
                          .data$drug_clinical_source)) |>
+        dplyr::select(-dplyr::any_of(
+          c("parent_molecule_chembl_id", "source_drug_ids"))) |>
         dplyr::distinct()
 
       drug_records <- as.data.frame(
@@ -749,19 +693,23 @@ get_drugs <- function(
                  .data$atc_code_level3,
                  .data$atc_level3,
                  .data$atc_treatment_category,
+                 .data$drug_cancer_relevance,
                  .data$primary_site,
                  .data$drug_clinical_id,
-                 .data$drug_max_phase_indication))) |>
+                 .data$drug_max_clinical_stage_indication))) |>
           dplyr::summarise(
             drug_clinical_id = paste(
               unique(sort(.data$drug_clinical_id)), collapse = "|"),
             disease_indication = paste(
               unique(sort(.data$disease_efo_label)), collapse = "|"),
             disease_indication_max_phase = paste(
-              sort(unique(.data$drug_max_phase_indication),
+              sort(unique(.data$drug_max_clinical_stage_indication),
                           decreasing = F), collapse = "|"),
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
+            drug_cancer_relevance = paste(
+              unique(sort(.data$drug_cancer_relevance)), collapse = "|"
+            ),
             atc_code_level1 = paste(
               unique(sort(.data$atc_code_level1)),
               collapse = "|"
@@ -785,17 +733,15 @@ get_drugs <- function(
             atc_level3 = paste(
               unique(sort(.data$atc_level3)),
               collapse = "|"
-            ), 
+            ),
             atc_treatment_category = paste(
               unique(sort(.data$atc_treatment_category)),
               collapse = "|"
-            ), 
+            ),
             .groups = "drop") |>
           dplyr::distinct()
       )
     }
-    lgr::lgr$info(
-      paste0("Final record set: n = ", nrow(drug_records), " records"))
   }
 
   if (output_resolution == "drug2target2indication") {
@@ -803,8 +749,10 @@ get_drugs <- function(
       "Collapsing record set - providing output on a 'per_drug_target_indication' resolution")
     if (nrow(drug_records) > 0) {
       drug_records <- as.data.frame(
-        drug_records |> 
+        drug_records |>
           dplyr::select(-c(.data$cui, .data$cui_name)) |>
+          dplyr::select(-dplyr::any_of(
+            c("parent_molecule_chembl_id", "source_drug_ids"))) |>
           dplyr::distinct() |>
           dplyr::group_by(
             dplyr::across(
@@ -855,8 +803,6 @@ get_drugs <- function(
       )
 
     }
-    lgr::lgr$info(
-      paste0("Final record set: n = ", nrow(drug_records), " records"))
   }
 
   if (nrow(drug_records) > 0) {
@@ -874,18 +820,24 @@ get_drugs <- function(
         dplyr::everything()
       ) |>
       dplyr::arrange(
-        dplyr::desc(.data$drug_max_ct_phase),
-        dplyr::desc(.data$drug_year_first_approval),
+        dplyr::desc(.data$drug_max_clinical_stage),
         dplyr::desc(.data$opentargets),
         nchar(.data$drug_name))
-    
-    if(!is.null(drug_indication_main)){
-      
-      if(output_resolution != "drug2target2indication"){
+
+    if ("drug_max_clinical_stage_indication" %in% names(drug_records)) {
+      drug_records <- drug_records |>
+        dplyr::arrange(
+          dplyr::desc(.data$drug_max_clinical_stage),
+          dplyr::desc(.data$drug_max_clinical_stage_indication),
+          dplyr::desc(.data$opentargets),
+          nchar(.data$drug_name))
+    }
+
+    if (!is.null(drug_indication_main)) {
+      if (output_resolution != "drug2target2indication") {
         drug_records <- drug_records |>
           dplyr::arrange(
             dplyr::desc(.data$disease_indication_max_phase),
-            dplyr::desc(.data$drug_year_first_approval),
             dplyr::desc(.data$opentargets),
             nchar(.data$drug_name))
       }
@@ -893,9 +845,27 @@ get_drugs <- function(
 
   }
 
+  lgr::lgr$info(
+    paste0("Final record set: n = ", nrow(drug_records), " records"))
+
   oncodrugs <- list()
-  oncodrugs[['records']] <- drug_records
+  oncodrugs[['records']]  <- drug_records
   oncodrugs[['metadata']] <- metadata
+
+  if (include_provenance == TRUE) {
+    if (!is.null(provenance) && nrow(drug_records) > 0) {
+      result_drug_ids <- unique(drug_records$drug_id)
+      oncodrugs[['provenance']] <- provenance |>
+        dplyr::filter(
+          .data$canonical_drug_id %in% result_drug_ids |
+          .data$drug_id           %in% result_drug_ids
+        ) |>
+        dplyr::arrange(.data$canonical_drug_id, .data$constituent_role)
+    } else {
+      lgr::lgr$warn(
+        "include_provenance = TRUE but no provenance data available in cache")
+    }
+  }
 
   return(oncodrugs)
 
@@ -1049,7 +1019,6 @@ utils::globalVariables(c("."))
 #' provided by pharmOncoX
 #'
 #' @param query A character vector of drug names/aliases
-#' @param exclude_salt_forms Logical indicating if salt forms should be excluded
 #' @param exclude_adc Logical indicating if antibody-drug conjugates should be excluded
 #' @param cache_dir Local directory for data download
 #' @param force_download Logical indicating if local cache should force downloaded
@@ -1057,7 +1026,6 @@ utils::globalVariables(c("."))
 #' @export
 #' 
 match_drug_names <- function(query = NULL,
-                             exclude_salt_forms = TRUE,
                              exclude_adc = FALSE,
                              cache_dir = NA,
                              force_download = FALSE){
@@ -1111,16 +1079,11 @@ match_drug_names <- function(query = NULL,
   drug_records <- as.data.frame(all_drug_recs[['records']])
   metadata <- as.data.frame(all_drug_recs[['metadata']])
   
-  if (exclude_salt_forms == TRUE) {
-    drug_records <- drug_records |>
-      dplyr::filter(.data$is_salt == FALSE)
-  }
-  
   if (exclude_adc == TRUE) {
     drug_records <- drug_records |>
       dplyr::filter(.data$is_adc == FALSE)
   }
-  
+
   ## Match drug names
   drug_records_slim <- drug_records |>
     dplyr::select(drug_name,
