@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 2.3.0
+
+- Updated NCI Thesaurus (26.04d)
+- Updated CIViC data (20260529)
+- Updated Mitelman database (20260415)
+- Updated OTP (2026.03)
+- New vignette in quarto format + reactable tables
+
 ## Version 2.2.6
 
 - Updated CIViC data (20260323)

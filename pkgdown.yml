@@ -1,9 +1,9 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   pharmOncoX: pharmOncoX.html
-last_built: 2026-03-23T10:16Z
+last_built: 2026-05-29T22:35Z
 urls:
   reference: https://sigven.github.io/pharmOncoX/reference
   article: https://sigven.github.io/pharmOncoX/articles
