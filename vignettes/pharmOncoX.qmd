@@ -9,7 +9,7 @@ knitr:
     collapse: true
     comment: "#>"
 execute:
-  freeze: false
+  freeze: true
 bibliography: "../inst/bibliography.bib"
 nocite: |
   @Kim2021-ye, @Sioutos2007-nl,
@@ -24,13 +24,6 @@ vignette: >
 ```{r}
 #| label: setup
 #| include: false
-
-## install and load pharmOncoX package
-if (!("remotes" %in% installed.packages())) {
- install.packages("remotes")
-}
-remotes::install_github('sigven/pharmOncoX')
-
 library(pharmOncoX)
 cache_dir <- tempdir()
 ```
