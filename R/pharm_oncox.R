@@ -135,7 +135,8 @@ get_drugs <- function(
     drug_source_opentargets = FALSE,
     drug_cancer_indication = TRUE, 
     drug_classified_cancer = TRUE,
-    drug_minimum_phase_any_indication = 0,
+    ## NA integer
+    drug_minimum_phase_any_indication = NA_integer_,
     include_provenance = FALSE,
     output_resolution = "drug2target2indication",
     drug_action_inhibition = F){
@@ -232,8 +233,8 @@ get_drugs <- function(
     assertthat::validate_that(
       length(is_valid_treatment_category) == 1 &
         is_valid_treatment_category == T,
-      msg = paste0("ERROR: Argument 'treatment_category' must contain any ",
-      "combination of 'chemo_therapy','hormone_therapy', or 'targeted_therapy'"))
+      msg = glue::glue("ERROR: Argument 'treatment_category' must contain any ",
+      "combination of {paste(valid_treatment_categories, collapse = '\", \"')}"))
   arg_validation_messages[[7]] <-
     assertthat::validate_that(
       output_resolution %in% valid_output_resolutions,
@@ -242,8 +243,21 @@ get_drugs <- function(
     assertthat::validate_that(
       is.logical(include_provenance),
       msg = "ERROR: Argument 'include_provenance' must be of type 'logical'")
-
-  arg_counter <- 9
+  
+  ## assert that drug minimum phase any indication is a numeric value between 0 and 4
+  arg_validation_messages[[9]] <-
+    assertthat::validate_that(
+      is.integer(drug_minimum_phase_any_indication) &
+        (is.na(drug_minimum_phase_any_indication) |
+        (length(drug_minimum_phase_any_indication) == 1 &
+        drug_minimum_phase_any_indication %in% c(1,2,3,4))),
+      msg = paste0(
+        "ERROR: Argument 'drug_minimum_phase_any_indication' ",
+        "must be an integer value between 1 and 4 (0: include drugs in any clinical phase, 1: include drugs in clinical phase 1 or higher, 2: include drugs in clinical phase 2 or higher, 3: include drugs in clinical phase 3 or higher, 4: include drugs that are approved)")
+    )
+  
+  
+  arg_counter <- 10
   if (!is.null(drug_action_type)) {
     arg_counter <- arg_counter + 1
     arg_validation_messages[[arg_counter]] <-
@@ -310,7 +324,7 @@ get_drugs <- function(
   }
   if (length(error_messages) > 0) {
     lgr::lgr$info('\n')
-    lgr::lgr$info(error_messages, sep = "\n")
+    lgr::lgr$info(error_messages)
     return()
   }
 
@@ -326,35 +340,38 @@ get_drugs <- function(
       dplyr::filter(.data$is_adc == FALSE)
   }
 
-
   ## targeted + chemo + hormone
   treatment_category_regex <- ""
   atc_treatment_strings <- c()
   
   if("hormone_therapy_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_hormone_therapy")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_hormone_therapy")
   }
   if("chemo_therapy_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_chemo_therapy")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_chemo_therapy")
   }
   if("targeted_therapy_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer(_adc)?_targeted_therapy")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer(_adc)?_targeted_therapy")
   }
   if("targeted_therapy_unclassified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_unclassified")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_unclassified")
   }
   if("immuno_suppressants_classified" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "cancer_immuno_suppressants")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "cancer_immuno_suppressants")
   }
   if("other" %in% treatment_category){
-    atc_treatment_strings <- c(atc_treatment_strings, "(other_targeted_therapy|unknown)")
+    atc_treatment_strings <- 
+      c(atc_treatment_strings, "(other_targeted_therapy|unknown)")
   }
   
   treatment_category_regex <- paste0(
     "^(", paste(atc_treatment_strings, collapse="|"), ")$")
-  
-  #cat(paste0('Treatment category regex: ', treatment_category_regex))
-  #cat('\n')
+
   
   drug_records <- drug_records |>
     dplyr::filter(
@@ -398,7 +415,8 @@ get_drugs <- function(
     }
   }
 
-  if (drug_minimum_phase_any_indication > 0) {
+  
+  if (!is.na(drug_minimum_phase_any_indication)) {
     if (nrow(drug_records) > 0) {
 
       ## include indications customly retrieved in DailyMed (assuming they are all max phase)
@@ -595,6 +613,7 @@ get_drugs <- function(
               .data$atc_code_level3,
               .data$atc_level3,
               .data$atc_treatment_category,
+              .data$drug_cancer_relevance,
               .data$disease_efo_label,
               .data$primary_site,
               .data$drug_clinical_id,
@@ -609,6 +628,9 @@ get_drugs <- function(
                      decreasing = T), collapse = "|"),
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
+            drug_cancer_relevance = paste(
+              unique(sort(.data$drug_cancer_relevance)), collapse = "|"
+            ),
             atc_code_level1 = paste(
               unique(sort(.data$atc_code_level1)),
               collapse = "|"
@@ -632,19 +654,17 @@ get_drugs <- function(
             atc_level3 = paste(
               unique(sort(.data$atc_level3)),
               collapse = "|"
-            ), 
+            ),
             atc_treatment_category = paste(
               unique(sort(.data$atc_treatment_category)),
               collapse = "|"
-            ), 
+            ),
             .groups = "drop") |>
           dplyr::distinct()
       )
 
 
     }
-    lgr::lgr$info(
-      paste0("Final record set: n = ", nrow(drug_records), " records"))
 
   }
 
@@ -673,6 +693,7 @@ get_drugs <- function(
                  .data$atc_code_level3,
                  .data$atc_level3,
                  .data$atc_treatment_category,
+                 .data$drug_cancer_relevance,
                  .data$primary_site,
                  .data$drug_clinical_id,
                  .data$drug_max_clinical_stage_indication))) |>
@@ -686,6 +707,9 @@ get_drugs <- function(
                           decreasing = F), collapse = "|"),
             disease_main_group = paste(
               unique(sort(.data$primary_site)), collapse = "|"),
+            drug_cancer_relevance = paste(
+              unique(sort(.data$drug_cancer_relevance)), collapse = "|"
+            ),
             atc_code_level1 = paste(
               unique(sort(.data$atc_code_level1)),
               collapse = "|"
@@ -709,17 +733,15 @@ get_drugs <- function(
             atc_level3 = paste(
               unique(sort(.data$atc_level3)),
               collapse = "|"
-            ), 
+            ),
             atc_treatment_category = paste(
               unique(sort(.data$atc_treatment_category)),
               collapse = "|"
-            ), 
+            ),
             .groups = "drop") |>
           dplyr::distinct()
       )
     }
-    lgr::lgr$info(
-      paste0("Final record set: n = ", nrow(drug_records), " records"))
   }
 
   if (output_resolution == "drug2target2indication") {
@@ -781,8 +803,6 @@ get_drugs <- function(
       )
 
     }
-    lgr::lgr$info(
-      paste0("Final record set: n = ", nrow(drug_records), " records"))
   }
 
   if (nrow(drug_records) > 0) {
@@ -804,6 +824,15 @@ get_drugs <- function(
         dplyr::desc(.data$opentargets),
         nchar(.data$drug_name))
 
+    if ("drug_max_clinical_stage_indication" %in% names(drug_records)) {
+      drug_records <- drug_records |>
+        dplyr::arrange(
+          dplyr::desc(.data$drug_max_clinical_stage),
+          dplyr::desc(.data$drug_max_clinical_stage_indication),
+          dplyr::desc(.data$opentargets),
+          nchar(.data$drug_name))
+    }
+
     if (!is.null(drug_indication_main)) {
       if (output_resolution != "drug2target2indication") {
         drug_records <- drug_records |>
@@ -815,6 +844,9 @@ get_drugs <- function(
     }
 
   }
+
+  lgr::lgr$info(
+    paste0("Final record set: n = ", nrow(drug_records), " records"))
 
   oncodrugs <- list()
   oncodrugs[['records']]  <- drug_records

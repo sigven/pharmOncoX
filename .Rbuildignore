@@ -9,3 +9,5 @@
 ^\.bumpversion.cfg$
 ^_pkgdown\.yml$
 ^pkgdown$
+^\.positai$
+^\.claude$

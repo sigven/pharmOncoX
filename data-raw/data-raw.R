@@ -248,6 +248,8 @@ db[['drug_map_provenance']][['records']] <- drug_index_map[['id2provenance']]
 gd_records <- list()
 db_id_ref <- data.frame()
 
+DRY_RUN <- 0
+
 for(elem in c('biomarkers',
               'drug_map_name',
               'drug_map_target',
@@ -268,6 +270,10 @@ for(elem in c('biomarkers',
     db[[elem]],
           file = local_rds_fpath)
 
+  if (DRY_RUN == 1){
+    cat("DRY RUN - skipping upload to Google Drive")
+    next
+  }
   (gd_records[[elem]] <- googledrive::drive_upload(
     media = local_rds_fpath,
     path = paste0("pharmOncoX/", elem, "_v", version_bump,".rds")

@@ -1,0 +1,775 @@
+---
+title: "Getting started"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: "#>"
+execute:
+  freeze: false
+bibliography: "../inst/bibliography.bib"
+nocite: |
+  @Kim2021-ye, @Sioutos2007-nl,
+  @Ochoa2021-jc, @Nakken2023-ab, @Griffith2017-do,
+  @Tamborero2018-aj
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(pharmOncoX)
+cache_dir <- "/Users/sigven/project_data/packages/package__pharmOncoX/pharmOncoX/data-raw/gd_local"
+```
+
+```{r}
+#| label: rt-helpers
+#| include: false
+
+## ── reactable helpers ────────────────────────────────────────────────────────
+
+build_rt_row_details <- function(
+    primary_cols,
+    styling_cols = character(0),
+    font_size = "0.94em") {
+  exclude_cols <- c(".details", primary_cols, styling_cols)
+  exclude_js   <- paste0("'", exclude_cols, "'", collapse = ", ")
+
+  reactable::JS(paste0(
+    "function(rowInfo) {",
+    "  var exclude = [", exclude_js, "];",
+    "  var items = Object.entries(rowInfo.row)",
+    "    .filter(function(e) {",
+    "      return exclude.indexOf(e[0]) === -1",
+    "        && e[1] !== null && e[1] !== ''",
+    "        && String(e[1]).length > 0;",
+    "    })",
+    "    .map(function(e) {",
+    "      return '<div style=\"margin-bottom:8px;\">'",
+    "           + '<div style=\"font-weight:600;color:#888;",
+    "font-size:", font_size, ";text-transform:uppercase;",
+    "letter-spacing:0.03em;margin-bottom:1px;\">'",
+    "           + e[0] + '</div>'",
+    "           + '<div style=\"color:#333;\">' + e[1] + '</div>'",
+    "           + '</div>';",
+    "    })",
+    "    .join('');",
+    "  if (!items) return null;",
+    "  return '<div style=\"padding:10px 16px 12px 40px;background:#f9f9fb;",
+    "display:flex;flex-wrap:wrap;gap:4px 24px;",
+    "font-size:", font_size, ";\">' + items + '</div>';",
+    "}"
+  ))
+}
+
+rt_theme <- function() {
+  reactable::reactableTheme(
+    style = list(fontFamily = "inherit"),
+    headerStyle = list(
+      background    = "#2c313c",
+      color         = "white",
+      fontWeight    = "bold",
+      fontSize      = "0.97em",
+      padding       = "10px 14px",
+      borderRight   = "1px solid rgba(255,255,255,0.3)",
+      display       = "flex",
+      alignItems    = "center"
+    ),
+    cellStyle = list(borderRight = "1px solid #e8e8e8"),
+    searchInputStyle = list(borderColor = "#2c313c")
+  )
+}
+
+## Convenience wrapper: hides every column not listed in col_defs_primary.
+## If search_cols is supplied, a hidden-but-searchable SEARCH_INDEX column is
+## prepended by pasting those fields together (missing columns are silently
+## skipped via intersect()).
+bake_reactable <- function(df,
+                           col_defs_primary,
+                           primary_cols,
+                           styling_cols = character(0),
+                           search_cols  = character(0)) {
+
+  ## Build SEARCH_INDEX from whichever search_cols are present in df
+  avail_search <- intersect(search_cols, colnames(df))
+  if (length(avail_search) > 0) {
+    df[["SEARCH_INDEX"]] <- apply(
+      df[, avail_search, drop = FALSE], 1,
+      function(row) {
+        vals <- as.character(row)
+        vals <- vals[!is.na(vals) & nchar(vals) > 0]
+        paste(vals, collapse = " | ")
+      }
+    )
+  }
+
+  col_defs <- col_defs_primary
+
+  ## SEARCH_INDEX: invisible in the table and in row-detail expansion,
+  ## but picked up by reactable's global search box
+  if ("SEARCH_INDEX" %in% colnames(df)) {
+    col_defs[["SEARCH_INDEX"]] <- reactable::colDef(
+      show = FALSE, searchable = TRUE)
+  }
+
+  for (col in colnames(df)) {
+    if (!col %in% names(col_defs)) {
+      col_defs[[col]] <- reactable::colDef(show = FALSE)
+    }
+  }
+
+  ## Keep SEARCH_INDEX out of the row-detail card (it's a derivative column)
+  details_styling <- unique(c(
+    styling_cols,
+    if ("SEARCH_INDEX" %in% colnames(df)) "SEARCH_INDEX" else character(0)
+  ))
+
+  reactable::reactable(
+    df,
+    columns        = col_defs,
+    defaultColDef  = reactable::colDef(html = TRUE),
+    details        = build_rt_row_details(
+                       primary_cols = primary_cols,
+                       styling_cols = details_styling),
+    searchable     = TRUE,
+    filterable     = TRUE,
+    striped        = TRUE,
+    highlight      = TRUE,
+    compact        = TRUE,
+    wrap           = TRUE,
+    defaultPageSize = 10,
+    theme          = rt_theme()
+  )
+}
+
+## Columns to suppress completely (IDs, raw codes, internal flags)
+## — excluded from both the main table view and the row-detail expansion
+drug_base_styling_cols <- c(
+  "drug_id", "molecule_chembl_id", "nci_t",
+  "atc_code_level1", "atc_code_level2", "atc_code_level3",
+  "atc_treatment_category", "inhibition_moa",
+  "drug_frac_cancer_indications", "drug_approved_noncancer",
+  "is_adc", "opentargets"
+)
+
+## Fields pasted into SEARCH_INDEX — gives the global search box access to
+## free-text columns that are not shown as primary columns
+drug_search_cols <- c(
+  "nci_concept_definition", "disease_indication",
+  "atc_level1", "atc_level2", "atc_level3",
+  "drug_cancer_relevance"
+)
+drug_target_search_cols <- c(drug_search_cols, "target_genename")
+
+biomarker_search_cols <- c(
+  "evidence_description", "molecular_profile_name",
+  "therapeutic_context", "evidence_url", "biomarker_source"
+)
+```
+
+<br><br>
+
+# Installation
+
+```{r}
+#| label: install
+#| echo: true
+#| eval: false
+
+# if (!("remotes" %in% installed.packages())) {
+#   install.packages("remotes")
+# }
+# remotes::install_github('sigven/pharmOncoX')
+```
+
+<br><br>
+
+# Cancer drug classifications
+
+## Targeted agents
+
+Plotted below are key statistics with respect to drug classification
+numbers for targeted and chemotherapy agents found in _pharmOncoX_.
+Existing drug classifications have been retrieved from
+[ATC](https://www.whocc.no/), and these have been extended with manual
+addition/curation, and also through the establishment of multiple novel
+levels in the ATC tree, particularly for targeted therapies. Note that
+only drugs that are indicated for cancer conditions (as harvested from
+the Open Targets platform) are considered in the numbers plotted below.
+
+<br>
+
+```{r}
+#| label: targeted-agents
+#| echo: false
+#| output: false
+
+drugs <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("targeted_therapy_classified",
+                         "hormone_therapy_classified"),
+  output_resolution = "drug",
+  drug_action_inhibition = TRUE,
+  drug_source_opentargets = TRUE)
+
+drug_classifications <-
+  drugs$records |>
+  dplyr::select(drug_name, atc_level3) |>
+  dplyr::mutate(
+    atc_level3 = stringr::str_replace_all(
+      atc_level3,
+      "\\|(Antineovascularisation agents|Selective immunosuppressants)",
+      ""
+    )
+  ) |>
+  dplyr::group_by(atc_level3) |>
+  dplyr::summarise(n = dplyr::n()) |>
+  dplyr::mutate(pct = round(n / sum(n) * 100, digits = 2)) |>
+  dplyr::arrange(dplyr::desc(pct)) |>
+  dplyr::filter(n >= 2)
+
+p_targeted_classifications <- ggplot2::ggplot(
+  data = drug_classifications,
+  ggplot2::aes(x = reorder(atc_level3, pct), y = pct)) +
+  ggplot2::geom_bar(stat = "identity", fill = "steelblue") +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::ylab("Percent of targeted agents") +
+  ggplot2::xlab("") +
+  ggplot2::scale_y_continuous(breaks = seq(0, 12, 2)) +
+  ggplot2::geom_text(
+    ggplot2::aes(label = n), hjust = 1.4, vjust = 0.50,
+    color = "white", size = 4) +
+  ggplot2::theme(
+    legend.title  = ggplot2::element_blank(),
+    axis.text.x   = ggplot2::element_text(size = 14, vjust = 0.5),
+    legend.text   = ggplot2::element_text(family = "Helvetica", size = 14),
+    axis.text.y   = ggplot2::element_text(family = "Helvetica", size = 13),
+    axis.title.x  = ggplot2::element_text(family = "Helvetica", size = 14),
+    axis.title.y  = ggplot2::element_text(family = "Helvetica", size = 14)
+  )
+```
+
+```{r}
+#| label: p-targeted
+#| echo: false
+#| fig-width: 9
+#| fig-height: 13
+p_targeted_classifications
+```
+
+## Chemotherapy agents
+
+```{r}
+#| label: chemo-agents
+#| echo: false
+#| output: false
+
+drugs <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("chemo_therapy_classified"),
+  output_resolution = "drug",
+  drug_classified_cancer = TRUE,
+  drug_source_opentargets = TRUE)
+
+drug_classifications_chemo <-
+  drugs$records |>
+  dplyr::select(drug_name, atc_level3) |>
+  dplyr::group_by(atc_level3) |>
+  dplyr::summarise(n = dplyr::n()) |>
+  dplyr::mutate(pct = round(n / sum(n) * 100, digits = 2)) |>
+  dplyr::arrange(dplyr::desc(pct))
+
+p_chemo_classifications <- ggplot2::ggplot(
+  data = drug_classifications_chemo,
+  ggplot2::aes(x = reorder(atc_level3, pct), y = pct)) +
+  ggplot2::geom_bar(stat = "identity", fill = "#E69F00") +
+  ggplot2::theme_classic() +
+  ggplot2::coord_flip() +
+  ggplot2::ylab("Percent of chemotherapy agents") +
+  ggplot2::xlab("") +
+  ggplot2::scale_y_continuous(breaks = seq(0, 30, 5)) +
+  ggplot2::geom_text(
+    ggplot2::aes(label = n), hjust = 1.4, vjust = 0.50,
+    color = "white", size = 4) +
+  ggplot2::theme(
+    legend.title  = ggplot2::element_blank(),
+    axis.text.x   = ggplot2::element_text(size = 14, vjust = 0.5),
+    legend.text   = ggplot2::element_text(family = "Helvetica", size = 14),
+    axis.text.y   = ggplot2::element_text(family = "Helvetica", size = 13),
+    axis.title.x  = ggplot2::element_text(family = "Helvetica", size = 14),
+    axis.title.y  = ggplot2::element_text(family = "Helvetica", size = 14)
+  )
+```
+
+```{r}
+#| label: chemo-plot
+#| echo: false
+#| fig-width: 9
+#| fig-height: 6
+p_chemo_classifications
+```
+
+<br><br>
+
+# Retrieval of drugs - examples
+
+## Get BRAF-targeted drugs, list records per indication
+
+```{r}
+#| label: braf-drugs-full
+#| echo: true
+
+drugs <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("targeted_therapy_classified",
+                         "targeted_therapy_unclassified"),
+  drug_target = c('BRAF'))
+
+## Number of drug records
+nrow(drugs$records)
+
+## Column names of drug records
+colnames(drugs$records)
+```
+
+<br><br>
+
+## Get RAS-targeted drugs, list per drug target
+
+```{r}
+#| label: ras-inhibitors
+#| echo: true
+#| output: false
+
+drugs_ras <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("targeted_therapy_classified"),
+  drug_action_inhibition = TRUE,
+  output_resolution = "drug2target")$records |>
+  dplyr::filter(atc_level3 == "RAS inhibitors") |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", ")) |>
+  dplyr::select(
+    drug_id, drug_name, drug_type, molecule_chembl_id,
+    drug_action_type, target_symbol, dplyr::everything())
+```
+
+<br>
+
+```{r}
+#| label: rt-ras-inhibitors
+#| echo: false
+
+bake_reactable(
+  df = drugs_ras,
+  primary_cols = c("drug_name", "drug_action_type",
+                   "target_symbol", "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = drug_base_styling_cols,
+  search_cols  = drug_target_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",        minWidth = 150),
+    drug_action_type      = reactable::colDef(name = "Action type",      minWidth = 120),
+    target_symbol         = reactable::colDef(name = "Target",           minWidth = 90),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",      minWidth = 90),
+    atc_level3            = reactable::colDef(name = "Drug category",    minWidth = 150)
+  )
+)
+```
+
+<br><br>
+
+## Get MEK inhibitors, list per drug only
+
+```{r}
+#| label: mek-inhibitors
+#| echo: true
+#| output: false
+
+drugs_mek <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("targeted_therapy_classified"),
+  drug_action_inhibition = TRUE,
+  drug_source_opentargets = TRUE,
+  output_resolution = "drug")$records |>
+  dplyr::filter(atc_level3 == "MEK inhibitors") |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", "))
+```
+
+<br>
+
+```{r}
+#| label: rt-mek-inhibitors
+#| echo: false
+
+bake_reactable(
+  df = drugs_mek,
+  primary_cols = c("drug_name", "drug_type", "drug_action_type",
+                   "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = drug_base_styling_cols,
+  search_cols  = drug_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",        minWidth = 150),
+    drug_type             = reactable::colDef(name = "Drug type",        minWidth = 120),
+    drug_action_type      = reactable::colDef(name = "Action type",      minWidth = 120),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",      minWidth = 90),
+    atc_level3            = reactable::colDef(name = "Drug category",    minWidth = 150)
+  )
+)
+```
+
+<br><br>
+
+## Get immune checkpoint inhibitors, list per drug target
+
+```{r}
+#| label: ici
+#| echo: true
+#| output: false
+
+drugs_ici <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("targeted_therapy_classified"),
+  drug_source_opentargets = FALSE,
+  drug_classified_cancer = TRUE,
+  output_resolution = "drug2target")$records |>
+  dplyr::filter(
+    !is.na(atc_level3) &
+      atc_level3 %in% c("PD-1/PDL-1 inhibitors",
+                        "Other ICIs - LAG3 inhibitors",
+                        "Other ICIs - TIGIT inhibitors",
+                        "Other ICIs - CTLA4 inhibitors",
+                        "Other ICIs")) |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", ")) |>
+  dplyr::select(
+    drug_id, drug_name, drug_type,
+    target_symbol, target_genename,
+    dplyr::everything())
+```
+
+<br>
+
+```{r}
+#| label: rt-ici
+#| echo: false
+
+bake_reactable(
+  df = drugs_ici,
+  primary_cols = c("drug_name",
+                   "target_symbol", "target_genename",
+                   "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = c(drug_base_styling_cols, "target_ensembl_gene_id",
+                   "target_entrezgene", "target_type"),
+  search_cols  = drug_target_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",        minWidth = 150),
+    target_symbol         = reactable::colDef(name = "Target",           minWidth = 90),
+    target_genename       = reactable::colDef(name = "Target gene name", minWidth = 160),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",      minWidth = 90),
+    atc_level3            = reactable::colDef(name = "ICI class",        minWidth = 180)
+  )
+)
+```
+
+<br><br>
+
+## Get immune checkpoint inhibitors indicated for lung cancer, list per drug-target entry
+
+```{r}
+#| label: ici-lung
+#| echo: true
+#| output: false
+
+drugs_ici_lung <- get_drugs(
+  cache_dir = cache_dir,
+  output_resolution = "drug2target",
+  treatment_category = c("targeted_therapy_classified"),
+  drug_source_opentargets = TRUE,
+  drug_indication_main = "Lung")$records |>
+  dplyr::filter(
+    !is.na(atc_level3) &
+      atc_level3 %in% c("PD-1/PDL-1 inhibitors",
+                        "Other ICIs - LAG3 inhibitors",
+                        "Other ICIs - TIGIT inhibitors",
+                        "Other ICIs - CTLA4 inhibitors",
+                        "Other ICIs")) |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", ")) |>
+  dplyr::select(
+    drug_id, drug_name, drug_type,
+    target_symbol, target_genename,
+    dplyr::everything())
+```
+
+<br>
+
+```{r}
+#| label: rt-ici-lung
+#| echo: false
+
+bake_reactable(
+  df = drugs_ici_lung,
+  primary_cols = c("drug_name",
+                   "target_symbol", "target_genename",
+                   "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = c(drug_base_styling_cols, "target_ensembl_gene_id",
+                   "target_entrezgene", "target_type"),
+  search_cols  = drug_target_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",        minWidth = 150),
+    target_symbol         = reactable::colDef(name = "Target",           minWidth = 90),
+    target_genename       = reactable::colDef(name = "Target gene name", minWidth = 160),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",      minWidth = 90),
+    atc_level3            = reactable::colDef(name = "ICI class",        minWidth = 180)
+  )
+)
+```
+
+<br><br>
+
+## Get antimetabolite drugs
+
+```{r}
+#| label: antimetabolites
+#| echo: true
+#| output: false
+
+drugs_antimetab <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = c("chemo_therapy_classified"),
+  output_resolution = "drug")$records |>
+  dplyr::filter(
+    !is.na(atc_level2) &
+      stringr::str_detect(atc_level2, "ANTIMETABOLITES")) |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", "))
+```
+
+<br>
+
+```{r}
+#| label: rt-antimetabolites
+#| echo: false
+
+bake_reactable(
+  df = drugs_antimetab,
+  primary_cols = c("drug_name", "drug_type", "drug_action_type",
+                   "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = drug_base_styling_cols,
+  search_cols  = drug_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",     minWidth = 150),
+    drug_type             = reactable::colDef(name = "Drug type",     minWidth = 120),
+    drug_action_type      = reactable::colDef(name = "Action type",   minWidth = 120),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",   minWidth = 90),
+    atc_level3            = reactable::colDef(name = "Drug category", minWidth = 150)
+  )
+)
+```
+
+<br><br>
+
+## Get taxanes
+
+```{r}
+#| label: taxanes
+#| echo: true
+#| output: false
+
+drugs_taxanes <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = "chemo_therapy_classified",
+  output_resolution = "drug")$records |>
+  dplyr::filter(
+    stringr::str_detect(atc_level3, "Taxanes")) |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", "))
+```
+
+<br>
+
+```{r}
+#| label: rt-taxanes
+#| echo: false
+
+bake_reactable(
+  df = drugs_taxanes,
+  primary_cols = c("drug_name", "drug_type", "drug_action_type",
+                   "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = drug_base_styling_cols,
+  search_cols  = drug_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",     minWidth = 150),
+    drug_type             = reactable::colDef(name = "Drug type",     minWidth = 120),
+    drug_action_type      = reactable::colDef(name = "Action type",   minWidth = 120),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",   minWidth = 90),
+    atc_level3            = reactable::colDef(name = "Drug category", minWidth = 150)
+  )
+)
+```
+
+<br><br>
+
+## Get platinum compounds
+
+```{r}
+#| label: platins
+#| echo: true
+#| output: false
+
+drugs_platins <- get_drugs(
+  cache_dir = cache_dir,
+  treatment_category = "chemo_therapy_classified",
+  output_resolution = "drug")$records |>
+  dplyr::filter(
+    stringr::str_detect(atc_level3, "Platinum compounds")) |>
+  dplyr::select(
+    -c("drug_alias", "disease_main_group", "drug_clinical_id")) |>
+  dplyr::mutate(
+    disease_indication = stringr::str_replace_all(
+      disease_indication, "\\|", ", ")) |>
+  dplyr::select(
+    drug_id, drug_name, drug_type, molecule_chembl_id,
+    drug_action_type, opentargets, dplyr::everything())
+```
+
+<br>
+
+```{r}
+#| label: rt-platins
+#| echo: false
+
+bake_reactable(
+  df = drugs_platins,
+  primary_cols = c("drug_name", "drug_type", "drug_action_type",
+                   "drug_max_clinical_stage", "atc_level3"),
+  styling_cols = drug_base_styling_cols,
+  search_cols  = drug_search_cols,
+  col_defs_primary = list(
+    drug_name             = reactable::colDef(name = "Drug name",     minWidth = 150),
+    drug_type             = reactable::colDef(name = "Drug type",     minWidth = 120),
+    drug_action_type      = reactable::colDef(name = "Action type",   minWidth = 120),
+    drug_max_clinical_stage = reactable::colDef(name = "Max stage",   minWidth = 90),
+    atc_level3            = reactable::colDef(name = "Drug category", minWidth = 150)
+  )
+)
+```
+
+<br><br>
+
+# Retrieval of biomarkers
+
+## Reported associations between BRCA1/2 alterations and drug sensitivity
+
+* Get evidence from [CIViC](https://civicdb.org) and
+  [CGI](https://www.cancergenomeinterpreter.org/biomarkers) for cancer
+  drug sensitivity of BRCA1/2 alterations (somatically (tumor) or
+  inherited/germline)
+
+```{r}
+#| label: biomarkers
+#| echo: true
+#| output: false
+
+biomarkers <- get_biomarkers(cache_dir = cache_dir)
+
+brca1_biomarkers <- list()
+for (source in c('civic', 'cgi')) {
+  brca1_biomarkers[[source]] <-
+    biomarkers$data[[source]]$variant |>
+    dplyr::filter(!is.na(symbol) & symbol %in% c("BRCA1", "BRCA2")) |>
+    dplyr::group_by(variant_id, variant_name_primary, variant_consequence) |>
+    dplyr::summarise(
+      variant_alias = paste(variant_alias, collapse = ", "),
+      .groups = "drop") |>
+    dplyr::inner_join(
+      biomarkers$data[[source]]$clinical, by = "variant_id") |>
+    dplyr::select(
+      variant_id, variant_name_primary, therapeutic_context,
+      evidence_type, evidence_level,
+      biomarker_source, biomarker_source_datestamp,
+      molecular_profile_name, evidence_id, variant_origin,
+      primary_site, evidence_id, source_id,
+      evidence_url, evidence_description, clinical_significance) |>
+    dplyr::distinct() |>
+    dplyr::rename(
+      literature_id = source_id,
+      variant_name  = variant_name_primary) |>
+    dplyr::filter(evidence_type == "Predictive") |>
+    dplyr::select(
+      variant_name, primary_site, therapeutic_context,
+      molecular_profile_name, evidence_level,
+      dplyr::everything())
+}
+
+brca1_biomarkers_all <-
+  dplyr::bind_rows(
+    brca1_biomarkers[['civic']],
+    brca1_biomarkers[['cgi']]) |>
+  dplyr::arrange(evidence_level)
+```
+
+<br>
+
+```{r}
+#| label: rt-brca-biomarkers
+#| echo: false
+
+bake_reactable(
+  df = brca1_biomarkers_all,
+  primary_cols = c("variant_name", "primary_site",
+                   "therapeutic_context",
+                   "clinical_significance", "molecular_profile_name"),
+  styling_cols = c("variant_id", "evidence_id", "literature_id",
+                   "biomarker_source_datestamp", "evidence_url",
+                   "variant_origin", "evidence_type"),
+  search_cols  = biomarker_search_cols,
+  col_defs_primary = list(
+    variant_name          = reactable::colDef(name = "Variant",           minWidth = 130),
+    primary_site          = reactable::colDef(name = "Tumor type",        minWidth = 120),
+    therapeutic_context   = reactable::colDef(name = "Drug/context",      minWidth = 150),
+    clinical_significance = reactable::colDef(name = "Significance",      minWidth = 120),
+    molecular_profile_name = reactable::colDef(name = "Molecular profile", minWidth = 160)
+  )
+)
+```
+
+<br><br>
+
+# Session Info
+
+```{r}
+#| label: sessioninfo
+#| eval: true
+sessionInfo()
+```
+
+<br><br>
+
+# References
