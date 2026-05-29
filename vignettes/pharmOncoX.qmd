@@ -24,8 +24,15 @@ vignette: >
 ```{r}
 #| label: setup
 #| include: false
+
+## install and load pharmOncoX package
+if (!("remotes" %in% installed.packages())) {
+ install.packages("remotes")
+}
+remotes::install_github('sigven/pharmOncoX')
+
 library(pharmOncoX)
-cache_dir <- "/Users/sigven/project_data/packages/package__pharmOncoX/pharmOncoX/data-raw/gd_local"
+cache_dir <- tempdir()
 ```
 
 ```{r}
