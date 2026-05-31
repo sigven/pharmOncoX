@@ -247,7 +247,7 @@ get_drugs <- function(
   ## assert that drug minimum phase any indication is a numeric value between 0 and 4
   arg_validation_messages[[9]] <-
     assertthat::validate_that(
-      is.integer(drug_minimum_phase_any_indication) &
+      is.numeric(drug_minimum_phase_any_indication) &
         (is.na(drug_minimum_phase_any_indication) |
         (length(drug_minimum_phase_any_indication) == 1 &
         drug_minimum_phase_any_indication %in% c(1,2,3,4))),
