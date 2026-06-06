@@ -1,3 +1,7 @@
+# Version 2.3.2
+
+- Fix biomarker disease annotations from phenOncoX
+
 # Version 2.3.0
 
  - Updated NCI Thesaurus (26.04d)
