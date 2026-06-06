@@ -54,7 +54,7 @@ drugs <- get_drugs(
 
 ## Number of drug records
 nrow(drugs$records)
-#> [1] 278
+#> [1] 273
 
 ## Column names of drug records
 colnames(drugs$records)
@@ -345,7 +345,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.3.1
+#> [1] pharmOncoX_2.3.2
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.0    
@@ -354,7 +354,7 @@ sessionInfo()
 #> [13] R6_2.6.1           generics_0.1.4     curl_7.1.0         knitr_1.51        
 #> [17] htmlwidgets_1.6.4  tibble_3.3.1       reactable_0.4.5    RColorBrewer_1.1-3
 #> [21] pillar_1.11.1      rlang_1.2.0        stringi_1.8.7      reactR_0.6.1      
-#> [25] lgr_0.5.2          xfun_0.57          S7_0.2.2           fs_2.1.0          
+#> [25] lgr_0.5.2          xfun_0.58          S7_0.2.2           fs_2.1.0          
 #> [29] otel_0.2.0         cli_3.6.6          withr_3.0.2        magrittr_2.0.5    
 #> [33] crosstalk_1.2.2    grid_4.6.0         digest_0.6.39      lifecycle_1.0.5   
 #> [37] vctrs_0.7.3        evaluate_1.0.5     gargle_1.6.1       glue_1.8.1        
