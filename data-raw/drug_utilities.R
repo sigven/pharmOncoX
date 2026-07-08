@@ -167,7 +167,15 @@ get_otp_drugs <-
             .data$disease_efo_id == 'EFO:0000311' |
             .data$disease_efo_id == 'EFO:0000313' |
             .data$disease_efo_id == 'MONDO:0004992' |
+            .data$disease_efo_id == 'MONDO:0005070' |
             .data$disease_efo_id == 'MONDO:0002120' |
+            .data$disease_efo_id == 'MONDO:0018908' |
+            .data$disease_efo_id == 'MONDO:0040679' |
+            .data$disease_efo_id == 'MONDO:0019496' |
+            .data$disease_efo_id == 'MONDO:0024880' |
+            .data$disease_efo_id == 'MONDO:0021085' |
+            .data$disease_efo_id == 'MONDO:0006130' |
+            .data$disease_efo_id == 'EFO:0003863' |
             .data$disease_efo_id == 'EFO:0003826' |
             .data$disease_efo_id == 'EFO:0000707' |
             .data$disease_efo_id == 'EFO:0000228'),

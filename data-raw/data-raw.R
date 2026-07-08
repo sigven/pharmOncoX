@@ -89,7 +89,7 @@ drug_sets[['nci']] <- get_nci_drugs(
 drug_sets[['otp']] <-
   get_otp_drugs(
     path_data_raw = path_data_raw,
-    ot_version = "2026.03")
+    ot_version = "2026.06")
 
 
 ## Merge information from Open Targets Platform and NCI targeted drugs
@@ -226,7 +226,7 @@ biomarkers[['metadata']] <- metadata$biomarkers
 #  substr(as.character(packageVersion("pharmOncoX")),1,4),
 #  as.character(as.integer(substr(as.character(packageVersion("pharmOncoX")),5,5)) + 1))
   
-version_bump <- "2.3.3"
+version_bump <- "2.3.4"
 
 db <- list()
 db[['biomarkers']] <- biomarkers
