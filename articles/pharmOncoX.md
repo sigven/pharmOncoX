@@ -54,7 +54,7 @@ drugs <- get_drugs(
 
 ## Number of drug records
 nrow(drugs$records)
-#> [1] 273
+#> [1] 490
 
 ## Column names of drug records
 colnames(drugs$records)
@@ -324,7 +324,7 @@ brca1_biomarkers_all <-
 ``` r
 
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.4 LTS
 #> 
@@ -345,21 +345,21 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.3.3
+#> [1] pharmOncoX_2.3.4
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.0    
+#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.1    
 #>  [5] crayon_1.5.3       tidyselect_1.2.1   stringr_1.6.0      assertthat_0.2.1  
 #>  [9] scales_1.4.0       yaml_2.3.12        fastmap_1.2.0      ggplot2_4.0.3     
 #> [13] R6_2.6.1           generics_0.1.4     curl_7.1.0         knitr_1.51        
 #> [17] htmlwidgets_1.6.4  tibble_3.3.1       reactable_0.4.5    RColorBrewer_1.1-3
-#> [21] pillar_1.11.1      rlang_1.2.0        stringi_1.8.7      reactR_0.6.1      
-#> [25] lgr_0.5.2          xfun_0.58          S7_0.2.2           fs_2.1.0          
-#> [29] otel_0.2.0         cli_3.6.6          withr_3.0.2        magrittr_2.0.5    
-#> [33] crosstalk_1.2.2    grid_4.6.0         digest_0.6.39      lifecycle_1.0.5   
+#> [21] pillar_1.11.1      rlang_1.3.0        stringi_1.8.7      reactR_0.6.1      
+#> [25] lgr_0.5.2          xfun_0.59          S7_0.2.2           fs_2.1.0          
+#> [29] otel_0.2.0         cli_3.6.6          withr_3.0.3        magrittr_2.0.5    
+#> [33] crosstalk_1.2.2    grid_4.6.1         digest_0.6.39      lifecycle_1.0.5   
 #> [37] vctrs_0.7.3        evaluate_1.0.5     gargle_1.6.1       glue_1.8.1        
 #> [41] farver_2.1.2       googledrive_2.1.2  rmarkdown_2.31     purrr_1.2.2       
-#> [45] httr_1.4.8         tools_4.6.0        pkgconfig_2.0.3    htmltools_0.5.9
+#> [45] httr_1.4.8         tools_4.6.1        pkgconfig_2.0.3    htmltools_0.5.9
 ```
 
   
