@@ -326,7 +326,7 @@ brca1_biomarkers_all <-
 sessionInfo()
 #> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> Running under: Ubuntu 24.04.5 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -345,13 +345,13 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.3.6
+#> [1] pharmOncoX_2.3.7
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.1    
 #>  [5] crayon_1.5.3       tidyselect_1.2.1   stringr_1.6.0      assertthat_0.2.1  
 #>  [9] scales_1.4.0       yaml_2.3.12        fastmap_1.2.0      ggplot2_4.0.3     
-#> [13] R6_2.6.1           generics_0.1.4     curl_8.0.0         knitr_1.51        
+#> [13] R6_2.6.1           generics_0.1.4     curl_8.0.0         knitr_1.52        
 #> [17] htmlwidgets_1.6.4  tibble_3.3.1       reactable_0.4.5    RColorBrewer_1.1-3
 #> [21] pillar_1.11.1      rlang_1.3.0        stringi_1.8.9      reactR_0.6.1      
 #> [25] lgr_0.5.2          xfun_0.60          S7_0.2.2           fs_2.1.0          
