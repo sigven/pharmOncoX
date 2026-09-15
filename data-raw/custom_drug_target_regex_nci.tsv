@@ -394,7 +394,7 @@ IRE1 RNase	ERN1
 (Akt-1/2|AKT-1/2|AKT 1/2)	AKT2
 (Akt Inhibitor|AKT/)	AKT1
 (Akt Inhibitor|AKT/)	AKT2
-Chk1 Inhibitor|Checkpoint Kinase Inhibitor	CHEK1
+Chk1 Inhibitor|Checkpoint Kinase Inhibitor|PF-477736	CHEK1
 Dihydroorotate Dehydrogenase	DHODH
 DNA-dependent Protein Kinase|DNA-PK	PRKDC
 ALK2	ACVR1
