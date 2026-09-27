@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.3.8
+
+- Updated CIViC data (20260927)
+- Updated Open Targets Platform (2026.09)
+
 ## Version 2.3.7
 
 - Updated CIViC data (20260915)
