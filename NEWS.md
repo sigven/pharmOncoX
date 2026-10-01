@@ -1,3 +1,8 @@
+# Version 2.3.9
+
+- Updated CIViC data (20261001)
+- Updated NCI Thesaurus (26.09d)
+
 # Version 2.3.8
 
 - Updated CIViC data (20260927)
@@ -5,7 +10,7 @@
 
 # Version 2.3.7
 
- - Updated CIViC data (20260915)
+- Updated CIViC data (20260915)
 
 # Version 2.3.6
 
