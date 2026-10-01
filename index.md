@@ -35,14 +35,14 @@ inhibitors*, *AKT inhibitors*, *PLK inhibitors*, *IAP inhibitors*, *RAS
 inhibitors*, *BCL2 inhibitors* etc.) enabling a filtering of drugs
 according to their main mechanisms of action.
 
-Currently (as of late September 2026), `pharmOncoX` is built upon the
+Currently (as of early October 2026), `pharmOncoX` is built upon the
 following releases of external databases:
 
 - Open Targets Platform (2026.09)
 - ChEMBL (v36)
-- NCI Thesaurus (26.08e)
+- NCI Thesaurus (26.09d)
 - MitelmanDB (20260715)
-- CIViC (20260927)
+- CIViC (20261001)
 
 ### Getting started
 

@@ -54,7 +54,7 @@ drugs <- get_drugs(
 
 ## Number of drug records
 nrow(drugs$records)
-#> [1] 490
+#> [1] 502
 
 ## Column names of drug records
 colnames(drugs$records)
@@ -345,7 +345,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] pharmOncoX_2.3.8
+#> [1] pharmOncoX_2.3.9
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.1    

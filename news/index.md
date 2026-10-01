@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.3.9
+
+- Updated CIViC data (20261001)
+- Updated NCI Thesaurus (26.09d)
+
 ## Version 2.3.8
 
 - Updated CIViC data (20260927)
