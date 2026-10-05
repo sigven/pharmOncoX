@@ -64,10 +64,18 @@ set_alteration_type <- function(variant_df){
   
   variant_df <- variant_df |>
     dplyr::mutate(
+      alteration_type = dplyr::if_else(
+        feature_type == "Factor",
+        as.character("COMPLEX"),
+        as.character(alteration_type)
+      )
+    ) |>
+    dplyr::mutate(
       alteration_type =
         dplyr::if_else(
           stringr::str_detect(toupper(variant),"EXPRESSION"),
-          "EXP",as.character(alteration_type))) |>
+          "EXP",
+          as.character(alteration_type))) |>
     dplyr::mutate(
       alteration_type =
         dplyr::case_when(
@@ -842,7 +850,7 @@ append_fusion_entrezgene <- function(df, gene_lookup) {
 
 
 load_civic_biomarkers <- function(
-    datestamp = '20260526',
+    datestamp = '20261005',
     compound_synonyms = NULL,
     hg38_fasta = 
       "/Users/sigven/research/DB/hg38/hg38.fa",
@@ -1140,7 +1148,7 @@ load_civic_biomarkers <- function(
     data.table::fread(civic_local_fnames[['VariantSummaries']],
                       select = c(1:25), fill = T)) |>
     ## Ignore the "Factor" feature type (Kataegis, CK, methylation)
-    dplyr::filter(feature_type != "Factor") |>
+    #dplyr::filter(feature_type != "Factor") |>
     #dplyr::rename(molecular_profile_id = variant_id) |>
     dplyr::mutate(alteration_type = "MUT") |>
     dplyr::mutate(variant = stringr::str_trim(variant)) |>
@@ -1201,12 +1209,20 @@ load_civic_biomarkers <- function(
       as.character(gene)
     )) |>
     set_alteration_type() |>
+    ## "Factor" features (TMB, MSI, CK etc.) have no gene - use
+    ## feature_name as prefix for variant_name_primary
+    dplyr::mutate(name_prefix = dplyr::if_else(
+      feature_type == "Factor",
+      as.character(feature_name),
+      as.character(gene)
+    )) |>
     dplyr::select(variant_id,
                   molecular_profile_id,
                   variant_consequence,
                   variant,
                   alteration_type,
                   gene,
+                  name_prefix,
                   variant_alias) |>
     dplyr::mutate(
       variant = stringr::str_replace_all(
@@ -1243,16 +1259,17 @@ load_civic_biomarkers <- function(
             variant,
             "Mutation|Wildtype|Splice|Copy Number|Deletion|Amplification") |
           stringr::str_detect(alteration_type,"^EXP") ~
-          paste0(gene," ",stringr::str_to_title(variant)),
+          paste0(name_prefix," ",stringr::str_to_title(variant)),
         variant_consequence == "transcript_fusion" |
           (nchar(variant_consequence) == 0 & variant == "FUSION") ~
-          paste0(gene, " Fusion"),
+          paste0(name_prefix, " Fusion"),
         variant == "REARRANGEMENT" ~ 
-          paste0(gene, " Rearrangement"),
+          paste0(name_prefix, " Rearrangement"),
         TRUE ~ as.character(
-          paste0(gene, " ", variant)
+          paste0(name_prefix, " ", variant)
         ))
     ) |>
+    dplyr::select(-name_prefix) |>
     dplyr::mutate(variant_consequence = dplyr::if_else(
       stringr::str_detect(variant,"^aa_region:"),
       as.character("missense_variant"),
@@ -1269,6 +1286,52 @@ load_civic_biomarkers <- function(
     ) |>
     dplyr::mutate(variant_name_primary = stringr::str_replace(
       variant_name_primary, "INS$","ins")
+    ) |>
+    ## Bare "High"/"Low" aliases (e.g. TMB, MSI, CK) are not
+    ## informative - replace with full name (e.g. "CK High")
+    dplyr::mutate(variant_alias = dplyr::if_else(
+      variant_alias %in% c("High", "Low") &
+        endsWith(variant_name_primary, paste0(" ", variant_alias)),
+      as.character(variant_name_primary),
+      as.character(variant_alias)
+    )) |>
+    dplyr::mutate(
+      variant = dplyr::if_else(
+        variant_alias == "High Tumor Mutational Burden" |
+          variant_alias == "TMB-H" |
+          variant_alias == "TMB High",
+        "TMB High",
+        as.character(variant)
+      )
+    ) |>
+    dplyr::mutate(
+      variant_name_primary = dplyr::if_else(
+        variant_alias == "High Tumor Mutational Burden" |
+          variant_alias == "TMB-H",
+        "TMB High",
+        as.character(variant_name_primary)
+      )
+    ) |>
+    dplyr::mutate(
+      variant = dplyr::if_else(
+        variant_alias == "Microsatellite Instability High" |
+          variant_alias == "deficient DNA mismatch repair" |
+          variant_alias == "dMMR" |
+          variant_alias == "MSI-H" |
+          variant_alias == "MSI High",
+        "MSI High",
+        as.character(variant)
+      )
+    ) |>
+    dplyr::mutate(
+      variant_name_primary = dplyr::if_else(
+        variant_alias == "Microsatellite Instability High" |
+          variant_alias == "deficient DNA mismatch repair" |
+          variant_alias == "dMMR" |
+          variant_alias == "MSI-H",
+        "MSI High",
+        as.character(variant_name_primary)
+      )
     )
   
   variants_expanded <- list()
@@ -1615,6 +1678,11 @@ load_civic_biomarkers <- function(
       dplyr::mutate(
         alias_type = "other_gene"
       ) |>
+      dplyr::mutate(alias_type = dplyr::if_else(
+        alteration_type == "COMPLEX",
+        "complex",
+        as.character(alias_type)
+      )) |>
       dplyr::distinct()
   )
   attr(variants_expanded[['other']],"groups") <- NULL
