@@ -42,7 +42,7 @@ following releases of external databases:
 - ChEMBL (v36)
 - NCI Thesaurus (26.09d)
 - MitelmanDB (20260715)
-- CIViC (20261001)
+- CIViC (20261005)
 
 ### Getting started
 

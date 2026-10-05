@@ -2,6 +2,10 @@
 
 ## Version 2.3.9
 
+- Updated CIViC data (20261005), added MSI-High and TMB-high biomarkers
+
+## Version 2.3.9
+
 - Updated CIViC data (20261001)
 - Updated NCI Thesaurus (26.09d)
 
