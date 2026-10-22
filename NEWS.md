@@ -1,3 +1,8 @@
+# Version 2.4.1
+
+- Updated CIViC data (20261022)
+- Updated Mitelman database (20261015)
+
 # Version 2.3.9
 
 - Updated CIViC data (20261005), added MSI-High and TMB-high biomarkers
